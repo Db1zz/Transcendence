@@ -1,10 +1,18 @@
-# The 42 Transcendence
-## What we're doing(the list of ideas)
-1. The website for a minecraft server that has item store, mini game for store, leaderboard, server statuses/amount of players
-2. Discord analogue. Servers, group chats, item market. | Super interesting, difficult project btv.
-	1. Server
-	2. DM Chats/calls
-	3. Friends
-	4. Shop
-	5. Game
-3. Online Marketplace like ss.lv avito.ru | Easy to implement, looks very borring tbh
+# anteiku.com
+## Description
+Online chat application based on slack and discord
+
+## Features
+1. User Profile - not sure
+	1. Profile customisation
+2. Friends
+3. DM Chat
+4. Servers(like in discord but without voice chat)
+	1. Multiple chat channels
+	2. Roles and role management
+5. Search engine for messages
+
+## Desirable Features
+1. Voice chat
+2. Marketplace for profile customisation
+3. Simple games?
