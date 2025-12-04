@@ -28,7 +28,7 @@ public class UserController {
     }
 
     // GET /api/users/id
-    @GetMapping("/api/users/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<User> findById(@PathVariable Long id) {
         Optional<User> user = userRepository.findById(id);
         return user.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
@@ -42,7 +42,7 @@ public class UserController {
     }
 
     // DELETE /api/users/id
-    @DeleteMapping("/api/users/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBook(@PathVariable Long id) {
         if (userRepository.existsById(id)) {
             userRepository.deleteById(id);
