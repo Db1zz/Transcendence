@@ -7,13 +7,6 @@ services:
       - 'POSTGRES_USER=aboba'
     volumes:
       - ./docker-entrypoint-initdb.d/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - postgresql_data:/var/lib/postgresql
+      - ./src/main/resources/db/data:/var/lib/postgresql
     ports:
       - "5432:5432"
-
-volumes:
-  postgresql_data:
-    driver_opts:
-      device: "${PWD}/src/main/resources/db/data"
-      type: "none"
-      o: bind
