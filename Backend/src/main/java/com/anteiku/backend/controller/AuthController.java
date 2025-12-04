@@ -7,5 +7,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     @GetMapping("/")
+    public String notSecured() { return "Hello from not secured"; }
+
+    @GetMapping("/secured")
+    public String secured() { return "Hello from secured"; }
 
 }
