@@ -97,11 +97,6 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.flywaydb</groupId>
-                <artifactId>flyway-maven-plugin</artifactId>
-                <version>11.17.0</version>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
