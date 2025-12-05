@@ -12,4 +12,7 @@ public class AuthController {
     @GetMapping("/secured")
     public String secured() { return "Hello from secured"; }
 
+	@GetMapping("/test_controller")
+    public String test_controller() { return "controller is working"; }
+
 }
