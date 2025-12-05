@@ -21,7 +21,7 @@ public class SecurityConfig {
                 )
 
                 .oauth2Login(oauth2 -> oauth2
-                        .defaultSuccessUrl("/secured", true)
+                        .defaultSuccessUrl("http://localhost:3000/home", true)
                 );
 
         return http.build();

@@ -1,5 +1,18 @@
 import React from 'react';
 
+// const fetchUserData = async () => {
+//   const token = localStorage.getItem('authToken');
+  
+//   const response = await fetch('http://localhost:8080/api/user', {
+//     headers: {
+//       'Authorization': `Bearer ${token}`
+//     }
+//   });
+  
+//   const data = await response.json();
+//   return data;
+// };
+
 const LoginPage: React.FC = () => {
 	const backendBase = process.env.REACT_APP_API_BASE_URL || '';
 
