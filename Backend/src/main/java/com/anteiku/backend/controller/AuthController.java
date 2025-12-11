@@ -1,5 +1,7 @@
 package com.anteiku.backend.controller;
 
+import com.anteiku.backend.model.User;
+import com.anteiku.backend.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 import java.net.URI;
+import java.util.List;
 
 @RestController
 public class AuthController {
@@ -29,22 +32,26 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.FOUND).location(frontendLogin).build();
     }
 
+
     @GetMapping("/api/user")
-    public ResponseEntity<Map<String, Object>> getUserInfo(OAuth2AuthenticationToken token) {
-        if (token == null) {
+    public ResponseEntity<Map<String, Object>> getUserInfo(OAuth2AuthenticationToken auth) {
+        if(auth == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
-        String email = token.getPrincipal().getAttribute("email");
-        String name = token.getPrincipal().getAttribute("name");
-        String picture = token.getPrincipal().getAttribute("picture");
-        if (picture == null) {
-            picture = "default.png";  // !!!!!!!!!!!!!!!!
+
+        String email = auth.getPrincipal().getAttribute("email");
+        String picture = auth.getPrincipal().getAttribute("picture");
+        if(picture == null) {
+            picture = "default.png";
         }
+
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
         Map<String, Object> map = Map.of(
-                "email", email,
-                "name", name,
-                "picture", picture
-        );
+                "email", user.getEmail(),
+                "picture", picture,
+                "name", user.getUsername(),
+                "role", user.getRole());
+
         return ResponseEntity.ok(map);
     }
 

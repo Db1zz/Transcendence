@@ -1,6 +1,4 @@
 package com.anteiku.backend.security.oauth2;
-
-
 import com.anteiku.backend.model.Role;
 import com.anteiku.backend.model.User;
 import com.anteiku.backend.repository.UserRepository;
@@ -13,11 +11,8 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
-import javax.print.attribute.SetOfIntegerSyntax;
 import java.util.Set;
-
 
 @Component
 @Slf4j
@@ -50,7 +45,8 @@ public class CustomOidcUserService implements OAuth2UserService<OidcUserRequest,
 //                .picture(oidcUser.getAttribute("picture"))
                 .role(Role.USER)
                 .build()));
-        log.info("User in db: {}", user);
+
+        log.info("user in DB : {}", user);
 
         var authorities = Set.of(new SimpleGrantedAuthority(user.getRole().name()));
 
