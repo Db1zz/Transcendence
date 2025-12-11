@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }: Props) => {
 					setUser(null);
 				else{
 					setUser({
-						name: data.username,
+						name: data.name,
 						email: data.email,
 						picture: data.picture,
 						role: data.role

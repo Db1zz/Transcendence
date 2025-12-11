@@ -17,14 +17,12 @@ import java.util.List;
 @RestController
 public class AuthController {
 
-//    @GetMapping("/")
-//    public String notSecured() { return "Hello from not secured"; }
-//
-//    @GetMapping("/secured")
-//    public String secured() { return "Hello from secured"; }
-//
-//	@GetMapping("/test_controller")
-//    public String test_controller() { return "controller is working"; }
+    private final UserRepository userRepository;
+
+    public AuthController(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
 
     @GetMapping("/login")
     public ResponseEntity<Void> redirectToFrontend() {
