@@ -26,24 +26,20 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(req -> {
                    CorsConfiguration cfg = new org.springframework.web.cors.CorsConfiguration();
-//                    cors.setAllowedOrigins(java.util.List.of("http://localhost:3000"));
-//                    cors.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-//                    cors.setAllowedHeaders(java.util.List.of("*"));
-//                    cors.setAllowCredentials(true);
-                    cfg.addAllowedOrigin("");
+                    cfg.addAllowedOrigin("http://localhost:3000");
                     cfg.setAllowCredentials(true);
                     return cfg;
                 }))
                 .csrf(AbstractHttpConfigurer::disable)
 
                 .authorizeHttpRequests(req -> req
-                        .requestMatchers("/", "/login").permitAll()
+                        .requestMatchers("/", "/login", "/api/user").permitAll()
                         .anyRequest().permitAll()
                 )
 
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo ->userInfo.oidcUserService(customOidcUserService))
-                        .defaultSuccessUrl("http://localhost:3000/home", true)
+                        .defaultSuccessUrl("http://localhost:3000/", true)
                 )
                 .logout(logout -> logout
                         .logoutSuccessUrl("http://localhost:3000/login")

@@ -17,16 +17,30 @@ type Props = {
 	children: ReactNode;
 };
 
-export const AuthProvider = ({children}: Props) => {
-	const [loading, setloading] = useState(true);
+export const AuthProvider = ({ children }: Props) => {
 
-	useEffect(()=> {
-		fetch("http://localhost:8080/api/user", {credentials: "include"})
-	})
-	.then()
+	const [loading, setLoading] = useState(true);
+	const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+	useEffect(() => {
+		fetch("http://localhost:8080/api/user", {
+			credentials: "include"
+		})
+			.then((res) => {
+				if (!res.ok) throw new Error("not authenticated");
+				return res.json();
+			})
+			.then(data => {
+				console.log("data= ", data);
+				if (data !== null)
+					setIsAuthenticated(true);
+			})
+			.catch((e) => console.log("error = ", e))
+			.finally(() => setLoading(false));
+	}, []);
 	return (
-		<AuthContext.Provider value={{isAuthenticated, loading}}>
+		<AuthContext.Provider value={{ isAuthenticated, loading }}>
 			{children}
-			</AuthContext.Provider>
+		</AuthContext.Provider>
 	)
 }

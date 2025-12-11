@@ -1,5 +1,7 @@
 package com.anteiku.backend.controller;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,18 +12,19 @@ import java.util.Map;
 @RestController
 public class AuthController {
 
-    @GetMapping("/")
-    public String notSecured() { return "Hello from not secured"; }
+//    @GetMapping("/")
+//    public String notSecured() { return "Hello from not secured"; }
+//
+//    @GetMapping("/secured")
+//    public String secured() { return "Hello from secured"; }
+//
+//	@GetMapping("/test_controller")
+//    public String test_controller() { return "controller is working"; }
 
-    @GetMapping("/secured")
-    public String secured() { return "Hello from secured"; }
-
-	@GetMapping("/test_controller")
-    public String test_controller() { return "controller is working"; }
     @GetMapping("/api/user")
     public ResponseEntity<Map<String, Object>> getUserInfo(OAuth2AuthenticationToken token) {
         if (token == null) {
-            return ResponseEntity.ok(null);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
         String email = token.getPrincipal().getAttribute("email");
         String name = token.getPrincipal().getAttribute("name");
@@ -33,7 +36,7 @@ public class AuthController {
                 "email", email,
                 "name", name,
                 "picture", picture
-        );v
+        );
         return ResponseEntity.ok(map);
     }
 
