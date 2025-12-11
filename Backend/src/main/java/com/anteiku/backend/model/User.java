@@ -1,25 +1,27 @@
 package com.anteiku.backend.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Column;
+import jakarta.persistence.*;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.sql.Timestamp;
+import lombok.*;
 
 @Entity
 @Table(name = "users")
-@Getter @Setter @NoArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@ToString
+
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
 
     @Column(name = "username")
     String username;
@@ -30,7 +32,11 @@ public class User {
     @Column(name = "created_at")
     Timestamp createdAt;
 
-    public User(String username, String email, Timestamp createdAt) {
+    @Column(name = "role")
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
+    public User(String username, String email, Timestamp createdAt, Role role) {
         this.username = username;
         this.email = email;
         this.createdAt = createdAt;

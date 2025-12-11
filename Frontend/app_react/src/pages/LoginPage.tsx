@@ -16,6 +16,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 // };
 
 const LoginPage: React.FC = () => {
+	
 	const backendBase = process.env.REACT_APP_API_BASE_URL || '';
 	const { isAuthenticated } = useAuth();
 	const navigate = useNavigate();
