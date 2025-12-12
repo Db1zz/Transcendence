@@ -1,0 +1,86 @@
+openapi: 3.1.0
+info:
+  title: Anteiku API
+  description: TODO
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080/api
+    description: Local HTTP Development Server
+  - url: https://localhost:8080/api
+    description: Local HTTPS Development Server
+
+paths:
+  /users:
+    post:
+      summary: Save User
+      operationId: saveUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        200:
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    get:
+      summary: "Get all users"
+      operationId: getAllUsers
+      parameters:
+        - name: limit
+          in: query
+          description: "The maximum amount of users to return"
+          required: false
+          schema:
+            type: integer
+            format: int32
+      responses:
+        200:
+          description: "Success! Returns list of users"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+
+  /users/{id}:
+    get:
+      summary: "Get user public data by id"
+      parameters:
+        - name: id
+          in: path
+          description: "user id"
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "Successful! Returns user public data."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        404:
+          description: "GG, user not found :("
+
+components:
+  schemas:
+      User:
+        type: object
+        description: User description data
+        properties:
+          id:
+            type: integer
+          email:
+            type: string
+            format: email
+          name:
+            type: string
+          timestamp:
+            type: string
+            format: date-time
