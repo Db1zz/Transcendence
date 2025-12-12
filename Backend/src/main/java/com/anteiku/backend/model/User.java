@@ -1,38 +1,35 @@
+// src/main/java/com/anteiku/backend/model/User.java
 package com.anteiku.backend.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Column;
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
-@Getter @Setter @NoArgsConstructor
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "users_id_seq")
+    @SequenceGenerator(name = "users_id_seq", sequenceName = "users_id_seq", allocationSize = 1)
+    private Long id;
 
-    @Column(name = "username")
-    String username;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    @CreationTimestamp
+    private LocalDateTime createdAt;
 
-    @Column(name = "email")
-    String email;
+    private String username;
 
-    @Column(name = "created_at")
-    Timestamp createdAt;
-
-    public User(String username, String email, Timestamp createdAt) {
-        this.username = username;
-        this.email = email;
-        this.createdAt = createdAt;
-    }
+    @Column(unique = true, nullable = false)
+    private String email;
+	
+	 @Enumerated(EnumType.STRING)
+    private Role role;
+    private String image;
 }
