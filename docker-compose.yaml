@@ -24,9 +24,9 @@ services:
       - ./Backend/.env
     environment:
       SPRING_DOCKER_COMPOSE_ENABLED: "false"
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-damn}
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-aboba}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-aboba}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
     command: ./mvnw clean spring-boot:run -Dspring-boot.run.jvmArguments="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
   frontend:
     build: 
