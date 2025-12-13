@@ -1,4 +1,4 @@
-package com.anteiku.backend;
+package anteiku.com.backend;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
