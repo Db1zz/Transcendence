@@ -2,7 +2,7 @@ services:
   postgres:
     image: 'postgres:17-alpine'
     env_file:
-      - ./Backend/.env
+      - .env
     volumes:
       - ./Backend/docker-entrypoint-initdb.d/init.sql:/docker-entrypoint-initdb.d/init.sql
       - ./Backend/src/main/resources/db/data:/var/lib/postgresql
@@ -21,7 +21,7 @@ services:
     depends_on:
       - postgres
     env_file:
-      - ./Backend/.env
+      - .env
     environment:
       SPRING_DOCKER_COMPOSE_ENABLED: "false"
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
