@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS users (
 
     username VARCHAR NOT NULL,
     created_at TIMESTAMP NOT NULL
+    role VARCHAR(50) NOT NULL DEFAULT 'USER'
 );
 
 CREATE TABLE IF NOT EXISTS users_credentials (

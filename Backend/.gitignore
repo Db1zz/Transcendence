@@ -34,3 +34,5 @@ build/
 ### VS Code ###
 .vscode/
 src/main/resources/db/data/18
+
+.env
