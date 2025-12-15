@@ -1,6 +1,8 @@
 package com.anteiku.backend.controller;
 
-import com.anteiku.backend.model.User;
+import com.anteiku.backend.entity.UserCredentialsEntity;
+import com.anteiku.backend.entity.UserEntity;
+import com.anteiku.backend.repository.UserCredentialsRepository;
 import com.anteiku.backend.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -13,14 +15,17 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class AuthController {
 
     private final UserRepository userRepository;
+    private final UserCredentialsRepository userCredentialsRepository;
 
-    public AuthController(UserRepository userRepository) {
+    public AuthController(UserRepository userRepository, UserCredentialsRepository userCredentialsRepository) {
         this.userRepository = userRepository;
+        this.userCredentialsRepository = userCredentialsRepository;
     }
 
 
@@ -43,9 +48,10 @@ public class AuthController {
             picture = "default.png";
         }
 
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+        UserCredentialsEntity userCredentials = userCredentialsRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+        UserEntity user = userRepository.findUserById(userCredentials.getUserId()).get();
         Map<String, Object> map = Map.of(
-                "email", user.getEmail(),
+                "email", userCredentials.getEmail(),
                 "picture", picture,
                 "name", user.getUsername(),
                 "role", user.getRole());
