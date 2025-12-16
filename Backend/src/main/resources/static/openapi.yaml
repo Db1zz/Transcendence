@@ -107,6 +107,32 @@ paths:
 #                $ref: '#/components/schemas/UserCredentialsDto'
 #        404:
 #          description: "Credentials not found"
+  /login:
+    get:
+      summary: "Redirect to frontend login"
+      operationId: redirectToFrontend
+      responses:
+        302:
+          description: "Redirect to frontend"
+        401:
+          description: "Unauthorized"
+
+  /api/user:
+    get:
+      summary: "Get authenticated user info"
+      operationId: getUserInfo
+      responses:
+        200:
+          description: "User info retrieved successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        401:
+          description: "User not authenticated"
+        404:
+          description: "User not found"
 
 components:
   schemas:
