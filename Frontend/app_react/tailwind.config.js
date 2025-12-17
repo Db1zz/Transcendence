@@ -14,6 +14,9 @@ module.exports = {
 				'sharp': '15px 20px 0px rgba(0, 0, 0, 1)',
 				'sharp-button': '5px 6px 0px rgba(0, 0, 0, 1)'
 			},
+			fontFamily: {
+				'ananias': ['ananias', 'sans-serif'],
+			}
 		},
 	},
 	plugins: [],

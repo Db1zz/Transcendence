@@ -37,7 +37,7 @@ const LoginPage: React.FC = () => {
 			{/* card */}
 			<div className="border-2 border-gray-800 bg-brand-beige rounded-2xl p-8 w-full max-w-md shadow-sharp relative z-10">
 
-				<h2 className="text-3xl font-bold text-black-500 text-center mb-2">login</h2>
+				<h2 className="text-3xl font-ananias font-bold text-black-500 text-center mb-2">login</h2>
 
 				<div className="space-y-4">
 					<div>
