@@ -1,19 +1,8 @@
 import React, { useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLocation, useNavigate } from 'react-router-dom';
+import bgLogin from '../img/bg_login.png';
 
-// const fetchUserData = async () => {
-//   const token = localStorage.getItem('authToken');
-  
-//   const response = await fetch('http://localhost:8080/api/user', {
-//     headers: {
-//       'Authorization': `Bearer ${token}`
-//     }
-//   });
-  
-//   const data = await response.json();
-//   return data;
-// };
 
 const LoginPage: React.FC = () => {
 	
@@ -39,13 +28,15 @@ const LoginPage: React.FC = () => {
 	}
 
 	return (
-		<div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-			<div className="bg-gray-800 text-white rounded-2xl p-8 w-full max-w-md">
+		<div className="min-h-screen bg-brand-green flex items-center justify-center p-4 relative overflow-hidden">
+			<div
+				className="absolute inset-0 bg-cover bg-center"
+				style={{ backgroundImage: `url(${bgLogin})` }}
+			/>
+			<div className="absolute inset-0 bg-brand-green opacity-60" />
+			<div className="bg-brand-beige rounded-2xl p-8 w-full max-w-md shadow-sharp relative z-10">
 
-				<h2 className="text-3xl font-bold text-center mb-2">login</h2>
-				{/* <p className="text-gray-400 text-center mb-8">
-          please enter your login and password
-        </p> */}
+				<h2 className="text-3xl font-bold text-black-500 text-center mb-2">login</h2>
 
 				<div className="space-y-4">
 					<div>
