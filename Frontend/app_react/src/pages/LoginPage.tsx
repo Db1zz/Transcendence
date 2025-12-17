@@ -5,7 +5,7 @@ import bgLogin from '../img/bg_login.png';
 import { Button } from '../components/Button';
 
 const LoginPage: React.FC = () => {
-	
+
 	const backendBase = process.env.REACT_APP_API_BASE_URL || '';
 	const { isAuthenticated } = useAuth();
 	const navigate = useNavigate();
@@ -14,7 +14,7 @@ const LoginPage: React.FC = () => {
 	const fromLocation = (location.state)?.from?.pathname || "/";
 	useEffect(() => {
 		if (isAuthenticated) {
-			navigate(fromLocation, {replace: true});
+			navigate(fromLocation, { replace: true });
 		}
 	}, [isAuthenticated, fromLocation, navigate])
 
@@ -33,43 +33,44 @@ const LoginPage: React.FC = () => {
 				className="absolute inset-0 bg-cover bg-center"
 				style={{ backgroundImage: `url(${bgLogin})` }}
 			/>
-			<div className="absolute inset-0 bg-brand-green opacity-75" />
+			<div className="absolute inset-0 bg-brand-green opacity-80" />
 			{/* card */}
 			<div className="border-2 border-gray-800 bg-brand-beige rounded-2xl p-8 w-full max-w-md shadow-sharp relative z-10">
 
-				<h2 className="text-3xl font-ananias font-bold text-black-500 text-center mb-2">login</h2>
+				<h2 className="text-3xl font-ananias font-bold text-black-500 text-center mb-3">login</h2>
+				<h3 className="text-l font-ananias text-black-500 text-center mb-4">sign in to continue</h3>
 
-				<div className="space-y-4">
+				<div className="space-y-4 font-roboto">
 					<div>
-						<label className="block text-sm text-gray-300 mb-2">
-							email address
+						<label className="block text-sm text-gray-800 mb-2">
+							email
 						</label>
 						<input
 							type="email"
-							className="w-full px-4 py-3 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+							className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
 							placeholder="enter your email"
 						/>
 					</div>
 
 					<div>
-						<label className="block text-sm text-gray-300 mb-2">
+						<label className="block text-sm text-gray-800 mb-2">
 							password
 						</label>
 						<input
 							type="password"
-							className="w-full px-4 py-3 bg-gray-700 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+							className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
 							placeholder="enter your password"
 						/>
 					</div>
 
 					<div className="text-sm">
-						<a href="#!" className="text-gray-400 hover:text-white">
+						<a href="#!" className="text-brand-brick hover:text-brand-green">
 							forgot password?
 						</a>
 					</div>
 
 					<div className="flex justify-center">
-					<Button text="login" />
+						<Button text="login" />
 					</div>
 				</div>
 
@@ -86,10 +87,10 @@ const LoginPage: React.FC = () => {
 					</a>
 				</div>
 
-				<div className="text-center">
-					<p className="text-gray-400">
+				<div className="text-center font-roboto text-brand-brick">
+					<p>
 						don't have an account?{' '}
-						<a href="#!" className="text-white font-bold hover:underline">
+						<a href="#!" className="font-bold hover:underline">
 							sign up
 						</a>
 					</p>

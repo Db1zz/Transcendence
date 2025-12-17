@@ -16,6 +16,7 @@ module.exports = {
 			},
 			fontFamily: {
 				'ananias': ['ananias', 'sans-serif'],
+				'roboto': ['Roboto', 'sans-serif'],
 			}
 		},
 	},
