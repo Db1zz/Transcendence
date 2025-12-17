@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import bgLogin from '../img/bg_login.png';
-
+import { Button } from '../components/Button';
 
 const LoginPage: React.FC = () => {
 	
@@ -33,8 +33,9 @@ const LoginPage: React.FC = () => {
 				className="absolute inset-0 bg-cover bg-center"
 				style={{ backgroundImage: `url(${bgLogin})` }}
 			/>
-			<div className="absolute inset-0 bg-brand-green opacity-60" />
-			<div className="bg-brand-beige rounded-2xl p-8 w-full max-w-md shadow-sharp relative z-10">
+			<div className="absolute inset-0 bg-brand-green opacity-75" />
+			{/* card */}
+			<div className="border-2 border-gray-800 bg-brand-beige rounded-2xl p-8 w-full max-w-md shadow-sharp relative z-10">
 
 				<h2 className="text-3xl font-bold text-black-500 text-center mb-2">login</h2>
 
@@ -67,9 +68,9 @@ const LoginPage: React.FC = () => {
 						</a>
 					</div>
 
-					<button className="w-full bg-transparent border-2 border-white text-white py-3 rounded-lg hover:bg-white hover:text-gray-900 transition-colors font-medium">
-						log me in!
-					</button>
+					<div className="flex justify-center">
+					<Button text="login" />
+					</div>
 				</div>
 
 				<div className="flex justify-center gap-4 my-6">

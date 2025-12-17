@@ -12,8 +12,11 @@ module.exports = {
 			},
 			boxShadow: {
 				'sharp': '15px 20px 0px rgba(0, 0, 0, 1)',
+				'sharp-button': '5px 6px 0px rgba(0, 0, 0, 1)'
 			},
 		},
 	},
 	plugins: [],
 }
+
+//border-2 border-gray-800 -- for borders
