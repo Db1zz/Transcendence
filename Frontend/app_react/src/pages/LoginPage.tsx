@@ -28,19 +28,23 @@ const LoginPage: React.FC = () => {
 	}
 
 	return (
-		<div className="min-h-screen bg-brand-green flex items-center justify-center p-4 relative overflow-hidden">
+		<div className="min-h-screen bg-brand-green flex flex-col items-center justify-center p-4 relative overflow-hidden">
 			<div
 				className="absolute inset-0 bg-cover bg-center"
 				style={{ backgroundImage: `url(${bgLogin})` }}
 			/>
 			<div className="absolute inset-0 bg-brand-green opacity-80" />
-			{/* card */}
-			<div className="border-2 border-gray-800 bg-brand-beige rounded-2xl p-8 w-full max-w-md shadow-sharp relative z-10">
+
+			<div className="font-ananias border-2 border-gray-800 bg-white h-20 w-full max-w-md flex items-center justify-center p-4 relative z-10 mb-16">
+				<h1 className="text-l text-gray-800">welcome to anteiku cafe</h1>
+			</div>
+
+			<div className="border-2 border-gray-800 bg-brand-beige rounded-2xl p-8 w-full max-w-lg shadow-sharp relative z-10">
 
 				<h2 className="text-3xl font-ananias font-bold text-black-500 text-center mb-3">login</h2>
 				<h3 className="text-l font-ananias text-black-500 text-center mb-4">sign in to continue</h3>
 
-				<div className="space-y-4 font-roboto">
+				<div className="block px-8 space-y-4 font-roboto">
 					<div>
 						<label className="block text-sm text-gray-800 mb-2">
 							email
