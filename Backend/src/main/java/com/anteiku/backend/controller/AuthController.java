@@ -23,11 +23,9 @@ public class AuthController {
 
     private final UserRepository userRepository;
     private final UserCredentialsRepository userCredentialsRepository;
-    private final UserCredentialsRepository userCredentialsRepository;
 
     public AuthController(UserRepository userRepository, UserCredentialsRepository userCredentialsRepository) {
         this.userRepository = userRepository;
-        this.userCredentialsRepository = userCredentialsRepository;
         this.userCredentialsRepository = userCredentialsRepository;
     }
 
