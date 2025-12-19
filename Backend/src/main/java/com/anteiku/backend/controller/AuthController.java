@@ -14,8 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 import java.net.URI;
-import java.util.List;
-import java.util.Optional;
 
 @RestController
 public class AuthController {
@@ -28,13 +26,11 @@ public class AuthController {
         this.userCredentialsRepository = userCredentialsRepository;
     }
 
-
     @GetMapping("/login")
     public ResponseEntity<Void> redirectToFrontend() {
         URI frontendLogin = URI.create("http://localhost:3000/login"); // adjust frontend URL
         return ResponseEntity.status(HttpStatus.FOUND).location(frontendLogin).build();
     }
-
 
     @GetMapping("/api/user")
     public ResponseEntity<Map<String, Object>> getUserInfo(OAuth2AuthenticationToken auth) {
