@@ -1,7 +1,8 @@
 package com.anteiku.backend.controller;
 
-import com.anteiku.backend.entity.UserEntity;
 import com.anteiku.backend.entity.UserCredentialsEntity;
+import com.anteiku.backend.entity.UserEntity;
+import com.anteiku.backend.repository.UserCredentialsRepository;
 import com.anteiku.backend.repository.UserRepository;
 import com.anteiku.backend.repository.UserCredentialsRepository;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URI;
 import java.util.Map;
+import java.net.URI;
+import java.util.List;
 
 @RestController
 public class AuthController {
@@ -21,8 +24,7 @@ public class AuthController {
     private final UserRepository userRepository;
     private final UserCredentialsRepository userCredentialsRepository;
 
-    public AuthController(UserRepository userRepository,
-                          UserCredentialsRepository userCredentialsRepository) {
+    public AuthController(UserRepository userRepository, UserCredentialsRepository userCredentialsRepository) {
         this.userRepository = userRepository;
         this.userCredentialsRepository = userCredentialsRepository;
     }

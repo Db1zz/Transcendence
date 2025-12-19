@@ -21,7 +21,7 @@ public class UserCredentialsEntity {
     @Column(name = "password", nullable = true)
     private String password;
 
-    @Column(name = "email")
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
     public UserCredentialsEntity(UUID userId, String email) {
