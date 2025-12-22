@@ -22,14 +22,14 @@ function ShowInfo() {
 		
 	}
 
-	if (user?.role === 'USER') {
+	if (user?.role === 'ADMIN') {
 		return (
-			<div>USER PAGE</div>
+			<div>secured admin page</div>
 		)
 	}
 
 	return (
-		<div>secured admin page</div>
+		<div>default PAGE</div>
 	)
 }
 

@@ -67,6 +67,15 @@ paths:
                 $ref: '#/components/schemas/UserPublicDto'
         404:
           description: "GG, user not found :("
+  /login:
+    get:
+      summary: "Redirect to frontend login"
+      operationId: redirectToFrontend
+      responses:
+        302:
+          description: "Redirect to frontend"
+        401:
+          description: "Unauthorized"
   /auth:
     post:
       summary: "Send authentication request to a server"
@@ -85,6 +94,46 @@ paths:
                 $ref: '#/components/schemas/UserAuthResponseDto'
         401:
           $ref: '#/components/responses/UnauthorizedError'
+  /api/user:
+    get:
+      summary: "Get authenticated user info"
+      operationId: getUserInfo
+      responses:
+        200:
+          description: "User info retrieved successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+        401:
+          description: "User not authenticated"
+        404:
+          description: "User not found"
+
+  /api/info:
+      get:
+        summary: "Get info"
+        description: "Returns some info. Requires ADMIN role."
+        operationId: getAppInfo
+        security:
+          - oauth2: [ ]
+        responses:
+          200:
+            description: "info retrieved successfully"
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    app:
+                      type: string
+                    version:
+                      type: string
+          401:
+            description: "User not authenticated"
+          403:
+            description: "Forbidden - requires ADMIN role"
 
 components:
   responses:

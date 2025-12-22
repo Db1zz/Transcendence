@@ -4,6 +4,7 @@ import com.anteiku.backend.api.UsersApi;
 import com.anteiku.backend.model.UserPublicDto;
 import com.anteiku.backend.model.UserRegistrationDto;
 import com.anteiku.backend.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
