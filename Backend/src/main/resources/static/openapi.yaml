@@ -94,65 +94,6 @@ paths:
                 $ref: '#/components/schemas/UserAuthResponseDto'
         401:
           $ref: '#/components/responses/UnauthorizedError'
-
-components:
-  responses:
-    UnauthorizedError:
-      description: "Access token is missing"
-
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-
-=========
-
-# Must be used later to change password/email
-#  /users/{id}/???:
-#    post:
-#      summary: "Save user credentials"
-#      operationId: saveUserCredentials
-#      requestBody:
-#        content:
-#          application/json:
-#            schema:
-#              $ref: '#/components/schemas/UserCredentialsDto'
-#      responses:
-#        200:
-#          description: "User credentials saved"
-
-# Do we even need API for that?
-#  /users/{id}/credentials:
-#    get:
-#      summary: "Get user credentials"
-#      operationId: getUserCredentialsById
-#      parameters:
-#        - name: id
-#          in: path
-#          description: "user id"
-#          required: true
-#          schema:
-#            $ref: '#/components/schemas/UserId'
-#      responses:
-#        200:
-#          description: "Successful! Returns user credentials kekw."
-#          content:
-#            application/json:
-#              schema:
-#                $ref: '#/components/schemas/UserCredentialsDto'
-#        404:
-#          description: "Credentials not found"
-  /login:
-    get:
-      summary: "Redirect to frontend login"
-      operationId: redirectToFrontend
-      responses:
-        302:
-          description: "Redirect to frontend"
-        401:
-          description: "Unauthorized"
-
   /api/user:
     get:
       summary: "Get authenticated user info"
@@ -171,28 +112,28 @@ components:
           description: "User not found"
 
   /api/info:
-      get:
-        summary: "Get info"
-        description: "Returns some info. Requires ADMIN role."
-        operationId: getAppInfo
-        security:
-          - oauth2: [ ]
-        responses:
-          200:
-            description: "info retrieved successfully"
-            content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    app:
-                      type: string
-                    version:
-                      type: string
-          401:
-            description: "User not authenticated"
-          403:
-            description: "Forbidden - requires ADMIN role"
+    get:
+      summary: "Get info"
+      description: "Returns some info. Requires ADMIN role."
+      operationId: getAppInfo
+      security:
+        - oauth2: [ ]
+      responses:
+        200:
+          description: "info retrieved successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  app:
+                    type: string
+                  version:
+                    type: string
+        401:
+          description: "User not authenticated"
+        403:
+          description: "Forbidden - requires ADMIN role"
 
 components:
   responses:
@@ -206,112 +147,90 @@ components:
       bearerFormat: JWT
 
   schemas:
-      UserId:
-        type: string
-        format: uuid
-        description: "User's universally unique identifier"
+    UserId:
+      type: string
+      format: uuid
+      description: "User's universally unique identifier"
 
-<<<<<<<<< Temporary merge branch 1
-      UserPassword:
-        type: string
-        format: password
+    UserPassword:
+      type: string
+      format: password
 
-      UserEmail:
-        type: string
-        format: email
+    UserEmail:
+      type: string
+      format: email
 
-=========
->>>>>>>>> Temporary merge branch 2
-      UserPublicDto:
-        type: object
-        description: "Public user data"
-        properties:
-          id:
-            $ref: '#/components/schemas/UserId'
-          username:
-            type: string
-          timestamp:
-            type: string
-            format: date-time
-<<<<<<<<< Temporary merge branch 1
-          role:
-            type: string
+    UserPublicDto:
+      type: object
+      description: "Public user data"
+      properties:
+        id:
+          $ref: '#/components/schemas/UserId'
+        username:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        role:
+          type: string
 
-      UserAuthDto:
-        type: object
-        description: "User authentication data"
-        properties:
-          email:
-            $ref: '#/components/schemas/UserEmail'
-          password:
-            $ref: '#/components/schemas/UserPassword'
+    UserAuthDto:
+      type: object
+      description: "User authentication data"
+      properties:
+        email:
+          $ref: '#/components/schemas/UserEmail'
+        password:
+          $ref: '#/components/schemas/UserPassword'
 
-      UserAuthResponseDto:
-        type: object
-        description: "User and token info"
-        properties:
-          accessToken:
-            type: string
-          tokenType:
-            type: string
-            enum: [bearer]
-          refreshToken:
-            type: string
-          tokenExpiresIn:
-            type: integer
-            format: int64
-          userInfo:
-            $ref: '#/components/schemas/UserInfoDto'
+    UserAuthResponseDto:
+      type: object
+      description: "User and token info"
+      properties:
+        accessToken:
+          type: string
+        tokenType:
+          type: string
+          enum: [bearer]
+        refreshToken:
+          type: string
+        tokenExpiresIn:
+          type: integer
+          format: int64
+        userInfo:
+          $ref: '#/components/schemas/UserInfoDto'
 
-      UserInfoDto:
-        type: object
-        description: "User general account info"
-        properties:
-          id:
-            $ref: '#/components/schemas/UserId'
-          email:
-            $ref: '#/components/schemas/UserEmail'
-          username:
-            type: string
-          role:
-            type: string
-=========
->>>>>>>>> Temporary merge branch 2
+    UserInfoDto:
+      type: object
+      description: "User general account info"
+      properties:
+        id:
+          $ref: '#/components/schemas/UserId'
+        email:
+          $ref: '#/components/schemas/UserEmail'
+        username:
+          type: string
+        role:
+          type: string
 
-      UserCredentialsDto:
-        type: object
-        description: "User credentials"
-        properties:
-          id:
-            $ref: '#/components/schemas/UserId'
-          email:
-<<<<<<<<< Temporary merge branch 1
-            $ref: '#/components/schemas/UserEmail'
-          password:
-            $ref: '#/components/schemas/UserPassword'
-=========
-            type: string
-            format: email
-          password:
-            type: string
-            format: password
->>>>>>>>> Temporary merge branch 2
+    UserCredentialsDto:
+      type: object
+      description: "User credentials"
+      properties:
+        id:
+          $ref: '#/components/schemas/UserId'
+        email:
+          $ref: '#/components/schemas/UserEmail'
+        password:
+          $ref: '#/components/schemas/UserPassword'
 
-      UserRegistrationDto:
-        type: object
-        description: "User registration data"
-        properties:
-          username:
-            type: string
-          email:
-<<<<<<<<< Temporary merge branch 1
-            $ref: '#/components/schemas/UserEmail'
-          password:
-            $ref: '#/components/schemas/UserPassword'
-=========
-            type: string
-            format: email
-          password:
-            type: string
-            format: password
->>>>>>>>> Temporary merge branch 2
+    UserRegistrationDto:
+      type: object
+      description: "User registration data"
+      properties:
+        username:
+          type: string
+        email:
+          $ref: '#/components/schemas/UserEmail'
+        password:
+          $ref: '#/components/schemas/UserPassword'
