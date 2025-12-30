@@ -67,6 +67,15 @@ paths:
                 $ref: '#/components/schemas/UserPublicDto'
         404:
           description: "GG, user not found :("
+  /login:
+    get:
+      summary: "Redirect to frontend login"
+      operationId: redirectToFrontend
+      responses:
+        302:
+          description: "Redirect to frontend"
+        401:
+          description: "Unauthorized"
   /auth:
     post:
       summary: "Send authentication request to a server"
@@ -97,166 +106,7 @@ components:
       scheme: bearer
       bearerFormat: JWT
 
-  schemas:
-      UserId:
-        type: string
-        format: uuid
-        description: "User's universally unique identifier"
-
-      UserPassword:
-        type: string
-        format: password
-
-      UserEmail:
-        type: string
-        format: email
-
-      UserPublicDto:
-        type: object
-        description: "Public user data"
-        properties:
-          id:
-            $ref: '#/components/schemas/UserId'
-          username:
-            type: string
-          timestamp:
-            type: string
-            format: date-time
-          role:
-            type: string
-
-      UserAuthDto:
-        type: object
-        description: "User authentication data"
-        properties:
-          email:
-            $ref: '#/components/schemas/UserEmail'
-          password:
-            $ref: '#/components/schemas/UserPassword'
-
-      UserAuthResponseDto:
-        type: object
-        description: "User and token info"
-        properties:
-          accessToken:
-            type: string
-          tokenType:
-            type: string
-            enum: [bearer]
-          refreshToken:
-            type: string
-          tokenExpiresIn:
-            type: integer
-            format: int64
-          userInfo:
-            $ref: '#/components/schemas/UserInfoDto'
-
-      UserInfoDto:
-        type: object
-        description: "User general account info"
-        properties:
-          id:
-            $ref: '#/components/schemas/UserId'
-          email:
-            $ref: '#/components/schemas/UserEmail'
-          username:
-            type: string
-          role:
-            type: string
-
-      UserCredentialsDto:
-        type: object
-        description: "User credentials"
-        properties:
-          id:
-            $ref: '#/components/schemas/UserId'
-          email:
-            $ref: '#/components/schemas/UserEmail'
-          password:
-            $ref: '#/components/schemas/UserPassword'
-
-      UserRegistrationDto:
-        type: object
-        description: "User registration data"
-        properties:
-          username:
-            type: string
-          email:
-            $ref: '#/components/schemas/UserEmail'
-          password:
-            $ref: '#/components/schemas/UserPassword'openapi: 3.1.0
-info:
-  title: Anteiku API
-  description: TODO
-  version: 1.0.0
-
-servers:
-  - url: http://localhost:8080/api
-    description: Local HTTP Development Server
-
-paths:
-  /users/register:
-    post:
-      summary: "Registers a new user"
-      operationId: registerUser
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserRegistrationDto'
-      responses:
-        200:
-          description: ok
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserRegistrationDto'
-
-  /users/public/{username}:
-    get:
-      summary: "Get list of users by username"
-      operationId: getUsersByUsername
-      parameters:
-        - name: username
-          in: path
-          description: "username"
-          required: true
-          schema:
-            type: string
-      x-spring-router-regexp:
-        username: "[a-zA-Z0-9_-]{1,}"
-      responses:
-        200:
-          description: "Successful response returning a list of users"
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/UserPublicDto'
-
-  /users/{id}:
-    get:
-      summary: "Get user public data by id"
-      operationId: getUserById
-      parameters:
-        - name: id
-          in: path
-          description: "user id"
-          required: true
-          schema:
-            $ref: '#/components/schemas/UserId'
-      x-spring-router-regexp:
-        id: "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
-      responses:
-        200:
-          description: "Successful! Returns user public data."
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/UserPublicDto'
-        404:
-          description: "GG, user not found :("
+=========
 
 # Must be used later to change password/email
 #  /users/{id}/???:
@@ -319,6 +169,7 @@ paths:
           description: "User not authenticated"
         404:
           description: "User not found"
+
   /api/info:
       get:
         summary: "Get info"
@@ -344,12 +195,33 @@ paths:
             description: "Forbidden - requires ADMIN role"
 
 components:
+  responses:
+    UnauthorizedError:
+      description: "Access token is missing"
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
       UserId:
         type: string
         format: uuid
         description: "User's universally unique identifier"
 
+<<<<<<<<< Temporary merge branch 1
+      UserPassword:
+        type: string
+        format: password
+
+      UserEmail:
+        type: string
+        format: email
+
+=========
+>>>>>>>>> Temporary merge branch 2
       UserPublicDto:
         type: object
         description: "Public user data"
@@ -361,6 +233,50 @@ components:
           timestamp:
             type: string
             format: date-time
+<<<<<<<<< Temporary merge branch 1
+          role:
+            type: string
+
+      UserAuthDto:
+        type: object
+        description: "User authentication data"
+        properties:
+          email:
+            $ref: '#/components/schemas/UserEmail'
+          password:
+            $ref: '#/components/schemas/UserPassword'
+
+      UserAuthResponseDto:
+        type: object
+        description: "User and token info"
+        properties:
+          accessToken:
+            type: string
+          tokenType:
+            type: string
+            enum: [bearer]
+          refreshToken:
+            type: string
+          tokenExpiresIn:
+            type: integer
+            format: int64
+          userInfo:
+            $ref: '#/components/schemas/UserInfoDto'
+
+      UserInfoDto:
+        type: object
+        description: "User general account info"
+        properties:
+          id:
+            $ref: '#/components/schemas/UserId'
+          email:
+            $ref: '#/components/schemas/UserEmail'
+          username:
+            type: string
+          role:
+            type: string
+=========
+>>>>>>>>> Temporary merge branch 2
 
       UserCredentialsDto:
         type: object
@@ -369,11 +285,17 @@ components:
           id:
             $ref: '#/components/schemas/UserId'
           email:
+<<<<<<<<< Temporary merge branch 1
+            $ref: '#/components/schemas/UserEmail'
+          password:
+            $ref: '#/components/schemas/UserPassword'
+=========
             type: string
             format: email
           password:
             type: string
             format: password
+>>>>>>>>> Temporary merge branch 2
 
       UserRegistrationDto:
         type: object
@@ -382,8 +304,14 @@ components:
           username:
             type: string
           email:
+<<<<<<<<< Temporary merge branch 1
+            $ref: '#/components/schemas/UserEmail'
+          password:
+            $ref: '#/components/schemas/UserPassword'
+=========
             type: string
             format: email
           password:
             type: string
             format: password
+>>>>>>>>> Temporary merge branch 2
