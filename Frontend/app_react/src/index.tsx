@@ -7,6 +7,7 @@ import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import { AuthProvider } from './context/AuthContext';
 import ShowInfo from './pages/ShowInfo';
+import SignupPage from './pages/SignupPage';
 
 
 const root = ReactDOM.createRoot(
@@ -19,6 +20,7 @@ root.render(
 		<Routes>
 			<Route path='/' element={<HomePage/>}></Route>
 			<Route path='/login' element={<LoginPage/>}></Route>
+			<Route path='/signup' element={<SignupPage/>}></Route>
 			<Route path='/info' element={<ShowInfo/>}></Route>
 		</Routes>
 	</Router>
