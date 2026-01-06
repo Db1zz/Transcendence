@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import bgLogin from '../img/bg_login.png';
@@ -6,6 +6,40 @@ import { Button } from '../components/Button';
 import { OAuthLogin } from '../components/OAuthLogin';
 
 const SignupPage: React.FC = () => {
+	const [email, setEmail] = useState('');
+	const [password, setPassword] = useState('');
+	const [username, setUsername] = useState('');
+	const [loading, setLoading] = useState(false);
+
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+		setLoading(true);
+
+		try {
+			const response = await fetch('http://localhost:8080/api/users/register', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({
+					username,
+					email,
+					password,
+				}),
+			});
+
+			if (response.ok) {
+				console.log('success');
+			} else {
+				console.error('signup failed:', response.statusText);
+			}
+		} catch (error) {
+			console.error('error during signup:', error);
+		} finally {
+			setLoading(false);
+		}
+	};
+
 	return (
 		<div className="min-h-screen bg-brand-green flex flex-col items-center justify-center p-4 relative overflow-hidden">
 			<div
@@ -23,15 +57,18 @@ const SignupPage: React.FC = () => {
 				<h2 className="text-3xl font-ananias font-bold text-brand-brick text-center mb-3">sign up</h2>
 				<h3 className="text-l font-ananias text-brand-brick text-center mb-4">sign up to continue</h3>
 
-				<div className="block px-8 space-y-4 font-roboto">
+				<form onSubmit={handleSubmit} className="block px-8 space-y-4 font-roboto">
 					<div>
 						<label className="block text-sm text-brand-brick mb-2">
 							email
 						</label>
 						<input
 							type="email"
+							value={email}
+							onChange={(e) => setEmail(e.target.value)}
 							className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
 							placeholder="enter your email"
+							required
 						/>
 					</div>
 
@@ -41,36 +78,37 @@ const SignupPage: React.FC = () => {
 						</label>
 						<input
 							type="password"
+							value={password}
+							onChange={(e) => setPassword(e.target.value)}
 							className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
 							placeholder="enter your password"
+							required
 						/>
 					</div>
 
-					<div>
-						<label className="block text-sm text-brand-brick mb-2">
-							name
-						</label>
-						<input
-							type="name"
-							className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
-							placeholder="enter your name"
-						/>
-					</div>
 					<div>
 						<label className="block text-sm text-brand-brick mb-2">
 							username
 						</label>
 						<input
-							type="username"
+							type="text"
+							value={username}
+							onChange={(e) => setUsername(e.target.value)}
 							className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
-							placeholder="create a username "
+							placeholder="create a username"
+							required
 						/>
 					</div>
 
 					<div className="flex justify-center">
-						<Button text="sign up" />
+						<Button
+							type="submit"
+							text="sign up"
+							disabled={loading}
+							className="px-8 py-3 hover:bg-opacity-90"
+						/>
 					</div>
-				</div>
+				</form>
 
 				<div className="flex justify-center gap-4 my-6">
 					<OAuthLogin />
