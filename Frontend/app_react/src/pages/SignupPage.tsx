@@ -6,10 +6,12 @@ import { Button } from '../components/Button';
 import { OAuthLogin } from '../components/OAuthLogin';
 
 const SignupPage: React.FC = () => {
+	const navigate = useNavigate();
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
 	const [username, setUsername] = useState('');
 	const [loading, setLoading] = useState(false);
+	const [isSuccess, setIsSuccess] = useState(false);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -30,6 +32,7 @@ const SignupPage: React.FC = () => {
 
 			if (response.ok) {
 				console.log('success');
+				setIsSuccess(true);
 			} else {
 				console.error('signup failed:', response.statusText);
 			}
@@ -54,78 +57,89 @@ const SignupPage: React.FC = () => {
 
 			<div className="border-2 border-gray-800 bg-brand-beige rounded-2xl p-8 w-full max-w-lg shadow-sharp relative z-10">
 
-				<h2 className="text-3xl font-ananias font-bold text-brand-brick text-center mb-3">sign up</h2>
-				<h3 className="text-l font-ananias text-brand-brick text-center mb-4">sign up to continue</h3>
 
-				<form onSubmit={handleSubmit} className="block px-8 space-y-4 font-roboto">
-					<div>
-						<label className="block text-sm text-brand-brick mb-2">
-							email
-						</label>
-						<input
-							type="email"
-							value={email}
-							onChange={(e) => setEmail(e.target.value)}
-							className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
-							placeholder="enter your email"
-							required
-						/>
+				{isSuccess ? (
+					<div className="flex flex-col items-center justify-center space-y-6 py-8">
+						<h2 className="text-2xl font-ananias font-bold text-brand-brick text-center">
+							you have successfully created an account
+						</h2>
+						<Button text="back to log in" onClick={() => navigate('/login')} />
 					</div>
+				) : (
+					<>
+						<h2 className="text-3xl font-ananias font-bold text-brand-brick text-center mb-3">sign up</h2>
+						<h3 className="text-l font-ananias text-brand-brick text-center mb-4">sign up to continue</h3>
 
-					<div>
-						<label className="block text-sm text-brand-brick mb-2">
-							password
-						</label>
-						<input
-							type="password"
-							value={password}
-							onChange={(e) => setPassword(e.target.value)}
-							className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
-							placeholder="enter your password"
-							required
-						/>
-					</div>
+						<form onSubmit={handleSubmit} className="block px-8 space-y-4 font-roboto">
+							<div>
+								<label className="block text-sm text-brand-brick mb-2">
+									email
+								</label>
+								<input
+									type="email"
+									value={email}
+									onChange={(e) => setEmail(e.target.value)}
+									className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
+									placeholder="enter your email"
+									required
+								/>
+							</div>
 
-					<div>
-						<label className="block text-sm text-brand-brick mb-2">
-							username
-						</label>
-						<input
-							type="text"
-							value={username}
-							onChange={(e) => setUsername(e.target.value)}
-							className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
-							placeholder="create a username"
-							required
-						/>
-					</div>
+							<div>
+								<label className="block text-sm text-brand-brick mb-2">
+									password
+								</label>
+								<input
+									type="password"
+									value={password}
+									onChange={(e) => setPassword(e.target.value)}
+									className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
+									placeholder="enter your password"
+									required
+								/>
+							</div>
 
-					<div className="flex justify-center">
-						<Button
-							type="submit"
-							text="sign up"
-							disabled={loading}
-							className="px-8 py-3 hover:bg-opacity-90"
-						/>
-					</div>
-				</form>
+							<div>
+								<label className="block text-sm text-brand-brick mb-2">
+									username
+								</label>
+								<input
+									type="text"
+									value={username}
+									onChange={(e) => setUsername(e.target.value)}
+									className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
+									placeholder="create a username"
+									required
+								/>
+							</div>
 
-				<div className="flex justify-center gap-4 my-6">
-					<OAuthLogin />
-				</div>
+							<div className="flex justify-center">
+								<Button
+									type="submit"
+									text="sign up"
+									disabled={loading}
+									className="px-8 py-3 hover:bg-opacity-90"
+								/>
+							</div>
+						</form>
 
-				<div className="text-center font-roboto text-brand-brick">
-					<p>
-						already have an account?{' '}
-						<a href="/login" className="font-bold hover:underline">
-							login
-						</a>
-					</p>
-				</div>
+						<div className="flex justify-center gap-4 my-6">
+							<OAuthLogin />
+						</div>
 
+						<div className="text-center font-roboto text-brand-brick">
+							<p>
+								already have an account?{' '}
+								<a href="/login" className="font-bold hover:underline">
+									login
+								</a>
+							</p>
+						</div>
+					</>
+				)}
 			</div>
 		</div>
 	);
 }
 
-export default SignupPage
+export default SignupPage;
