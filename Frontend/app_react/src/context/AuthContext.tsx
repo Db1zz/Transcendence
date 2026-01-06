@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { createContext, useContext, useEffect, type ReactNode } from "react";
 
 
-type User = {
+export type User = {
 	name: string;
 	email: string;
 	picture?: string;
+	status: 'online' | 'idle' | 'dnd' | 'offline';
+	//i will add it to db maybe we can migrate to redis later idk
 	role: 'USER' | 'ADMIN';
 }
 
@@ -52,6 +54,8 @@ export const AuthProvider = ({ children }: Props) => {
 						name: data.name,
 						email: data.email,
 						picture: data.picture,
+						status: 'online',
+						//placeholder
 						role: data.role
 					});
 				}
