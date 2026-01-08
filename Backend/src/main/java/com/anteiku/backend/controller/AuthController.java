@@ -37,20 +37,28 @@ public class AuthController {
 
     @GetMapping("/api/user")
     public ResponseEntity<Map<String, Object>> getUserInfo(@AuthenticationPrincipal OAuth2User principal) {
-        if (principal == null) {
-            throw new RuntimeException("User not authenticated");
-        }
+    if (principal == null) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
 
-        String email = principal.getAttribute("email");
-        if (email == null) {
-            throw new RuntimeException("Email not found in principal");
-        }
+    String email = principal.getAttribute("email");
+    if (email == null) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
 
-        UserCredentialsEntity credentials = userCredentialsRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User credentials not found"));
+    UserCredentialsEntity credentials = userCredentialsRepository.findByEmail(email)
+            .orElse(null);
+    
+    if (credentials == null) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
 
-        UserEntity user = userRepository.findUserById(credentials.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    UserEntity user = userRepository.findUserById(credentials.getUserId())
+            .orElse(null);
+    
+    if (user == null) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
 
         Map<String, Object> userInfo = Map.of(
                 "id", user.getId(),

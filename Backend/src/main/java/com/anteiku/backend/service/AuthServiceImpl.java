@@ -36,11 +36,11 @@ public class AuthServiceImpl implements AuthService {
     public UserAuthResponseDto authenticateUser(UserAuthDto userAuthDto) {
         Optional<UserCredentialsEntity> userCredentials = userCredentialsRepository.findByEmail(userAuthDto.getEmail());
         if (userCredentials.isPresent() == false) {
-            // Throw exception "User Not Found"
+            throw new RuntimeException("User Not Found");
         }
 
         if (passwordEncoder.matches(userAuthDto.getPassword(), userCredentials.get().getPassword()) == false) {
-            // Throw exception "Invalid password"
+            throw new RuntimeException("Invalid password");
         }
 
         UserEntity userEntity = userRepository.findUserById(userCredentials.get().getUserId()).get();

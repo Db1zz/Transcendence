@@ -20,7 +20,7 @@ const AuthContext = createContext<AuthContextType>({
 	isAuthenticated: false,
 	loading: false,
 	user: null,
-	setUser: () => {},
+	setUser: () => { },
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -35,33 +35,41 @@ export const AuthProvider = ({ children }: Props) => {
 	const [loading, setLoading] = useState(true);
 	//const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-	useEffect(() => {
-		fetch("http://localhost:8080/api/user", {
-			credentials: "include"
-		})
-			.then((res) => {
-				if (!res.ok) throw new Error("not authenticated");
-				return res.json();
-			})
-			.then(data => {
-				console.log("data= ", data);
-				if (!data)
-					setUser(null);
-				else{
-					setUser({
-						name: data.name,
-						email: data.email,
-						picture: data.picture,
-						role: data.role
-					});
-				}
-			})
-			.catch((e) => {
-				console.log("error = ", e)
-				setUser(null);
-			})
-			.finally(() => setLoading(false));
-	}, []);
+useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+
+    const headers: HeadersInit = {};
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    fetch("http://localhost:8080/api/user", {
+        credentials: "include",
+        headers
+    })
+        .then((res) => {
+            if (!res.ok) {
+                localStorage.removeItem('accessToken');
+                setUser(null);
+                return;
+            }
+            return res.json();
+        })
+        .then(data => {
+            if (data) {
+                setUser({
+                    name: data.username,
+                    email: data.email,
+                    picture: data.picture,
+                    role: data.role
+                });
+            }
+        })
+        .catch(() => {
+            setUser(null);
+        })
+        .finally(() => setLoading(false));
+}, []);
 
 	const isAuthenticated = !!user;
 	return (

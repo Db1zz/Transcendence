@@ -5,15 +5,23 @@ import bgLogin from '../img/bg_login.png';
 import { Button } from '../components/Button';
 import { OAuthLogin } from '../components/OAuthLogin';
 
+type User = {
+    name: string;
+    email: string;
+    picture?: string;
+    role: 'USER' | 'ADMIN';
+}
+
 const LoginPage: React.FC = () => {
 
 	const backendBase = process.env.REACT_APP_API_BASE_URL || '';
-	const { isAuthenticated } = useAuth();
+	const { isAuthenticated, setUser } = useAuth();
 	const navigate = useNavigate();
 	const location = useLocation();
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
 	const [loading, setLoading] = useState(false);
+
 
 	const fromLocation = (location.state)?.from?.pathname || "/";
 	useEffect(() => {
@@ -36,11 +44,20 @@ const LoginPage: React.FC = () => {
 					email,
 					password,
 				}),
+				credentials: 'include'
 			});
 
 			if (response.ok) {
 				const data = await response.json();
 				console.log('success', data);
+				localStorage.setItem('accessToken', data.accessToken);
+				setUser({
+					name: data.name,
+					email: data.email,
+					picture: data.picture,
+					role: data.role
+				})
+				navigate("/home");
 			} else {
 				console.error('login failed:', response.statusText);
 			}
