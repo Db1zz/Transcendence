@@ -1,17 +1,17 @@
 import React, { useState } from "react"
-import { User } from "../context/AuthContext"
+import { ProfilePopup } from "./ProfilePopup"
 
 interface ProfileButtonProps {
     user: any;
     className?: string;
-}
+};
 
-const statusColors = {
+export const StatusColors = {
     online: 'bg-green-500',
     idle: 'bg-yellow-500',
     dnd: 'bg-red-500',
     offline: 'bg-gray-400',
-}
+};
 
 export const ProfileButton: React.FC<ProfileButtonProps> = ({
     user,
@@ -44,7 +44,7 @@ export const ProfileButton: React.FC<ProfileButtonProps> = ({
                     <div
                         className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full
                             border-2 border-brand-beige
-                            ${statusColors[user.status as keyof typeof statusColors] || 'bg-gray-400'}
+                            ${StatusColors[user.status as keyof typeof StatusColors] || 'bg-gray-400'}
                         `}
                     />
                 </div>
@@ -58,6 +58,11 @@ export const ProfileButton: React.FC<ProfileButtonProps> = ({
                     </p>
                 </div>
             </button>
+            <ProfilePopup
+                user={user}
+                isOpen={isPopupOpen}
+                onClose={() => setIsPopupOpen(false)}
+            />
         </>
     );
 };

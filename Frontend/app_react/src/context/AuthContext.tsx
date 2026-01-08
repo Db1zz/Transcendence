@@ -8,6 +8,8 @@ export type User = {
 	picture?: string;
 	status: 'online' | 'idle' | 'dnd' | 'offline';
 	//i will add it to db maybe we can migrate to redis later idk
+	about: string;
+	createdAt: string;
 	role: 'USER' | 'ADMIN';
 }
 
@@ -56,7 +58,10 @@ export const AuthProvider = ({ children }: Props) => {
 						picture: data.picture,
 						status: 'online',
 						//placeholder
-						role: data.role
+						about: 'default text',
+						//again placeholder
+						role: data.role,
+						createdAt: data.createdAt,
 					});
 				}
 			})
