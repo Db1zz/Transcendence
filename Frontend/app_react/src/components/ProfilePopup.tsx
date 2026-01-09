@@ -101,9 +101,9 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
                         />
                         <div
                             className={`
-                absolute bottom-1 right-1 rounded-full border-[3px] border-brand-beige
+                absolute -bottom-0.5 -right-0.5 rounded-full border-[3px] border-brand-beige
                 ${StatusColors[user.status as keyof typeof StatusColors] || 'bg-gray-400'}
-                ${isExpanded ? 'w-8 h-8 bottom-2 right-2' : 'w-5 h-5'}
+                ${isExpanded ? 'w-8 h-8 -bottom-0.5 -right-0.5' : 'w-5 h-5'}
               `}
                         />
                     </div>

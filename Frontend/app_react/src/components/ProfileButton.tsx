@@ -2,7 +2,7 @@ import React, { useState } from "react"
 import { ProfilePopup } from "./ProfilePopup"
 
 interface ProfileButtonProps {
-    user: any;
+    user: any;                      // any for the testing, when parsing from back works change to User
     className?: string;
 };
 
