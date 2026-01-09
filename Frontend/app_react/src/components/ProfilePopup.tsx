@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { X, Expand, Coffee, Shield } from "lucide-react"
+import { X, Expand, Coffee, Shield, Minimize2 } from "lucide-react"
 import { User } from "../context/AuthContext"
 import { StatusColors } from "./ProfileButton"
 import { Button } from "./Button"
@@ -36,6 +36,10 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
         onClose();
     };
 
+    const toggleExpand = () => {
+        setIsExpanded(!isExpanded)
+    }
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div
@@ -44,8 +48,9 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
             />
             <div
                 className={`
-          relative z-50 bg-brand-beige border-2 border-gray-800 rounded-xl overflow-hidden
-          transition-all duration-300 ease-out flex flex-col
+          fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+          z-50 bg-brand-beige border-2 border-gray-800 rounded-xl overflow-hidden
+          duration-300 ease-out flex flex-col
           ${isExpanded
                         ? 'w-[500px] h-[550px] shadow-sharp animate-expand'
                         : 'w-[320px] h-auto shadow-sharp-md animate-slide-up'
@@ -59,14 +64,17 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
           `}
                 >
                     <div className="absolute top-2 right-2 flex gap-2">
-                        {!isExpanded && (
                             <button
-                                onClick={() => setIsExpanded(true)}
+                                onClick={toggleExpand}
                                 className="p-1.5 rounded bg-black/20 hover:bg-black/40 transition-colors text-brand-beige"
+                                title={isExpanded ? "Collapse" : "Expand"}
                             >
-                                <Expand className="w-4 h-4" />
+                                {isExpanded ? (
+                                    <Minimize2 className="w-4 h-4" />
+                                ) : (
+                                    <Expand className="w-4 h-4" />
+                                )}
                             </button>
-                        )}
                         <button
                             onClick={handleClose}
                             className="p-1.5 rounded bg-black/20 hover:bg-black/40 transition-colors text-brand-beige"
@@ -159,8 +167,8 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
                             </div>
                             <div className="flex gap-4 mt-6 justify-end">
                                 <Button
-                                    text="COLLAPSE"
-                                    onClick={() => setIsExpanded(false)}
+                                    text="Add Friend"
+                                    onClick={() => null}
                                     color="bg-transparent"
                                     className="!px-6 !py-2 text-gray-800 text-sm w-full"
                                 />

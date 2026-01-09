@@ -26,8 +26,8 @@ module.exports = {
 					'100%': { opacity: '1', transform: 'translate(-50%, -50%)' },
 				},
 				'expand': {
-					'0%': { transform: 'scale(0.95) translate(-50%, -40%)' },
-					'100%': { transform: 'scale(1) translate(-50%, -50%)' }, 
+					'0%': { transform: 'translate(-50%, -50%) scale(0.95)' },
+					'100%': { transform: 'translate(-50%, -50%) scale(1)' }, 
 				}
 			},
 			animation: {
