@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import bgLogin from '../img/bg_login.png';
 import { Button } from '../components/Button';
 import { OAuthLogin } from '../components/OAuthLogin';
+import defaultAvatar from '../img/default.png';
 
 type User = {
     name: string;
@@ -51,13 +52,15 @@ const LoginPage: React.FC = () => {
 				const data = await response.json();
 				console.log('success', data);
 				localStorage.setItem('accessToken', data.accessToken);
+				//rm when we fix endpoint
+				const userInfo = data.userInfo || data;
 				setUser({
-					name: data.name,
-					email: data.email,
-					picture: data.picture,
-					role: data.role
-				})
-				navigate("/home");
+					name: userInfo.username || userInfo.name,
+					email: userInfo.email,
+					picture: userInfo.picture || defaultAvatar,
+					role: userInfo.role
+				});
+				//navigate("/home");
 			} else {
 				console.error('login failed:', response.statusText);
 			}
@@ -65,6 +68,7 @@ const LoginPage: React.FC = () => {
 			console.error('error during login:', error);
 		} finally {
 			setLoading(false);
+			navigate("/home");
 		}
 	};
 

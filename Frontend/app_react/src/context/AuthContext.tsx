@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { createContext, useContext, useEffect, type ReactNode } from "react";
+import defaultAvatar from '../img/default.png';
 
 
 type User = {
@@ -43,6 +44,7 @@ useEffect(() => {
         headers['Authorization'] = `Bearer ${token}`;
     }
 
+	//change to retrieving data from /auth only
     fetch("http://localhost:8080/api/user", {
         credentials: "include",
         headers
@@ -57,11 +59,15 @@ useEffect(() => {
         })
         .then(data => {
             if (data) {
+				console.log(data);
+				//rm when we fix endpoint
+                const userInfo = data.userInfo || data;
+                
                 setUser({
-                    name: data.username,
-                    email: data.email,
-                    picture: data.picture,
-                    role: data.role
+                    name: userInfo.username || userInfo.name,
+                    email: userInfo.email,
+                    picture: userInfo.picture || defaultAvatar,
+                    role: userInfo.role
                 });
             }
         })
