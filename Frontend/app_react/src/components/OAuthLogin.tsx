@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 export const OAuthLogin: React.FC = () => {
-  const handleLogin = (provider: string) => {
-    if (provider === 'github')
-      window.location.href = 'http://localhost:8080/oauth2/authorization/github';
-    if (provider === 'google')
-      window.location.href = 'http://localhost:8080/oauth2/authorization/google';
-  };
+	const { login } = useAuth();
+
+	const handleLogin = (provider: 'github' | 'google') => {
+		login(provider);
+	};
 
   return (
     <div>

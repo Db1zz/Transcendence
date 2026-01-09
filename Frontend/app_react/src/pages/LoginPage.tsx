@@ -4,19 +4,11 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import bgLogin from '../img/bg_login.png';
 import { Button } from '../components/Button';
 import { OAuthLogin } from '../components/OAuthLogin';
-import defaultAvatar from '../img/default.png';
-
-type User = {
-    name: string;
-    email: string;
-    picture?: string;
-    role: 'USER' | 'ADMIN';
-}
 
 const LoginPage: React.FC = () => {
 
 	const backendBase = process.env.REACT_APP_API_BASE_URL || '';
-	const { isAuthenticated, setUser } = useAuth();
+	const { isAuthenticated, setUser, login } = useAuth();
 	const navigate = useNavigate();
 	const location = useLocation();
 	const [email, setEmail] = useState('');
@@ -35,39 +27,11 @@ const LoginPage: React.FC = () => {
 		e.preventDefault();
 		setLoading(true);
 
-		try {
-			const response = await fetch('http://localhost:8080/api/auth', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({
-					email,
-					password,
-				}),
-				credentials: 'include'
-			});
+		const success = await login('credentials', { email, password });
 
-			if (response.ok) {
-				const data = await response.json();
-				console.log('success', data);
-				localStorage.setItem('accessToken', data.accessToken);
-				//rm when we fix endpoint
-				const userInfo = data.userInfo || data;
-				setUser({
-					name: userInfo.username || userInfo.name,
-					email: userInfo.email,
-					picture: userInfo.picture || defaultAvatar,
-					role: userInfo.role
-				});
-				//navigate("/home");
-			} else {
-				console.error('login failed:', response.statusText);
-			}
-		} catch (error) {
-			console.error('error during login:', error);
-		} finally {
-			setLoading(false);
+		setLoading(false);
+
+		if (success) {
 			navigate("/home");
 		}
 	};

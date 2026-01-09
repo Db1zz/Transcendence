@@ -13,6 +13,8 @@ const HomePage = () => {
 		return <Navigate to="/login" replace />
 
 	const handleLogout = () => {
+		localStorage.removeItem('accessToken');
+		localStorage.removeItem('user');
 		setUser(null);
 		window.location.href = 'http://localhost:8080/logout';
 	}
