@@ -40,3 +40,5 @@ module.exports = {
 }
 
 //border-2 border-gray-800 -- for borders
+
+//border-2 border-gray-800 -- for borders
