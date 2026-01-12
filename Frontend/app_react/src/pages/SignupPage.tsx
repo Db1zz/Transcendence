@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import bgLogin from '../img/bg_login.png';
 import { Button } from '../components/Button';
 import { OAuthLogin } from '../components/OAuthLogin';
+import validator from 'validator'
 
 const SignupPage: React.FC = () => {
 	const navigate = useNavigate();
@@ -12,10 +13,52 @@ const SignupPage: React.FC = () => {
 	const [username, setUsername] = useState('');
 	const [loading, setLoading] = useState(false);
 	const [isSuccess, setIsSuccess] = useState(false);
+	const [errorMessagePassword, setErrorMessagePassword] = useState('');
+	const [errorMessageEmail, setErrorMessageEmail] = useState('');
+
+	const validateEmail = (value: string): boolean => {
+		if (validator.isEmail(value)) {
+			setErrorMessageEmail('');
+			return true;
+		} else {
+			setErrorMessageEmail('please enter a valid email');
+			return false;
+		}
+	}
+
+	const validatePassword = (value: string): boolean => {
+		const score = validator.isStrongPassword(value, {
+			minLength: 8,
+			minLowercase: 1,
+			minUppercase: 1,
+			minNumbers: 1,
+			minSymbols: 1,
+			returnScore: true,
+			pointsPerUnique: 1,
+			pointsPerRepeat: 0.5,
+			pointsForContainingLower: 10,
+			pointsForContainingUpper: 10,
+			pointsForContainingNumber: 10,
+			pointsForContainingSymbol: 10
+		}) as number;
+
+		const maxScore = 80; // Approximate max score
+		const strengthLevel = Math.min(Math.round((score / maxScore) * 100), 100);
+
+		if (score >= 50) {
+			setErrorMessagePassword(`nice strong password! (${strengthLevel}% strength)`)
+			return true;
+		} else {
+			setErrorMessagePassword(`password strength: ${strengthLevel}% - needs more complexity`)
+			return false;
+		}
+	}
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setLoading(true);
+		if (!validatePassword(password))
+			return;
 
 		try {
 			const response = await fetch('http://localhost:8080/api/users/register', {
@@ -30,6 +73,10 @@ const SignupPage: React.FC = () => {
 				}),
 			});
 
+			// add user with this email exists? validation : register
+			//incorrect email format
+			//password validation
+			//make a var msg that will be displayed in a div after error if isSuccess false (each block or separately?)
 			if (response.ok) {
 				console.log('success');
 				setIsSuccess(true);
@@ -83,6 +130,8 @@ const SignupPage: React.FC = () => {
 									placeholder="enter your email"
 									required
 								/>
+								{errorMessageEmail === '' ? null :
+									<span className='font-bold text-brand-brick'>please enter correct email!</span>}
 							</div>
 
 							<div>
@@ -92,11 +141,19 @@ const SignupPage: React.FC = () => {
 								<input
 									type="password"
 									value={password}
-									onChange={(e) => setPassword(e.target.value)}
+									onChange={(e) => {
+										setPassword(e.target.value);
+										validateEmail(e.target.value);
+									}}
 									className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
-									placeholder="enter your password"
+									placeholder="create your password"
 									required
 								/>
+								{errorMessagePassword === '' ? null :
+									<span style={{
+										fontWeight: 'bold',
+										color: 'red',
+									}}>{errorMessagePassword}</span>}
 							</div>
 
 							<div>

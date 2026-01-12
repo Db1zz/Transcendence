@@ -73,7 +73,7 @@ export const AuthProvider = ({ children }: Props) => {
 
 	const checkAuthStatus = async () => {
 		try {
-			const response = await fetch('http://localhost:8080/api/auth', {
+			const response = await fetch('http://localhost:8080/api/users/me', {
 				credentials: 'include'
 			});
 
@@ -110,7 +110,7 @@ export const AuthProvider = ({ children }: Props) => {
 
 				if (response.ok) {
 					const data = await response.json();
-					localStorage.setItem('accessToken', data.accessToken);
+					//localStorage.setItem('accessToken', data.accessToken);
 					saveAuthData(data);
 					return true;
 				} else {
