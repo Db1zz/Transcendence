@@ -57,8 +57,8 @@ const SignupPage: React.FC = () => {
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setLoading(true);
-		if (!validatePassword(password))
-			return;
+		// if (!validatePassword(password))
+		// 	return;
 
 		try {
 			const response = await fetch('http://localhost:8080/api/users/register', {
