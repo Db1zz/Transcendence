@@ -4,6 +4,7 @@ import com.anteiku.backend.entity.UserCredentialsEntity;
 import com.anteiku.backend.entity.UserEntity;
 import com.anteiku.backend.repository.UserCredentialsRepository;
 import com.anteiku.backend.repository.UserRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
