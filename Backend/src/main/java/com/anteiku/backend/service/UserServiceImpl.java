@@ -3,18 +3,20 @@ package com.anteiku.backend.service;
 import com.anteiku.backend.entity.UserCredentialsEntity;
 import com.anteiku.backend.entity.UserEntity;
 import com.anteiku.backend.mapper.UserMapper;
-import com.anteiku.backend.model.Role;
-import com.anteiku.backend.model.UserCredentialsDto;
-import com.anteiku.backend.model.UserPublicDto;
-import com.anteiku.backend.model.UserRegistrationDto;
+import com.anteiku.backend.model.*;
 import com.anteiku.backend.repository.UserCredentialsRepository;
 import com.anteiku.backend.repository.UserRepository;
+import com.anteiku.backend.security.jwt.JwtServiceImpl;
+import com.anteiku.backend.security.jwt.JwtUtils;
 import jakarta.transaction.Transactional;
 import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
+import javax.naming.AuthenticationException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -28,11 +30,13 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     UserCredentialsRepository userCredentialsRepository;
     private final UserMapper userMapper;
+    private final JwtServiceImpl jwtService;
 
-    public UserServiceImpl(UserRepository userRepository, UserCredentialsRepository userCredentialsRepository, UserMapper userMapper) {
+    public UserServiceImpl(UserRepository userRepository, UserCredentialsRepository userCredentialsRepository, UserMapper userMapper, JwtServiceImpl jwtSerivce) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
         this.userCredentialsRepository = userCredentialsRepository;
+        this.jwtService = jwtSerivce;
     }
 
     @Override
@@ -54,7 +58,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserPublicDto getUserByEmail(String email) {
         UserCredentialsDto userCredentialsDto = getUserCredentialsByEmail(email);
-        return userMapper.toDto(userRepository.findUserById(userCredentialsDto.getId()).get());
+        return userMapper.toDto(userRepository.findUserById(userCredentialsDto.getUserId()).get());
     }
 
     @Override
@@ -88,6 +92,28 @@ public class UserServiceImpl implements UserService {
         UserCredentialsEntity userCredentialsEntity = userCredentialsRepository.findByEmail(userEmail).orElseThrow(
                 () -> new UserServiceException("User not found")
         );
+
         return userMapper.toCredentialsDto(userCredentialsEntity);
+    }
+
+    @Override
+    public UserInfoDto getMe() throws AuthenticationException {
+        JwtUtils jwtUtils = new JwtUtils();
+        Optional<String> optionalEmail = jwtUtils.getCurrentUserEmail();
+        if (optionalEmail.isEmpty()) {
+            throw new AuthenticationCredentialsNotFoundException("User is not authenticated");
+        }
+
+        String email = optionalEmail.get();
+
+        UserInfoDto userInfoDto = new UserInfoDto();
+
+        UserPublicDto userPublicDto = getUserByEmail(email);
+
+        userInfoDto.setEmail(email);
+        userInfoDto.setUsername(userPublicDto.getUsername());
+        userInfoDto.setRole(userPublicDto.getRole());
+        userInfoDto.setId(userPublicDto.getId());
+        return userInfoDto;
     }
 }
