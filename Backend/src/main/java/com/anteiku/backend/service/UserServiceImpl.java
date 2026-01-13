@@ -9,6 +9,7 @@ import com.anteiku.backend.repository.UserRepository;
 import com.anteiku.backend.security.jwt.JwtServiceImpl;
 import com.anteiku.backend.security.jwt.JwtUtils;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
@@ -23,21 +24,12 @@ import java.util.UUID;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-    @Autowired(required = true)
-    private PasswordEncoder passwordEncoder;
-
+    private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
-    UserCredentialsRepository userCredentialsRepository;
+    private final UserCredentialsRepository userCredentialsRepository;
     private final UserMapper userMapper;
-    private final JwtServiceImpl jwtService;
-
-    public UserServiceImpl(UserRepository userRepository, UserCredentialsRepository userCredentialsRepository, UserMapper userMapper, JwtServiceImpl jwtSerivce) {
-        this.userRepository = userRepository;
-        this.userMapper = userMapper;
-        this.userCredentialsRepository = userCredentialsRepository;
-        this.jwtService = jwtSerivce;
-    }
 
     @Override
     public List<UserPublicDto> getUsersByUsername(String username) {

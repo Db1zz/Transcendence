@@ -13,9 +13,9 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
 
-        // corsConfiguration.addAllowedOrigin("http://localhost:3000"); // <- is not used with allowed origin "*"
+         corsConfiguration.addAllowedOrigin("http://localhost:3000"); // <- is not used with allowed origin "*"
         corsConfiguration.addAllowedOrigin("*");
-        corsConfiguration.setAllowCredentials(true);
+        // corsConfiguration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 

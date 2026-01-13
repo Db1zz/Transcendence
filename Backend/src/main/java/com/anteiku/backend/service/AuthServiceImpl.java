@@ -9,6 +9,7 @@ import com.anteiku.backend.repository.UserCredentialsRepository;
 import com.anteiku.backend.repository.UserRepository;
 import com.anteiku.backend.security.jwt.JwtServiceImpl;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,19 +20,19 @@ import java.util.Optional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
-    @Autowired(required = true)
     private PasswordEncoder passwordEncoder;
 
     final private UserRepository userRepository;
     final private UserCredentialsRepository userCredentialsRepository;
     final private JwtServiceImpl jwtServiceImpl;
 
-    AuthServiceImpl(UserCredentialsRepository userCredentialsRepository, UserRepository userRepository, JwtServiceImpl jwtServiceImpl) {
-        this.userCredentialsRepository = userCredentialsRepository;
-        this.userRepository = userRepository;
-        this.jwtServiceImpl = jwtServiceImpl;
-    }
+//    AuthServiceImpl(UserCredentialsRepository userCredentialsRepository, UserRepository userRepository, JwtServiceImpl jwtServiceImpl) {
+//        this.userCredentialsRepository = userCredentialsRepository;
+//        this.userRepository = userRepository;
+//        this.jwtServiceImpl = jwtServiceImpl;
+//    }
 
     @Override
     public UserAuthResponseDto authenticateUser(UserAuthDto userAuthDto) {
