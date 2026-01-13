@@ -47,7 +47,11 @@ export const AuthProvider = ({ children }: Props) => {
 			name: userInfo.username || userInfo.name,
 			email: userInfo.email,
 			picture: userInfo.picture || defaultAvatar,
-			role: userInfo.role
+			role: userInfo.role,
+			status: 'online',
+			about: 'default text',
+			createdAt: ""
+									
 		};
 
 		localStorage.setItem('user', JSON.stringify(userData));
