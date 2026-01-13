@@ -1,12 +1,9 @@
 package com.anteiku.backend.controller;
 
-import com.anteiku.backend.entity.UserEntity;
 import com.anteiku.backend.entity.UserCredentialsEntity;
-import com.anteiku.backend.repository.UserRepository;
+import com.anteiku.backend.entity.UserEntity;
 import com.anteiku.backend.repository.UserCredentialsRepository;
 import com.anteiku.backend.repository.UserRepository;
-import com.anteiku.backend.repository.UserCredentialsRepository;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,30 +11,22 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.net.URI;
 import java.util.Map;
 import java.net.URI;
 import java.util.List;
 
 @RestController
-public class AuthController {
+public class OAuthController {
 
     private final UserRepository userRepository;
     private final UserCredentialsRepository userCredentialsRepository;
 
-    public AuthController(UserRepository userRepository,
-                          UserCredentialsRepository userCredentialsRepository) {
+    public OAuthController(UserRepository userRepository, UserCredentialsRepository userCredentialsRepository) {
         this.userRepository = userRepository;
         this.userCredentialsRepository = userCredentialsRepository;
     }
 
-    @GetMapping("/login")
-    public ResponseEntity<Void> redirectToFrontend() {
-        URI frontendLogin = URI.create("http://localhost:3000/login");
-        return ResponseEntity.status(HttpStatus.FOUND).location(frontendLogin).build();
-    }
-
-    @GetMapping("/api/user")
+    @GetMapping("/")
     public ResponseEntity<Map<String, Object>> getUserInfo(@AuthenticationPrincipal OAuth2User principal) {
     if (principal == null) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

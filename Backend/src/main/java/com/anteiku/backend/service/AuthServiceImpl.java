@@ -7,30 +7,32 @@ import com.anteiku.backend.model.UserAuthResponseDto;
 import com.anteiku.backend.model.UserInfoDto;
 import com.anteiku.backend.repository.UserCredentialsRepository;
 import com.anteiku.backend.repository.UserRepository;
-import com.anteiku.backend.security.JwtServiceImpl;
+import com.anteiku.backend.security.jwt.JwtServiceImpl;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
-    @Autowired(required = true)
     private PasswordEncoder passwordEncoder;
 
     final private UserRepository userRepository;
     final private UserCredentialsRepository userCredentialsRepository;
     final private JwtServiceImpl jwtServiceImpl;
 
-    AuthServiceImpl(UserCredentialsRepository userCredentialsRepository, UserRepository userRepository, JwtServiceImpl jwtServiceImpl) {
-        this.userCredentialsRepository = userCredentialsRepository;
-        this.userRepository = userRepository;
-        this.jwtServiceImpl = jwtServiceImpl;
-    }
+//    AuthServiceImpl(UserCredentialsRepository userCredentialsRepository, UserRepository userRepository, JwtServiceImpl jwtServiceImpl) {
+//        this.userCredentialsRepository = userCredentialsRepository;
+//        this.userRepository = userRepository;
+//        this.jwtServiceImpl = jwtServiceImpl;
+//    }
 
     @Override
     public UserAuthResponseDto authenticateUser(UserAuthDto userAuthDto) {
@@ -61,4 +63,28 @@ public class AuthServiceImpl implements AuthService {
 
         return userAuthResponseDto;
     }
+
+//    public UserInfoDto getOAuth2UserInfo(@AuthenticationPrincipal OAuth2User principal) {
+//        if (principal == null) {
+//            throw new RuntimeException("User not authenticated");
+//        }
+//
+//        String email = principal.getAttribute("email");
+//        if (email == null) {
+//            throw new RuntimeException("Email not found in principal");
+//        }
+//
+//        UserCredentialsEntity userCredentialsEntity = userCredentialsRepository.findByEmail(email)
+//                .orElseThrow(() -> new RuntimeException("User credentials not found"));
+//
+//        UserEntity userEntity = userRepository.findUserById(userCredentialsEntity.getUserId()).get();
+//
+//        UserInfoDto userInfoDto = new UserInfoDto();
+//        userInfoDto.setId(userEntity.getId());
+//        userInfoDto.setUsername(userEntity.getUsername());
+//        userInfoDto.setEmail(email);
+//        userInfoDto.setRole(userEntity.getRole().toString());
+//
+//        return userInfoDto;
+//    }
 }
