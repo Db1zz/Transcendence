@@ -14,51 +14,59 @@ const SignupPage: React.FC = () => {
 	const [loading, setLoading] = useState(false);
 	const [isSuccess, setIsSuccess] = useState(false);
 	const [errorMessagePassword, setErrorMessagePassword] = useState('');
-	const [errorMessageEmail, setErrorMessageEmail] = useState('');
+	//const [errorMessageEmail, setErrorMessageEmail] = useState('');
+	const [passwordChecks, setPasswordChecks] = useState({
+		length: false,
+		lower: false,
+		upper: false,
+		number: false,
+		symbol: false,
+	});
 
-	const validateEmail = (value: string): boolean => {
-		if (validator.isEmail(value)) {
-			setErrorMessageEmail('');
-			return true;
-		} else {
-			setErrorMessageEmail('please enter a valid email');
-			return false;
-		}
-	}
+	// const validateEmail = (value: string): boolean => {
+	// 	if (validator.isEmail(value)) {
+	// 		setErrorMessagePassword('');
+	// 		return true;
+	// 	} else {
+	// 		setErrorMessagePassword('please enter a valid email');
+	// 		return false;
+	// 	}
+	//change to just parsing fetch responses when they are implemented
+	// }
 
 	const validatePassword = (value: string): boolean => {
-		const score = validator.isStrongPassword(value, {
-			minLength: 8,
-			minLowercase: 1,
-			minUppercase: 1,
-			minNumbers: 1,
-			minSymbols: 1,
-			returnScore: true,
-			pointsPerUnique: 1,
-			pointsPerRepeat: 0.5,
-			pointsForContainingLower: 10,
-			pointsForContainingUpper: 10,
-			pointsForContainingNumber: 10,
-			pointsForContainingSymbol: 10
-		}) as number;
+		const checks = {
+			length: validator.isLength(value, { min: 8 }),
+			lower: validator.matches(value, /[a-z]/),
+			upper: validator.matches(value, /[A-Z]/),
+			number: validator.matches(value, /[0-9]/),
+			symbol: validator.matches(value, /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/),
+		};
 
-		const maxScore = 80; // Approximate max score
-		const strengthLevel = Math.min(Math.round((score / maxScore) * 100), 100);
+		setPasswordChecks(checks);
 
-		if (score >= 50) {
-			setErrorMessagePassword(`nice strong password! (${strengthLevel}% strength)`)
+		const missing: string[] = [];
+		if (!checks.length) missing.push('8+ characters');
+		if (!checks.lower) missing.push('1 lowercase');
+		if (!checks.upper) missing.push('1 uppercase');
+		if (!checks.number) missing.push('1 number');
+		if (!checks.symbol) missing.push('1 symbol');
+
+		if (missing.length === 0) {
+			setErrorMessagePassword('');
 			return true;
-		} else {
-			setErrorMessagePassword(`password strength: ${strengthLevel}% - needs more complexity`)
-			return false;
 		}
+
+		setErrorMessagePassword(`password needs: ${missing.join(', ')}`);
+		return false;
 	}
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
+		//const emailOk = validateEmail(email);
+		const passwordOk = validatePassword(password);
+		if (!passwordOk) return;
 		setLoading(true);
-		// if (!validatePassword(password))
-		// 	return;
 
 		try {
 			const response = await fetch('http://localhost:8080/api/users/register', {
@@ -125,13 +133,17 @@ const SignupPage: React.FC = () => {
 								<input
 									type="email"
 									value={email}
-									onChange={(e) => setEmail(e.target.value)}
+									onChange={(e) => {
+										const val = e.target.value;
+										setEmail(val);
+										//validateEmail(val);
+									}}
 									className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
 									placeholder="enter your email"
 									required
 								/>
-								{errorMessageEmail === '' ? null :
-									<span className='font-bold text-brand-brick'>please enter correct email!</span>}
+								{/* {errorMessageEmail === '' ? null :
+									<span className='font-bold text-brand-brick'>please enter correct email!</span>} */}
 							</div>
 
 							<div>
@@ -142,8 +154,9 @@ const SignupPage: React.FC = () => {
 									type="password"
 									value={password}
 									onChange={(e) => {
-										setPassword(e.target.value);
-										validateEmail(e.target.value);
+										const val = e.target.value;
+										setPassword(val);
+										validatePassword(val);
 									}}
 									className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
 									placeholder="create your password"
@@ -152,7 +165,7 @@ const SignupPage: React.FC = () => {
 								{errorMessagePassword === '' ? null :
 									<span style={{
 										fontWeight: 'bold',
-										color: 'red',
+										color: 'brand-brick',
 									}}>{errorMessagePassword}</span>}
 							</div>
 
