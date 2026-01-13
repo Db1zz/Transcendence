@@ -4,6 +4,8 @@ import com.anteiku.backend.entity.UserCredentialsEntity;
 import com.anteiku.backend.entity.UserEntity;
 import com.anteiku.backend.repository.UserCredentialsRepository;
 import com.anteiku.backend.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -12,44 +14,38 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
-import java.net.URI;
-import java.util.List;
 
+@RequiredArgsConstructor
 @RestController
 public class OAuthController {
 
     private final UserRepository userRepository;
     private final UserCredentialsRepository userCredentialsRepository;
 
-    public OAuthController(UserRepository userRepository, UserCredentialsRepository userCredentialsRepository) {
-        this.userRepository = userRepository;
-        this.userCredentialsRepository = userCredentialsRepository;
-    }
-
     @GetMapping("/")
     public ResponseEntity<Map<String, Object>> getUserInfo(@AuthenticationPrincipal OAuth2User principal) {
-    if (principal == null) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    }
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
 
-    String email = principal.getAttribute("email");
-    if (email == null) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    }
+        String email = principal.getAttribute("email");
+        if (email == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
 
-    UserCredentialsEntity credentials = userCredentialsRepository.findByEmail(email)
-            .orElse(null);
-    
-    if (credentials == null) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    }
+        UserCredentialsEntity credentials = userCredentialsRepository.findByEmail(email)
+                .orElse(null);
 
-    UserEntity user = userRepository.findUserById(credentials.getUserId())
-            .orElse(null);
-    
-    if (user == null) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    }
+        if (credentials == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        UserEntity user = userRepository.findUserById(credentials.getUserId())
+                .orElse(null);
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
 
         Map<String, Object> userInfo = Map.of(
                 "id", user.getId(),
