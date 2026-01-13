@@ -3,10 +3,14 @@ import { createContext, useContext, useEffect, type ReactNode } from "react";
 import defaultAvatar from '../img/default.png';
 
 
-type User = {
+export type User = {
 	name: string;
 	email: string;
 	picture?: string;
+	status: 'online' | 'idle' | 'dnd' | 'offline';
+	//i will add it to db maybe we can migrate to redis later idk
+	about: string;
+	createdAt: string;
 	role: 'USER' | 'ADMIN';
 }
 

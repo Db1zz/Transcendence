@@ -1,7 +1,8 @@
 package com.anteiku.backend.controller;
 
-import com.anteiku.backend.entity.UserCredentialsEntity;
 import com.anteiku.backend.entity.UserEntity;
+import com.anteiku.backend.entity.UserCredentialsEntity;
+import com.anteiku.backend.repository.UserRepository;
 import com.anteiku.backend.repository.UserCredentialsRepository;
 import com.anteiku.backend.repository.UserRepository;
 import com.anteiku.backend.repository.UserCredentialsRepository;
@@ -24,7 +25,8 @@ public class AuthController {
     private final UserRepository userRepository;
     private final UserCredentialsRepository userCredentialsRepository;
 
-    public AuthController(UserRepository userRepository, UserCredentialsRepository userCredentialsRepository) {
+    public AuthController(UserRepository userRepository,
+                          UserCredentialsRepository userCredentialsRepository) {
         this.userRepository = userRepository;
         this.userCredentialsRepository = userCredentialsRepository;
     }
