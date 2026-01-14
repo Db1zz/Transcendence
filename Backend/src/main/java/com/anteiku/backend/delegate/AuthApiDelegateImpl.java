@@ -1,6 +1,8 @@
 package com.anteiku.backend.delegate;
 
 import com.anteiku.backend.api.AuthApi;
+import com.anteiku.backend.exception.InvalidCredentialsException;
+import com.anteiku.backend.exception.UserNotFoundException;
 import com.anteiku.backend.model.UserAuthDto;
 import com.anteiku.backend.model.UserAuthResponseDto;
 import com.anteiku.backend.model.UserInfoDto;
@@ -11,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -27,7 +30,10 @@ public class AuthApiDelegateImpl implements AuthApi {
         try {
             UserAuthResponseDto userAuthResponseDto = authService.authenticateUser(userAuthDto);
             return ResponseEntity.ok(userAuthResponseDto);
-        }  catch (Exception e) {
+        }  catch (UserNotFoundException e) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND).body(null);
+        } catch (InvalidCredentialsException e) {
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED).body(null);
         }

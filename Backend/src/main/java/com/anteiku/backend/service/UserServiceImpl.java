@@ -2,6 +2,8 @@ package com.anteiku.backend.service;
 
 import com.anteiku.backend.entity.UserCredentialsEntity;
 import com.anteiku.backend.entity.UserEntity;
+import com.anteiku.backend.exception.EmailIsAlreadyUsedException;
+import com.anteiku.backend.exception.UserNotFoundException;
 import com.anteiku.backend.mapper.UserMapper;
 import com.anteiku.backend.model.*;
 import com.anteiku.backend.repository.UserCredentialsRepository;
@@ -30,17 +32,19 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserPublicDto> getUsersByUsername(String username) {
         List<UserEntity> users = userRepository.findUserByUsername(username);
-        // TODO add exception if users were not found
+        if (users.isEmpty()) {
+            throw new UserNotFoundException("User not found");
+        }
 
         return userMapper.toDtoList(users);
     }
 
     @Override
     public UserPublicDto getUserById(UUID id) {
-        Optional<UserEntity> userEntity = userRepository.findUserById(id);
-        // TODO add exception if user was not found
+        UserEntity userEntity = userRepository.findUserById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        return userMapper.toDto(userEntity.get());
+        return userMapper.toDto(userEntity);
     }
 
     @Override
@@ -64,7 +68,7 @@ public class UserServiceImpl implements UserService {
         UserEntity userEntity = userMapper.toEntity(userRegistrationDto);
 
         if (userCredentialsRepository.existsByEmail(userCredentialsEntity.getEmail())) {
-            // TODO throw exception "this email is already used"
+            throw new EmailIsAlreadyUsedException("Email " + userCredentialsEntity.getEmail() + " is already used");
         }
 
         userEntity.setRole(Role.USER);
