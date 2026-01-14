@@ -11,7 +11,7 @@ const SignupPage: React.FC = () => {
 	const [email, setEmail] = useState('');
 	const [displayName, setDisplayName] = useState('');
 	const [password, setPassword] = useState('');
-	const [passwordCopy, setPasswordCopy] = useState('');
+	// const [passwordCopy, setPasswordCopy] = useState('');
 	const [username, setUsername] = useState('');
 	const [loading, setLoading] = useState(false);
 	const [isSuccess, setIsSuccess] = useState(false);
@@ -37,12 +37,12 @@ const SignupPage: React.FC = () => {
 	//change to just parsing fetch responses when they are implemented
 	// }
 
-	const validateCopyPassword = (value: string) => {
-		if (value && value !== password)
-			setErrorMessageCopyPassword("passwords should match");
-		else
-			setErrorMessageCopyPassword("");
-	}
+	// const validateCopyPassword = (value: string) => {
+	// 	if (value && value !== password)
+	// 		setErrorMessageCopyPassword("passwords should match");
+	// 	else
+	// 		setErrorMessageCopyPassword("");
+	// }
 
 	const validatePassword = (value: string): boolean => {
 		const checks = {
@@ -162,7 +162,7 @@ const SignupPage: React.FC = () => {
 									display name
 								</label>
 								<input
-									type="email"
+									type="name"
 									value={displayName}
 									onChange={(e) => {
 										const val = e.target.value;
@@ -201,19 +201,16 @@ const SignupPage: React.FC = () => {
 									onChange={(e) => {
 										const val = e.target.value;
 										setPassword(val);
-										validatePassword(val);
+										// validatePassword(val);
 									}}
-									className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
+    className={`w-full px-4 py-3 ${errorMessagePassword ? 'bg-brand-peach ring-2 ring-brand-brick' : 'bg-brand-green'} placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick`}
 									placeholder="create your password"
 									required
 								/>
 								{errorMessagePassword === '' ? null :
-									<span style={{
-										fontWeight: 'bold',
-										color: 'brand-brick',
-									}}>{errorMessagePassword}</span>}
+									<span className='font-bold text-red-800'>{errorMessagePassword}</span>}
 							</div>
-
+{/* 
 							<div>
 								<label className="block text-sm text-brand-brick mb-2">
 									confirm password <span className='text-red-600'> *</span>
@@ -235,7 +232,7 @@ const SignupPage: React.FC = () => {
 										fontWeight: 'bold',
 										color: 'brand-brick',
 									}}>{errorMessageCopyPassword}</span>}
-							</div>
+							</div> */}
 
 							<div className="flex justify-center">
 								<Button
