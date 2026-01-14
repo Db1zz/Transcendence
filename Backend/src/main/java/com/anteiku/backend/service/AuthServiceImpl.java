@@ -2,6 +2,8 @@ package com.anteiku.backend.service;
 
 import com.anteiku.backend.entity.UserCredentialsEntity;
 import com.anteiku.backend.entity.UserEntity;
+import com.anteiku.backend.exception.InvalidCredentialsException;
+import com.anteiku.backend.exception.UserNotFoundException;
 import com.anteiku.backend.model.UserAuthDto;
 import com.anteiku.backend.model.UserAuthResponseDto;
 import com.anteiku.backend.model.UserInfoDto;
@@ -22,8 +24,7 @@ import java.util.Optional;
 @Transactional
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
-    private PasswordEncoder passwordEncoder;
-
+    final private PasswordEncoder passwordEncoder;
     final private UserRepository userRepository;
     final private UserCredentialsRepository userCredentialsRepository;
     final private JwtServiceImpl jwtServiceImpl;
@@ -37,12 +38,12 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public UserAuthResponseDto authenticateUser(UserAuthDto userAuthDto) {
         Optional<UserCredentialsEntity> userCredentials = userCredentialsRepository.findByEmail(userAuthDto.getEmail());
-        if (userCredentials.isPresent() == false) {
-            throw new RuntimeException("User Not Found");
+        if (userCredentials.isEmpty()) {
+            throw new UserNotFoundException("User not found");
         }
 
-        if (passwordEncoder.matches(userAuthDto.getPassword(), userCredentials.get().getPassword()) == false) {
-            throw new RuntimeException("Invalid password");
+        if (!passwordEncoder.matches(userAuthDto.getPassword(), userCredentials.get().getPassword())) {
+            throw new InvalidCredentialsException("Invalid password");
         }
 
         UserEntity userEntity = userRepository.findUserById(userCredentials.get().getUserId()).get();

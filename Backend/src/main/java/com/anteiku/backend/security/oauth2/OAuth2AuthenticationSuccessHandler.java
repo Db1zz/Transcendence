@@ -2,6 +2,7 @@ package com.anteiku.backend.security.oauth2;
 
 import com.anteiku.backend.security.jwt.JwtServiceImpl;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -36,14 +37,16 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
 //        responseBody.put("expiresIn", jwtService.extractExpirationDate(token).getTime() - date.getTime() / 1000);
 //        responseBody.put("email", jwtService.extractUserEmail(token));
 
-        log.info("generated token for user {}", userEmail);
+//        log.info("generated token for user {}", userEmail);
+////        Cookie cookie = new Cookie("token", token);
+//        response.addCookie(cookie);
 
 //        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 //        response.setStatus(HttpServletResponse.SC_OK);
 //        response.getWriter().write(objectMapper.writeValueAsString(responseBody));
         String redirectUri = "http://localhost:3000/";
-        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(redirectUri)
-                        .queryParam("token", token);
-        response.sendRedirect(uriBuilder.toUriString());
+//        UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromUriString(redirectUri)
+//                        .queryParam("token", token);
+        response.sendRedirect(redirectUri);
     }
 }
