@@ -9,6 +9,7 @@ import validator from 'validator'
 const SignupPage: React.FC = () => {
 	const navigate = useNavigate();
 	const [email, setEmail] = useState('');
+	const [displayName, setDisplayName] = useState('');
 	const [password, setPassword] = useState('');
 	const [passwordCopy, setPasswordCopy] = useState('');
 	const [username, setUsername] = useState('');
@@ -132,13 +133,13 @@ const SignupPage: React.FC = () => {
 					</div>
 				) : (
 					<>
-						<h2 className="text-3xl font-ananias font-bold text-brand-brick text-center mb-3">sign up</h2>
-						<h3 className="text-l font-ananias text-brand-brick text-center mb-4">sign up to continue</h3>
+						<h2 className="text-3xl font-ananias font-bold text-brand-brick text-center mb-2">sign up</h2>
+						<h3 className="text-l font-ananias text-brand-green text-center mb-4">sign up to continue</h3>
 
 						<form onSubmit={handleSubmit} className="block px-8 space-y-4 font-roboto">
 							<div>
 								<label className="block text-sm text-brand-brick mb-2">
-									email
+									email<span className='text-red-600'> *</span>
 								</label>
 								<input
 									type="email"
@@ -158,7 +159,41 @@ const SignupPage: React.FC = () => {
 
 							<div>
 								<label className="block text-sm text-brand-brick mb-2">
-									password
+									display name
+								</label>
+								<input
+									type="email"
+									value={displayName}
+									onChange={(e) => {
+										const val = e.target.value;
+										setDisplayName(val);
+										//validateEmail(val);
+									}}
+									className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
+									placeholder="this is how others see you"
+									required
+								/>
+								{/* {errorMessageEmail === '' ? null :
+									<span className='font-bold text-brand-brick'>please enter correct email!</span>} */}
+							</div>
+
+							<div>
+								<label className="block text-sm text-brand-brick mb-2">
+									username <span className='text-red-600'> *</span>
+								</label>
+								<input
+									type="text"
+									value={username}
+									onChange={(e) => setUsername(e.target.value)}
+									className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
+									placeholder="pls only use numbers,underscores and full stops"
+									required
+								/>
+							</div>
+
+							<div>
+								<label className="block text-sm text-brand-brick mb-2">
+									password <span className='text-red-600'> *</span>
 								</label>
 								<input
 									type="password"
@@ -181,7 +216,7 @@ const SignupPage: React.FC = () => {
 
 							<div>
 								<label className="block text-sm text-brand-brick mb-2">
-									confirm password
+									confirm password <span className='text-red-600'> *</span>
 								</label>
 								<input
 									type="password"
@@ -200,20 +235,6 @@ const SignupPage: React.FC = () => {
 										fontWeight: 'bold',
 										color: 'brand-brick',
 									}}>{errorMessageCopyPassword}</span>}
-							</div>
-
-							<div>
-								<label className="block text-sm text-brand-brick mb-2">
-									username
-								</label>
-								<input
-									type="text"
-									value={username}
-									onChange={(e) => setUsername(e.target.value)}
-									className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
-									placeholder="create a username"
-									required
-								/>
 							</div>
 
 							<div className="flex justify-center">
