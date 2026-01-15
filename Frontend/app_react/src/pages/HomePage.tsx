@@ -2,6 +2,7 @@ import React from "react";
 import { useAuth } from "../context/AuthContext";
 import { Navigate } from "react-router-dom";
 import ProfileButton from "../components/ProfileButton";
+import { Button } from "../components/Button";
 
 const testUser = {
 	name: 'kaneki',
@@ -36,8 +37,13 @@ const HomePage = () => {
 			<h1>you have been logged in.</h1>
 			<ProfileButton
 				user={testUser}
-				className="w-[280px] mt-5"
-			/>
+				className="w-[280px] mt-5">
+				<Button
+					text="Chat"
+					onClick={() => console.log("hihihi")}
+					className="!px-4 !py-1 !text-xs !shadow-[2px_2px_0px_rgba(0, 0, 0, 1)"
+				/>
+			</ProfileButton>
 
 			<button 
 				onClick={handleLogout}
