@@ -39,6 +39,8 @@ public class SecurityConfig {
                                 "/api/swagger-ui.html",
                                 "/v3/api-docs/swagger-config",
                                 "/api/users/register",
+                                "/api/users/check-email",
+                                "/api/users/check-username",
                                 "/api/auth/login"
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/login").permitAll()

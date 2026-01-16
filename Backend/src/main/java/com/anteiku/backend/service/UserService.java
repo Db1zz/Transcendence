@@ -17,4 +17,6 @@ public interface UserService {
     UserRegistrationDto registerUser(UserRegistrationDto userRegistrationDto);
     UserCredentialsDto getUserCredentialsByEmail(String userEmail);
     UserInfoDto getMe() throws AuthenticationException;
+    boolean isEmailAvailable(String email);
+    boolean isUsernameAvailable(String username);
 }

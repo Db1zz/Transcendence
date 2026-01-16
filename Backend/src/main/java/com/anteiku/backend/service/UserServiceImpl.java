@@ -108,4 +108,14 @@ public class UserServiceImpl implements UserService {
         userInfoDto.setId(userPublicDto.getId());
         return userInfoDto;
     }
+
+    @Override
+    public boolean isEmailAvailable(String email) {
+        return !userCredentialsRepository.existsByEmail(email);
+    }
+
+    @Override
+    public boolean isUsernameAvailable(String username) {
+        return userRepository.findUserByUsername(username).isEmpty();
+    }
 }

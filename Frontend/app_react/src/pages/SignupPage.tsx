@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import bgLogin from '../img/bg_login.png';
@@ -11,13 +11,15 @@ const SignupPage: React.FC = () => {
 	const [email, setEmail] = useState('');
 	const [displayName, setDisplayName] = useState('');
 	const [password, setPassword] = useState('');
-	// const [passwordCopy, setPasswordCopy] = useState('');
 	const [username, setUsername] = useState('');
 	const [loading, setLoading] = useState(false);
 	const [isSuccess, setIsSuccess] = useState(false);
 	const [errorMessagePassword, setErrorMessagePassword] = useState('');
 	const [errorMessageCopyPassword, setErrorMessageCopyPassword] = useState('');
-	//const [errorMessageEmail, setErrorMessageEmail] = useState('');
+	const [emailValidation, setEmailValidation] = useState<'checking' | 'available' | 'taken' | ''>('');
+	const [usernameValidation, setUsernameValidation] = useState<'checking' | 'available' | 'taken' | ''>('');
+	const emailTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+	const usernameTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 	const [passwordChecks, setPasswordChecks] = useState({
 		length: false,
 		lower: false,
@@ -43,6 +45,70 @@ const SignupPage: React.FC = () => {
 	// 	else
 	// 		setErrorMessageCopyPassword("");
 	// }
+
+	const checkEmailAvailability = async (emailToCheck: string) => {
+		if (!emailToCheck || !validator.isEmail(emailToCheck)) {
+			setEmailValidation('');
+			return;
+		}
+
+		setEmailValidation('checking');
+
+		try {
+			const response = await fetch(`http://localhost:8080/api/users/check-email?email=${encodeURIComponent(emailToCheck)}`);
+			if (response.ok) {
+				const data = await response.json();
+				setEmailValidation(data.available ? 'available' : 'taken');
+			}
+		} catch (error) {
+			console.error('error checking email:', error);
+			setEmailValidation('');
+		}
+	};
+
+	const checkUsernameAvailability = async (usernameToCheck: string) => {
+		if (!usernameToCheck || usernameToCheck.length < 3) {
+			setUsernameValidation('');
+			return;
+		}
+
+		setUsernameValidation('checking');
+
+		try {
+			const response = await fetch(`http://localhost:8080/api/users/check-username?username=${encodeURIComponent(usernameToCheck)}`);
+			if (response.ok) {
+				const data = await response.json();
+				setUsernameValidation(data.available ? 'available' : 'taken');
+			}
+		} catch (error) {
+			console.error('error checking username:', error);
+			setUsernameValidation('');
+		}
+	};
+
+	const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const val = e.target.value;
+		setEmail(val);
+		if (emailTimeoutRef.current) {
+			clearTimeout(emailTimeoutRef.current);
+		}
+
+		emailTimeoutRef.current = setTimeout(() => {
+			checkEmailAvailability(val);
+		}, 500);
+	};
+
+	const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const val = e.target.value;
+		setUsername(val);
+		if (usernameTimeoutRef.current) {
+			clearTimeout(usernameTimeoutRef.current);
+		}
+
+		usernameTimeoutRef.current = setTimeout(() => {
+			checkUsernameAvailability(val);
+		}, 500);
+	};
 
 	const validatePassword = (value: string): boolean => {
 		const checks = {
@@ -144,17 +210,20 @@ const SignupPage: React.FC = () => {
 								<input
 									type="email"
 									value={email}
-									onChange={(e) => {
-										const val = e.target.value;
-										setEmail(val);
-										//validateEmail(val);
-									}}
+									onChange={handleEmailChange}
 									className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
 									placeholder="enter your email"
 									required
 								/>
-								{/* {errorMessageEmail === '' ? null :
-									<span className='font-bold text-brand-brick'>please enter correct email!</span>} */}
+								{emailValidation === 'checking' && (
+									<span className='text-sm text-gray-600'>checking...</span>
+								)}
+								{emailValidation === 'available' && (
+									<span className='text-sm text-green-600 font-semibold'>this email is available</span>
+								)}
+								{emailValidation === 'taken' && (
+									<span className='text-sm text-red-600 font-semibold'>this email already exists</span>
+								)}
 							</div>
 
 							<div>
@@ -184,11 +253,20 @@ const SignupPage: React.FC = () => {
 								<input
 									type="text"
 									value={username}
-									onChange={(e) => setUsername(e.target.value)}
+									onChange={handleUsernameChange}
 									className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
 									placeholder="pls only use numbers,underscores and full stops"
 									required
 								/>
+								{usernameValidation === 'checking' && (
+									<span className='text-sm text-gray-600'>checking...</span>
+								)}
+								{usernameValidation === 'available' && (
+									<span className='text-sm text-green-600 font-semibold'>✓ this username is free</span>
+								)}
+								{usernameValidation === 'taken' && (
+									<span className='text-sm text-red-600 font-semibold'>✗ this username is taken</span>
+								)}
 							</div>
 
 							<div>
@@ -203,14 +281,14 @@ const SignupPage: React.FC = () => {
 										setPassword(val);
 										// validatePassword(val);
 									}}
-    className={`w-full px-4 py-3 ${errorMessagePassword ? 'bg-brand-peach ring-2 ring-brand-brick' : 'bg-brand-green'} placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick`}
+									className={`w-full px-4 py-3 ${errorMessagePassword ? 'bg-brand-peach ring-2 ring-brand-brick' : 'bg-brand-green'} placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick`}
 									placeholder="create your password"
 									required
 								/>
 								{errorMessagePassword === '' ? null :
 									<span className='font-bold text-red-800'>{errorMessagePassword}</span>}
 							</div>
-{/* 
+							{/* 
 							<div>
 								<label className="block text-sm text-brand-brick mb-2">
 									confirm password <span className='text-red-600'> *</span>

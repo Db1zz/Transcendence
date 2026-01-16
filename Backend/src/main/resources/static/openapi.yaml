@@ -80,6 +80,44 @@ paths:
                 $ref: '#/components/schemas/UserInfoDto'
         401:
           $ref: '#/components/responses/UnauthorizedError'
+
+  /users/check-email:
+    get:
+      summary: "Check if email is available"
+      operationId: checkEmailAvailability
+      parameters:
+        - name: email
+          in: query
+          description: "email to check"
+          required: true
+          schema:
+            $ref: '#/components/schemas/UserEmail'
+      responses:
+        200:
+          description: "Returns availability status"
+          content:
+            application/json:
+              schema:
+                type: boolean
+
+  /users/check-username:
+    get:
+      summary: "Check if username is available"
+      operationId: checkUsernameAvailability
+      parameters:
+        - name: username
+          in: query
+          description: "username to check"
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "Returns availability status"
+          content:
+            application/json:
+              schema:
+                type: boolean
   /auth/login:
     post:
       summary: "Send authentication request to a server"
