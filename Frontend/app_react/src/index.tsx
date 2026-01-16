@@ -12,6 +12,7 @@ import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import { AuthProvider } from "./context/AuthContext";
 import ShowInfo from "./pages/ShowInfo";
+import TestFriendsView from "./pages/TestFriendsView";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement,
@@ -24,6 +25,7 @@ root.render(
           <Route path="/" element={<HomePage />}></Route>
           <Route path="/login" element={<LoginPage />}></Route>
           <Route path="/info" element={<ShowInfo />}></Route>
+          <Route path="/testGrisha" element={<TestFriendsView />}></Route>
         </Routes>
       </Router>
     </AuthProvider>

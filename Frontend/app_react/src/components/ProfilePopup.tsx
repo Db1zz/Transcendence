@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import ReactDOM from "react-dom";
 import { X, Expand, Coffee, Shield, Minimize2 } from "lucide-react";
 import { User } from "../context/AuthContext";
 import { StatusColors } from "./ProfileButton";
@@ -40,8 +41,8 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
     setIsExpanded(!isExpanded);
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+  return ReactDOM.createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center font-roboto">
       <div
         className="absolute inset-0 bg-black/40 backdrop-blur-sm"
         onClick={handleClose}
@@ -49,12 +50,13 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
       <div
         className={`
           fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
-          z-50 bg-brand-beige border-2 border-gray-800 rounded-xl overflow-hidden
+          bg-brand-beige border-2 border-gray-800 rounded-xl overflow-hidden
           duration-300 ease-out flex flex-col
+          animate-slide-up
           ${
             isExpanded
-              ? "w-[500px] h-[550px] shadow-sharp animate-expand"
-              : "w-[320px] h-auto shadow-sharp-md animate-slide-up"
+              ? "w-[500px] h-[550px] shadow-sharp"
+              : "w-[320px] h-[280px] shadow-sharp-md"
           }
         `}
       >
@@ -186,7 +188,8 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };
 

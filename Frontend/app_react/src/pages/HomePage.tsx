@@ -27,6 +27,10 @@ const HomePage = () => {
     window.location.href = "http://localhost:8080/logout";
   };
 
+  const handleTest = () => {
+    window.location.href = "http://localhost:3000/testGrisha";
+  };
+
   return (
     <div className="flex flex-col gap-4 items-center">
       {user?.name} : {user?.email}
@@ -41,7 +45,7 @@ const HomePage = () => {
           />
         </ProfileButton>
 
-        <Button text="Test" onClick={() => null} />
+        <Button text="Test" onClick={handleTest} />
         <button
           onClick={handleLogout}
           className="bg-red-500 text-white px-4 py-2 rounded cursor-pointer mt-5"
