@@ -4,9 +4,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.jwt.Jwt;
 
-import javax.swing.text.html.Option;
 import java.util.Optional;
 
 public class JwtUtils {
@@ -47,6 +45,4 @@ public class JwtUtils {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         return auth != null && auth.isAuthenticated();
     }
-
-
 }

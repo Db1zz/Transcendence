@@ -41,8 +41,6 @@ public class SecurityConfig {
                                 "/api/users/register",
                                 "/api/auth/login"
                         ).permitAll()
-                        .requestMatchers(HttpMethod.POST, "/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .anyRequest().authenticated())
 
                 .oauth2Login(oauth2 -> oauth2

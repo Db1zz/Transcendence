@@ -60,10 +60,6 @@ public class JwtServiceImpl  {
                 .getBody();
     }
 
-    public String getTokenType(String token) {
-        return "Bearer";
-    }
-
     private boolean isTokenExpired(String token) {
         return extractExpirationDate(token).before(new Date());
     }
