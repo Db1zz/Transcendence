@@ -46,7 +46,7 @@ export const FriendsList: React.FC<FriendsListProps> = ({
           type="text"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Search friends."
+          placeholder="search friends."
           className="w-full px-4 py-3 pl-11 bg-brand-green border-2 border-gray-800 rounded-lg font-roboto text-gray-800 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-brick shadow-sharp-xs transition-all duration-150"
         />
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />

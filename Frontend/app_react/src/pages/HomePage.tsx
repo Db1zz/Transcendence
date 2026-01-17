@@ -39,13 +39,13 @@ const HomePage = () => {
         <h1>you have been logged in.</h1>
         <ProfileButton user={testUser} className="w-[280px] mt-5">
           <Button
-            text="Chat"
+            text="chat"
             onClick={() => console.log("hihihi")}
             className="!px-4 !py-1 !text-xs !shadow-[2px_2px_0px_rgba(0, 0, 0, 1)"
           />
         </ProfileButton>
 
-        <Button text="Test" onClick={handleTest} />
+        <Button text="test" onClick={handleTest} />
         <button
           onClick={handleLogout}
           className="bg-red-500 text-white px-4 py-2 rounded cursor-pointer mt-5"

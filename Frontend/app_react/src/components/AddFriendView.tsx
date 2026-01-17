@@ -39,7 +39,7 @@ export const AddFriendView: React.FC = () => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSubmit}
-            placeholder="Enter a name"
+            placeholder="enter a name"
             className="flex-1 px-4 py-3 bg-transparent font-roboto text-gray-800 placeholder:text-gray-600 focus:outline-none"
           />
           <Button
@@ -49,10 +49,10 @@ export const AddFriendView: React.FC = () => {
                 ? "bg-brand-brick"
                 : "bg-gray-400 cursor-not-allowed shadow-none"
             }
-            className={`!px-6 !py-2 !text-sm whitespace-nowrap ${!isValid ? "hover:translate-x-0 hover:translate-y-0 hover:shadow-none" : ""}`}
+            className={`!px-6 !py-3 !text-sm whitespace-nowrap -translate-y-[2px] ${!isValid ? "hover:translate-x-0 hover:translate-y-0 hover:shadow-none" : ""}`}
           >
             <UserPlus className="w-4 h-4" />
-            <span>Send request</span>
+            <span>send request</span>
           </Button>
         </div>
         {status === "success" && (

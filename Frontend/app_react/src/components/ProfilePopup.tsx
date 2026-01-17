@@ -173,13 +173,13 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
               </div>
               <div className="flex gap-4 mt-6 justify-end">
                 <Button
-                  text="Add Friend"
+                  text="add Friend"
                   onClick={() => null}
                   color="bg-transparent"
                   className="!px-6 !py-2 text-gray-800 text-sm w-full"
                 />
                 <Button
-                  text="MESSAGE"
+                  text="message"
                   onClick={() => console.log("Message clicked")}
                   className="!px-6 !py-2 text-sm w-full"
                 />
