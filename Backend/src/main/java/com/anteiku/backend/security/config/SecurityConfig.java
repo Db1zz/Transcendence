@@ -41,7 +41,8 @@ public class SecurityConfig {
                                 "/api/users/register",
                                 "/api/users/check-email",
                                 "/api/users/check-username",
-                                "/api/auth/login"
+                                "/api/auth/login",
+								"/openapi.yaml"
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
