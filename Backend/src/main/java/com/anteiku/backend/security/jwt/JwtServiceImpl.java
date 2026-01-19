@@ -1,4 +1,4 @@
-package com.anteiku.backend.security;
+package com.anteiku.backend.security.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -26,10 +26,9 @@ public class JwtServiceImpl  {
     public String generateToken(String userEmail) {
         Date issuedDate = new Date();
         Date expiryDate = Date.from(LocalDate.now().plusDays(1L).atStartOfDay(ZoneId.systemDefault()).toInstant());
-        Map<String, Object> claims = new HashMap<>();
         return Jwts.builder()
-                .setClaims(claims)
                 .setSubject(userEmail)
+                .claim("userEmail", userEmail)
                 .setIssuedAt(issuedDate)
                 .setExpiration(expiryDate)
                 .signWith(getSignKey(), SignatureAlgorithm.HS256).compact();
@@ -59,6 +58,10 @@ public class JwtServiceImpl  {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    public String getTokenType(String token) {
+        return "Bearer";
     }
 
     private boolean isTokenExpired(String token) {

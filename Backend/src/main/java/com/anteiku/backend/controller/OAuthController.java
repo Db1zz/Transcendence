@@ -1,11 +1,10 @@
 package com.anteiku.backend.controller;
 
-import com.anteiku.backend.entity.UserEntity;
 import com.anteiku.backend.entity.UserCredentialsEntity;
-import com.anteiku.backend.repository.UserRepository;
+import com.anteiku.backend.entity.UserEntity;
 import com.anteiku.backend.repository.UserCredentialsRepository;
 import com.anteiku.backend.repository.UserRepository;
-import com.anteiku.backend.repository.UserCredentialsRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,45 +13,39 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.net.URI;
 import java.util.Map;
-import java.net.URI;
-import java.util.List;
 
+@RequiredArgsConstructor
 @RestController
-public class AuthController {
+public class OAuthController {
 
     private final UserRepository userRepository;
     private final UserCredentialsRepository userCredentialsRepository;
 
-    public AuthController(UserRepository userRepository,
-                          UserCredentialsRepository userCredentialsRepository) {
-        this.userRepository = userRepository;
-        this.userCredentialsRepository = userCredentialsRepository;
-    }
-
-    @GetMapping("/login")
-    public ResponseEntity<Void> redirectToFrontend() {
-        URI frontendLogin = URI.create("http://localhost:3000/login");
-        return ResponseEntity.status(HttpStatus.FOUND).location(frontendLogin).build();
-    }
-
-    @GetMapping("/api/user")
+    @GetMapping("/")
     public ResponseEntity<Map<String, Object>> getUserInfo(@AuthenticationPrincipal OAuth2User principal) {
         if (principal == null) {
-            throw new RuntimeException("User not authenticated");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         String email = principal.getAttribute("email");
         if (email == null) {
-            throw new RuntimeException("Email not found in principal");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         UserCredentialsEntity credentials = userCredentialsRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User credentials not found"));
+                .orElse(null);
+
+        if (credentials == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
 
         UserEntity user = userRepository.findUserById(credentials.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElse(null);
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
 
         Map<String, Object> userInfo = Map.of(
                 "id", user.getId(),

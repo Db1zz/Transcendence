@@ -67,16 +67,58 @@ paths:
                 $ref: '#/components/schemas/UserPublicDto'
         404:
           description: "GG, user not found :("
-  /login:
+  /users/me:
     get:
-      summary: "Redirect to frontend login"
-      operationId: redirectToFrontend
+      summary: "Get information about myself"
+      operationId: getMe
       responses:
-        302:
-          description: "Redirect to frontend"
+        200:
+          description: "Returns user info"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfoDto'
         401:
-          description: "Unauthorized"
-  /auth:
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /users/check-email:
+    get:
+      summary: "Check if email is available"
+      operationId: checkEmailAvailability
+      parameters:
+        - name: email
+          in: query
+          description: "email to check"
+          required: true
+          schema:
+            $ref: '#/components/schemas/UserEmail'
+      responses:
+        200:
+          description: "Returns availability status"
+          content:
+            application/json:
+              schema:
+                type: boolean
+
+  /users/check-username:
+    get:
+      summary: "Check if username is available"
+      operationId: checkUsernameAvailability
+      parameters:
+        - name: username
+          in: query
+          description: "username to check"
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "Returns availability status"
+          content:
+            application/json:
+              schema:
+                type: boolean
+  /auth/login:
     post:
       summary: "Send authentication request to a server"
       operationId: authenticateUser
@@ -94,22 +136,6 @@ paths:
                 $ref: '#/components/schemas/UserAuthResponseDto'
         401:
           $ref: '#/components/responses/UnauthorizedError'
-  /api/user:
-    get:
-      summary: "Get authenticated user info"
-      operationId: getUserInfo
-      responses:
-        200:
-          description: "User info retrieved successfully"
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties: true
-        401:
-          description: "User not authenticated"
-        404:
-          description: "User not found"
 
   /api/info:
     get:
@@ -217,7 +243,7 @@ components:
       type: object
       description: "User credentials"
       properties:
-        id:
+        userId:
           $ref: '#/components/schemas/UserId'
         email:
           $ref: '#/components/schemas/UserEmail'
