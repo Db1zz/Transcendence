@@ -28,23 +28,6 @@ const SignupPage: React.FC = () => {
 		symbol: false,
 	});
 
-	// const validateEmail = (value: string): boolean => {
-	// 	if (validator.isEmail(value)) {
-	// 		setErrorMessagePassword('');
-	// 		return true;
-	// 	} else {
-	// 		setErrorMessagePassword('please enter a valid email');
-	// 		return false;
-	// 	}
-	//change to just parsing fetch responses when they are implemented
-	// }
-
-	// const validateCopyPassword = (value: string) => {
-	// 	if (value && value !== password)
-	// 		setErrorMessageCopyPassword("passwords should match");
-	// 	else
-	// 		setErrorMessageCopyPassword("");
-	// }
 
 	const checkEmailAvailability = async (emailToCheck: string) => {
 		if (!emailToCheck || !validator.isEmail(emailToCheck)) {
@@ -57,14 +40,16 @@ const SignupPage: React.FC = () => {
 		try {
 			const response = await fetch(`http://localhost:8080/api/users/check-email?email=${encodeURIComponent(emailToCheck)}`);
 			if (response.ok) {
-				const data = await response.json();
-				setEmailValidation(data.available ? 'available' : 'taken');
+				const available = await response.json();
+				//console.log("response: ", available);
+				setEmailValidation(available ? 'available' : 'taken');
 			}
 		} catch (error) {
 			console.error('error checking email:', error);
 			setEmailValidation('');
 		}
 	};
+
 
 	const checkUsernameAvailability = async (usernameToCheck: string) => {
 		if (!usernameToCheck || usernameToCheck.length < 3) {
@@ -77,8 +62,8 @@ const SignupPage: React.FC = () => {
 		try {
 			const response = await fetch(`http://localhost:8080/api/users/check-username?username=${encodeURIComponent(usernameToCheck)}`);
 			if (response.ok) {
-				const data = await response.json();
-				setUsernameValidation(data.available ? 'available' : 'taken');
+				const available = await response.json();
+				setUsernameValidation(available ? 'available' : 'taken');
 			}
 		} catch (error) {
 			console.error('error checking username:', error);
@@ -262,10 +247,10 @@ const SignupPage: React.FC = () => {
 									<span className='text-sm text-gray-600'>checking...</span>
 								)}
 								{usernameValidation === 'available' && (
-									<span className='text-sm text-green-600 font-semibold'>✓ this username is free</span>
+									<span className='text-sm text-green-600 font-semibold'>this username is free</span>
 								)}
 								{usernameValidation === 'taken' && (
-									<span className='text-sm text-red-600 font-semibold'>✗ this username is taken</span>
+									<span className='text-sm text-red-600 font-semibold'>this username is taken</span>
 								)}
 							</div>
 
