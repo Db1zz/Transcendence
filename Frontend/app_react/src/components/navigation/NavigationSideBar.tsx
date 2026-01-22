@@ -25,7 +25,7 @@ const MOCK_DMS = [
 
 export const NavigationSidebar = () => {
   return (
-    <div className="space-y-4 flex flex-col items-center text-primary w-full bg-brand-green py-3 h-full">
+    <div className="space-y-4 flex flex-col items-center text-primary w-full bg-brand-green py-3 h-full border-r border-brand-peach ">
       <div className="h-[2px] bg-brand-green dark:bg-zinc-700 rounded-md w-10 mx-auto" />
       <div className="flex-1 w-full overflow-y-auto">
         {MOCK_DMS.map((chat, index) => (
