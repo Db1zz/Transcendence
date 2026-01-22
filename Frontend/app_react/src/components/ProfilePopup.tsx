@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import ReactDOM from "react-dom";
 import { X, Expand, Coffee, Shield, Minimize2 } from "lucide-react";
-import { User } from "../context/AuthContext";
+import { User, useAuth } from "../context/AuthContext";
 import { StatusColors } from "./ProfileButton";
 import { Button } from "./Button";
 
@@ -29,6 +29,7 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
   onClose,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { logout } = useAuth();
 
   if (!isOpen) return null;
 
@@ -39,6 +40,11 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
 
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
+  };
+
+  const handleLogout = () => {
+    logout();
+    handleClose();
   };
 
   return ReactDOM.createPortal(
@@ -160,6 +166,12 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
             >
               {user.about || "This user is too lazy to write a bio."}
             </p>
+            {/* <Button
+              onClick={handleLogout}
+              className="bg- text-white px-4 py-2 rounded cursor-pointer mt-5"
+            >
+              logout
+            </Button> */}
           </div>
           {isExpanded && (
             <div className="animate-fade-in flex flex-col h-full">
