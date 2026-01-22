@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -66,5 +67,21 @@ public class JwtServiceImpl  {
 
     public boolean isTokenValid(String token, String userEmail) {
         return userEmail.equals(extractUserEmail(token)) && !isTokenExpired(token);
+    }
+
+    public String extractTokenFromACookies(Cookie[] cookies) {
+        String token = null;
+
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("jwt")) {
+                    token = cookie.getValue();
+//                    System.out.println("TOKEN: " + token);
+                    break;
+                }
+            }
+        }
+
+        return token;
     }
 }

@@ -1,5 +1,6 @@
 package com.anteiku.backend.security.jwt;
 
+import com.anteiku.backend.security.session.SessionService;
 import com.anteiku.backend.service.UserServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -21,6 +22,7 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtServiceImpl jwtService;
+    private final SessionService sessionService;
     private final UserServiceImpl userService;
 
     @Override
@@ -45,6 +47,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         if (token != null) {
+            if (sessionService.isSessionLogouted(token)) {
+                System.out.println("Session is already logged out");
+                filterChain.doFilter(request, response);
+                return;
+            }
+
             userEmail = jwtService.extractUserEmail(token);
         }
 
