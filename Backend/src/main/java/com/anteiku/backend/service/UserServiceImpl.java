@@ -2,19 +2,20 @@ package com.anteiku.backend.service;
 
 import com.anteiku.backend.entity.UserCredentialsEntity;
 import com.anteiku.backend.entity.UserEntity;
+import com.anteiku.backend.exception.EmailIsAlreadyUsedException;
+import com.anteiku.backend.exception.UserNotFoundException;
 import com.anteiku.backend.mapper.UserMapper;
-import com.anteiku.backend.model.Role;
-import com.anteiku.backend.model.UserCredentialsDto;
-import com.anteiku.backend.model.UserPublicDto;
-import com.anteiku.backend.model.UserRegistrationDto;
+import com.anteiku.backend.model.*;
 import com.anteiku.backend.repository.UserCredentialsRepository;
 import com.anteiku.backend.repository.UserRepository;
+import com.anteiku.backend.security.jwt.JwtUtils;
 import jakarta.transaction.Transactional;
-import org.apache.catalina.User;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.naming.AuthenticationException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
