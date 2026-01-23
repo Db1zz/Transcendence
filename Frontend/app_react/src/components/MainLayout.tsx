@@ -24,13 +24,14 @@ interface MainLayoutProps {
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
-    <div className="min-h-screen flex flex-col relative bg-brand-beige">
+    <div className="min-h-screen flex flex-col relative">
       <HeaderBar type="friends" />
       <div className="flex flex-1 overflow-hidden">
         <div className="flex w-[72px] z-30 flex-col overflow-hidden">
           <NavigationSidebar />
         </div>
-        <main className="flex-1 flex gap-0 pt-2 pl-2 pr-0 md:p-2 overflow-hidden">
+        <main className="flex-1 flex gap-0 pt-2 pl-2 pr-0 md:p-2 overflow-hidden relative">
+          <div className="absolute inset-0 bg-brand-green opacity-80 -z-10"></div>
           <div className="w-full md:w-1/5 flex-shrink-0 overflow-auto">
             <LeftBar />
           </div>
