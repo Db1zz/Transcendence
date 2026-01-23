@@ -2,7 +2,7 @@
 
 import React from "react";
 import { NavigationItem } from "./NavigationItem";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare} from "lucide-react";
 
 const MOCK_SERVERS = [
   {
@@ -27,11 +27,13 @@ const MOCK_SERVERS = [
 export const NavigationSidebar = () => {
   return (
     <div className="space-y-4 flex flex-col items-center text-primary w-full bg-brand-green py-3 h-full border-r border-brand-peach overflow-hidden">
-      <button className="transition-all duration-200 hover:scale-125">
-        <MessageSquare
-          size={35}
-          className="text-brand-beige hover:text-brand-brick transition-colors duration-200"
-        />
+      <button className="group relative flex items-center transition-all duration-150">
+        <div className="flex h-[48px] w-[48px] rounded-[24px] group-hover:rounded-[16px] transition-all overflow-hidden items-center justify-center bg-brand-beige border border-brand-peach group-hover:border-brand-peach hover:bg-brand-peach shadow-sm hover:shadow-none">
+          <MessageSquare
+            size={24}
+            className="text-brand-green group-hover:text-brand-brick transition-colors duration-200"
+          />
+        </div>
       </button>
       <div className="h-[2px] bg-brand-peach rounded-md w-10 mx-auto" />
       <div className="flex-1 w-full overflow-y-auto overflow-x-hidden">
