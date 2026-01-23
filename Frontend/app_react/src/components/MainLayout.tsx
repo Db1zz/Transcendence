@@ -27,22 +27,22 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     <div className="min-h-screen flex flex-col relative bg-brand-beige">
       <HeaderBar type="friends" />
       <div className="flex flex-1 overflow-hidden">
-        <div className="hidden md:flex w-[72px] z-30 flex-col overflow-hidden">
+        <div className="flex w-[72px] z-30 flex-col overflow-hidden">
           <NavigationSidebar />
         </div>
-        <main className="flex-1 flex gap-0 p-2 overflow-hidden">
-          <div className="w-1/5 flex-shrink-0 overflow-auto">
+        <main className="flex-1 flex gap-0 pt-2 pl-2 pr-0 md:p-2 overflow-hidden">
+          <div className="w-full md:w-1/5 flex-shrink-0 overflow-auto">
             <LeftBar />
           </div>
-          <div className="w-3/5 overflow-auto">
+          <div className="hidden md:block w-3/5 overflow-auto">
             <FriendsView />
           </div>
-          <div className="w-1/5 flex-shrink-0 overflow-auto">
+          <div className="hidden lg:block w-1/5 flex-shrink-0 overflow-auto">
             <RightBar />
           </div>
         </main>
       </div>
-      <div className="fixed bottom-1.5 left-1 z-40">
+      <div className="hidden md:fixed bottom-1.5 left-1 z-40">
         <ProfileButton user={testUser} className="w-[390px]" />
       </div>
     </div>
