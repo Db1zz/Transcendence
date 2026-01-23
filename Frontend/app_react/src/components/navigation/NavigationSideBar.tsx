@@ -2,8 +2,9 @@
 
 import React from "react";
 import { NavigationItem } from "./NavigationItem";
+import { MessageSquare } from "lucide-react";
 
-const MOCK_DMS = [
+const MOCK_SERVERS = [
   {
     id: "1",
     name: "monki",
@@ -25,10 +26,11 @@ const MOCK_DMS = [
 
 export const NavigationSidebar = () => {
   return (
-    <div className="space-y-4 flex flex-col items-center text-primary w-full bg-brand-green py-3 h-full border-r border-brand-peach ">
-      <div className="h-[2px] bg-brand-green dark:bg-zinc-700 rounded-md w-10 mx-auto" />
-      <div className="flex-1 w-full overflow-y-auto">
-        {MOCK_DMS.map((chat, index) => (
+    <div className="space-y-4 flex flex-col items-center text-primary w-full bg-brand-green py-3 h-full border-r border-brand-peach overflow-hidden">
+      <MessageSquare size={35} className="text-brand-beige" />
+      <div className="h-[2px] bg-brand-peach rounded-md w-10 mx-auto" />
+      <div className="flex-1 w-full overflow-y-auto overflow-x-hidden">
+        {MOCK_SERVERS.map((chat, index) => (
           <div key={chat.id} className="mb-4">
             <NavigationItem
               id={chat.id}

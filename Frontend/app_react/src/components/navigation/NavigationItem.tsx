@@ -29,12 +29,12 @@ export const NavigationItem = ({
       title={name}
     >
       <div
-        className={`absolute left-0 bg-brand-brick rounded-r-full transition-all w-[4px] ${
+        className={`absolute left-0 bg-brand-brick rounded-r-full transition-all w-[4px] border-brand-peach ${
           !active && "group-hover:h-[20px]"
         } ${active ? "h-[36px]" : "h-[8px]"}`}
       />
       <div
-        className={`relative group flex mx-3 h-[48px] w-[48px] rounded-[24px] group-hover:rounded-[16px] transition-all overflow-hidden bg-gray-300 flex items-center justify-center text-sm font-bold ${
+        className={`relative group flex mx-3 h-[48px] w-[48px] rounded-[24px] group-hover:rounded-[16px] transition-all border border-brand-peach overflow-hidden bg-gray-300 flex items-center justify-center text-sm font-bold ${
           active ? "rounded-[16px]" : ""
         }`}
       >

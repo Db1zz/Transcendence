@@ -16,22 +16,32 @@ const testUser = {
   createdAt: "2023-12-20T10:00:00Z",
 };
 
+const LeftBar = () => <div className="bg-gray-200 h-full rounded-l-lg"></div>;
+const RightBar = () => <div className="bg-gray-200 h-full rounded-r-lg"></div>;
+
 interface MainLayoutProps {
   children: React.ReactNode;
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
-    <div className="h-full flex flex-col relative bg-brand-beige">
+    <div className="h-full flex flex-col relative">
       <HeaderBar type="friends" />
-      <div className="flex flex-1">
-        <div className="hidden md:flex w-[72px] z-30 flex-col fixed inset-y-[30px] left-0">
+      <div className="flex flex-1 overflow-hidden">
+        <div className="hidden md:flex w-[72px] z-30 flex-col overflow-hidden">
           <NavigationSidebar />
         </div>
-        <main className="md:pl-[72px] flex-1 flex flex-col">{children}</main>
-      </div>
-      <div className="flex flex-col gap-4 items-center">
-        <FriendsView></FriendsView>
+        <main className="flex-1 flex gap-0 p-2 overflow-hidden">
+          <div className="w-1/5 flex-shrink-0 overflow-auto">
+            <LeftBar />
+          </div>
+          <div className="w-3/5 overflow-auto">
+            <FriendsView />
+          </div>
+          <div className="w-1/5 flex-shrink-0 overflow-auto">
+            <RightBar />
+          </div>
+        </main>
       </div>
       <div className="fixed bottom-1.5 left-1 z-40">
         <ProfileButton user={testUser} className="w-[400px]" />
