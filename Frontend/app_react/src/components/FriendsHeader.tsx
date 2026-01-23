@@ -55,7 +55,7 @@ export const FriendsHeader: React.FC<FriendsHeaderProps> = ({
         <Button
           onClick={() => onTabChange("add")}
           color={activeTab === "add" ? "bg-brand-green" : "bg-brand-brick"}
-          className="!px-4 !py-1.5 !text-sm flex items-center gap-2"
+          className="mb-2 !px-4 !py-1.5 !text-sm flex items-center gap-2"
         >
           <UserPlus className="w-4 h-4" />
           <span>Add Friend</span>
