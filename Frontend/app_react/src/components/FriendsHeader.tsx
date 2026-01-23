@@ -26,7 +26,7 @@ export const FriendsHeader: React.FC<FriendsHeaderProps> = ({
   counts,
 }) => {
   return (
-    <div className="flex items-center gap-4 px-4 py-3 border-b-2 border-gray-800 bg-brand-beige">
+    <div className="flex items-center gap-4 px-4 py-3 border-b-2 border-gray-800 bg-brand-peach">
       <div className="flex items-center gap-2 pr-4 border-r-2 border-gray-800">
         <Users className="w-5 h-5 text-gray-800" />
         <span className="font-ananias font-bold text-gray-800">Friends</span>

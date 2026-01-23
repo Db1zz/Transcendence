@@ -27,7 +27,12 @@ const MOCK_SERVERS = [
 export const NavigationSidebar = () => {
   return (
     <div className="space-y-4 flex flex-col items-center text-primary w-full bg-brand-green py-3 h-full border-r border-brand-peach overflow-hidden">
-      <MessageSquare size={35} className="text-brand-beige" />
+      <button className="transition-all duration-200 hover:scale-125">
+        <MessageSquare
+          size={35}
+          className="text-brand-beige hover:text-brand-brick transition-colors duration-200"
+        />
+      </button>
       <div className="h-[2px] bg-brand-peach rounded-md w-10 mx-auto" />
       <div className="flex-1 w-full overflow-y-auto overflow-x-hidden">
         {MOCK_SERVERS.map((chat, index) => (

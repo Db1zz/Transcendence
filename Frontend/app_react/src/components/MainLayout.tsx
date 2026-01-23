@@ -5,6 +5,8 @@ import { NavigationSidebar } from "./navigation/NavigationSideBar";
 import React from "react";
 import ProfileButton from "../components/ProfileButton";
 import { HeaderBar } from "./navigation/HeaderBar";
+import { LeftBar } from "./navigation/LeftBar";
+import RightBar from "./navigation/RightBar";
 
 const testUser = {
   name: "kaneki",
@@ -15,9 +17,6 @@ const testUser = {
   about: "privet",
   createdAt: "2023-12-20T10:00:00Z",
 };
-
-const LeftBar = () => <div className="bg-gray-200 h-full rounded-l-lg"></div>;
-const RightBar = () => <div className="bg-gray-200 h-full rounded-r-lg"></div>;
 
 interface MainLayoutProps {
   children: React.ReactNode;
