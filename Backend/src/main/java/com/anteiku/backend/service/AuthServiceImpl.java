@@ -29,6 +29,12 @@ public class AuthServiceImpl implements AuthService {
     final private UserCredentialsRepository userCredentialsRepository;
     final private JwtServiceImpl jwtServiceImpl;
 
+    AuthServiceImpl(UserCredentialsRepository userCredentialsRepository, UserRepository userRepository, JwtServiceImpl jwtServiceImpl) {
+        this.userCredentialsRepository = userCredentialsRepository;
+        this.userRepository = userRepository;
+        this.jwtServiceImpl = jwtServiceImpl;
+    }
+
     @Override
     public UserAuthResponseDto authenticateUser(UserAuthDto userAuthDto) {
         Optional<UserCredentialsEntity> userCredentials = userCredentialsRepository.findByEmail(userAuthDto.getEmail());

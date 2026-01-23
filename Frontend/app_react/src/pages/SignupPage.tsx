@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import bgLogin from '../img/bg_login.png';
@@ -9,12 +9,17 @@ import validator from 'validator'
 const SignupPage: React.FC = () => {
 	const navigate = useNavigate();
 	const [email, setEmail] = useState('');
+	const [displayName, setDisplayName] = useState('');
 	const [password, setPassword] = useState('');
 	const [username, setUsername] = useState('');
 	const [loading, setLoading] = useState(false);
 	const [isSuccess, setIsSuccess] = useState(false);
 	const [errorMessagePassword, setErrorMessagePassword] = useState('');
-	//const [errorMessageEmail, setErrorMessageEmail] = useState('');
+	const [errorMessageCopyPassword, setErrorMessageCopyPassword] = useState('');
+	const [emailValidation, setEmailValidation] = useState<'checking' | 'available' | 'taken' | ''>('');
+	const [usernameValidation, setUsernameValidation] = useState<'checking' | 'available' | 'taken' | ''>('');
+	const emailTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+	const usernameTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 	const [passwordChecks, setPasswordChecks] = useState({
 		length: false,
 		lower: false,
@@ -23,16 +28,72 @@ const SignupPage: React.FC = () => {
 		symbol: false,
 	});
 
-	// const validateEmail = (value: string): boolean => {
-	// 	if (validator.isEmail(value)) {
-	// 		setErrorMessagePassword('');
-	// 		return true;
-	// 	} else {
-	// 		setErrorMessagePassword('please enter a valid email');
-	// 		return false;
-	// 	}
-	//change to just parsing fetch responses when they are implemented
-	// }
+
+	const checkEmailAvailability = async (emailToCheck: string) => {
+		if (!emailToCheck || !validator.isEmail(emailToCheck)) {
+			setEmailValidation('');
+			return;
+		}
+
+		setEmailValidation('checking');
+
+		try {
+			const response = await fetch(`http://localhost:8080/api/users/check-email?email=${encodeURIComponent(emailToCheck)}`);
+			if (response.ok) {
+				const available = await response.json();
+				//console.log("response: ", available);
+				setEmailValidation(available ? 'available' : 'taken');
+			}
+		} catch (error) {
+			console.error('error checking email:', error);
+			setEmailValidation('');
+		}
+	};
+
+
+	const checkUsernameAvailability = async (usernameToCheck: string) => {
+		if (!usernameToCheck || usernameToCheck.length < 3) {
+			setUsernameValidation('');
+			return;
+		}
+
+		setUsernameValidation('checking');
+
+		try {
+			const response = await fetch(`http://localhost:8080/api/users/check-username?username=${encodeURIComponent(usernameToCheck)}`);
+			if (response.ok) {
+				const available = await response.json();
+				setUsernameValidation(available ? 'available' : 'taken');
+			}
+		} catch (error) {
+			console.error('error checking username:', error);
+			setUsernameValidation('');
+		}
+	};
+
+	const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const val = e.target.value;
+		setEmail(val);
+		if (emailTimeoutRef.current) {
+			clearTimeout(emailTimeoutRef.current);
+		}
+
+		emailTimeoutRef.current = setTimeout(() => {
+			checkEmailAvailability(val);
+		}, 500);
+	};
+
+	const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const val = e.target.value;
+		setUsername(val);
+		if (usernameTimeoutRef.current) {
+			clearTimeout(usernameTimeoutRef.current);
+		}
+
+		usernameTimeoutRef.current = setTimeout(() => {
+			checkUsernameAvailability(val);
+		}, 500);
+	};
 
 	const validatePassword = (value: string): boolean => {
 		const checks = {
@@ -64,6 +125,7 @@ const SignupPage: React.FC = () => {
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		//const emailOk = validateEmail(email);
+		//check that all error messages are null instead
 		const passwordOk = validatePassword(password);
 		if (!passwordOk) return;
 		setLoading(true);
@@ -122,24 +184,47 @@ const SignupPage: React.FC = () => {
 					</div>
 				) : (
 					<>
-						<h2 className="text-3xl font-ananias font-bold text-brand-brick text-center mb-3">sign up</h2>
-						<h3 className="text-l font-ananias text-brand-brick text-center mb-4">sign up to continue</h3>
+						<h2 className="text-3xl font-ananias font-bold text-brand-brick text-center mb-2">sign up</h2>
+						<h3 className="text-l font-ananias text-brand-green text-center mb-4">sign up to continue</h3>
 
 						<form onSubmit={handleSubmit} className="block px-8 space-y-4 font-roboto">
 							<div>
 								<label className="block text-sm text-brand-brick mb-2">
-									email
+									email<span className='text-red-600'> *</span>
 								</label>
 								<input
 									type="email"
 									value={email}
+									onChange={handleEmailChange}
+									className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
+									placeholder="enter your email"
+									required
+								/>
+								{emailValidation === 'checking' && (
+									<span className='text-sm text-gray-600'>checking...</span>
+								)}
+								{emailValidation === 'available' && (
+									<span className='text-sm text-green-600 font-semibold'>this email is available</span>
+								)}
+								{emailValidation === 'taken' && (
+									<span className='text-sm text-red-600 font-semibold'>this email already exists</span>
+								)}
+							</div>
+
+							<div>
+								<label className="block text-sm text-brand-brick mb-2">
+									display name
+								</label>
+								<input
+									type="name"
+									value={displayName}
 									onChange={(e) => {
 										const val = e.target.value;
-										setEmail(val);
+										setDisplayName(val);
 										//validateEmail(val);
 									}}
 									className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
-									placeholder="enter your email"
+									placeholder="this is how others see you"
 									required
 								/>
 								{/* {errorMessageEmail === '' ? null :
@@ -148,7 +233,30 @@ const SignupPage: React.FC = () => {
 
 							<div>
 								<label className="block text-sm text-brand-brick mb-2">
-									password
+									username <span className='text-red-600'> *</span>
+								</label>
+								<input
+									type="text"
+									value={username}
+									onChange={handleUsernameChange}
+									className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
+									placeholder="pls only use numbers,underscores and full stops"
+									required
+								/>
+								{usernameValidation === 'checking' && (
+									<span className='text-sm text-gray-600'>checking...</span>
+								)}
+								{usernameValidation === 'available' && (
+									<span className='text-sm text-green-600 font-semibold'>this username is free</span>
+								)}
+								{usernameValidation === 'taken' && (
+									<span className='text-sm text-red-600 font-semibold'>this username is taken</span>
+								)}
+							</div>
+
+							<div>
+								<label className="block text-sm text-brand-brick mb-2">
+									password <span className='text-red-600'> *</span>
 								</label>
 								<input
 									type="password"
@@ -156,32 +264,38 @@ const SignupPage: React.FC = () => {
 									onChange={(e) => {
 										const val = e.target.value;
 										setPassword(val);
-										validatePassword(val);
+										// validatePassword(val);
 									}}
-									className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
+									className={`w-full px-4 py-3 ${errorMessagePassword ? 'bg-brand-peach ring-2 ring-brand-brick' : 'bg-brand-green'} placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick`}
 									placeholder="create your password"
 									required
 								/>
 								{errorMessagePassword === '' ? null :
+									<span className='font-bold text-red-800'>{errorMessagePassword}</span>}
+							</div>
+							{/* 
+							<div>
+								<label className="block text-sm text-brand-brick mb-2">
+									confirm password <span className='text-red-600'> *</span>
+								</label>
+								<input
+									type="password"
+									value={passwordCopy}
+									onChange={(e) => {
+										const val = e.target.value;
+										setPasswordCopy(val);
+										validateCopyPassword(val);
+									}}
+									className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
+									placeholder="repeat your password"
+									required
+								/>
+								{errorMessageCopyPassword === '' ? null :
 									<span style={{
 										fontWeight: 'bold',
 										color: 'brand-brick',
-									}}>{errorMessagePassword}</span>}
-							</div>
-
-							<div>
-								<label className="block text-sm text-brand-brick mb-2">
-									username
-								</label>
-								<input
-									type="text"
-									value={username}
-									onChange={(e) => setUsername(e.target.value)}
-									className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
-									placeholder="create a username"
-									required
-								/>
-							</div>
+									}}>{errorMessageCopyPassword}</span>}
+							</div> */}
 
 							<div className="flex justify-center">
 								<Button
