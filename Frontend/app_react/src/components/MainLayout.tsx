@@ -24,7 +24,7 @@ interface MainLayoutProps {
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
-    <div className="h-full flex flex-col relative">
+    <div className="min-h-screen flex flex-col relative bg-brand-beige">
       <HeaderBar type="friends" />
       <div className="flex flex-1 overflow-hidden">
         <div className="hidden md:flex w-[72px] z-30 flex-col overflow-hidden">
@@ -43,7 +43,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         </main>
       </div>
       <div className="fixed bottom-1.5 left-1 z-40">
-        <ProfileButton user={testUser} className="w-[400px]" />
+        <ProfileButton user={testUser} className="w-[390px]" />
       </div>
     </div>
   );

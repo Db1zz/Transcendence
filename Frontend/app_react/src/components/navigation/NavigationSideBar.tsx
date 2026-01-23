@@ -2,7 +2,7 @@
 
 import React from "react";
 import { NavigationItem } from "./NavigationItem";
-import { MessageSquare} from "lucide-react";
+import { MessageSquare } from "lucide-react";
 
 const MOCK_SERVERS = [
   {
