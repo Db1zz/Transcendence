@@ -18,10 +18,8 @@ public class SessionLogoutHandler implements LogoutHandler {
     public void logout(HttpServletRequest request, HttpServletResponse response, @Nullable Authentication authentication) {
         String token = null;
 
-        System.out.println("test1");
         token = jwtService.extractTokenFromACookies(request.getCookies());
         if (token == null) {
-            System.out.println("test 1000-7");
             final String lookupKey = "Bearer ";
             String authorizationHeader = request.getHeader("Authorization");
             if (authorizationHeader != null && authorizationHeader.startsWith(lookupKey)) {
@@ -29,7 +27,6 @@ public class SessionLogoutHandler implements LogoutHandler {
             }
         }
 
-        System.out.println("test2");
         if (token == null) {
             return;
         }

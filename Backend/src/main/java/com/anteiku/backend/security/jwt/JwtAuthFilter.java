@@ -47,7 +47,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         if (token != null) {
-            if (sessionService.isSessionLogouted(token)) {
+            if (sessionService.isSessionLoggedOut(token)) {
                 System.out.println("Session is already logged out");
                 filterChain.doFilter(request, response);
                 return;

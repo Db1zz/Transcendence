@@ -6,7 +6,7 @@ import java.util.HashSet;
 
 @Service
 public class SessionServiceImpl implements SessionService {
-    final private HashSet<String> usedTokens = new HashSet<String>();
+    final private HashSet<String> loggedOutSession = new HashSet<String>();
 
     @Override
     public void logout(String token) {
@@ -14,14 +14,14 @@ public class SessionServiceImpl implements SessionService {
             return;
         }
 
-        if (usedTokens.contains(token)) {
+        if (loggedOutSession.contains(token)) {
             return;
         }
-        usedTokens.add(token);
+        loggedOutSession.add(token);
     }
 
     @Override
-    public boolean isSessionLogouted(String token) {
-        return  usedTokens.contains(token);
+    public boolean isSessionLoggedOut(String token) {
+        return  loggedOutSession.contains(token);
     }
 }
