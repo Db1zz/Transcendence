@@ -28,6 +28,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         String token = jwtService.generateToken(userEmail);
 
         Cookie responseCookie = new Cookie("jwt", token);
+        responseCookie.setPath("/");
 
         response.addCookie(responseCookie);
         response.setStatus(HttpServletResponse.SC_OK);
