@@ -1,6 +1,5 @@
 package com.anteiku.backend.security.session;
 
-import com.anteiku.backend.exception.UserIsNotAuthorized;
 import com.anteiku.backend.security.jwt.JwtServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -11,7 +10,7 @@ import org.springframework.security.web.authentication.logout.LogoutHandler;
 
 @RequiredArgsConstructor
 public class SessionLogoutHandler implements LogoutHandler {
-    final private SessionServiceImpl sessionService;
+    final private UserSessionsServiceImpl sessionService;
     final private JwtServiceImpl jwtService;
 
     @Override

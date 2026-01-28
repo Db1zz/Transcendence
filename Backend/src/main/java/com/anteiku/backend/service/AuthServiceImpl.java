@@ -2,23 +2,26 @@ package com.anteiku.backend.service;
 
 import com.anteiku.backend.entity.UserCredentialsEntity;
 import com.anteiku.backend.entity.UserEntity;
+import com.anteiku.backend.entity.UserSessionEntity;
 import com.anteiku.backend.exception.InvalidCredentialsException;
+import com.anteiku.backend.exception.UserIsNotAuthorized;
 import com.anteiku.backend.exception.UserNotFoundException;
-import com.anteiku.backend.model.UserAuthDto;
-import com.anteiku.backend.model.UserAuthResponseDto;
-import com.anteiku.backend.model.UserInfoDto;
+import com.anteiku.backend.model.*;
 import com.anteiku.backend.repository.UserCredentialsRepository;
 import com.anteiku.backend.repository.UserRepository;
 import com.anteiku.backend.security.jwt.JwtServiceImpl;
+import com.anteiku.backend.security.session.UserSessionsServiceImpl;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.Charset;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -28,6 +31,7 @@ public class AuthServiceImpl implements AuthService {
     final private UserRepository userRepository;
     final private UserCredentialsRepository userCredentialsRepository;
     final private JwtServiceImpl jwtServiceImpl;
+    final private UserSessionsServiceImpl userSessionsService;
 
     @Override
     public UserAuthResponseDto authenticateUser(UserAuthDto userAuthDto) {
@@ -52,34 +56,34 @@ public class AuthServiceImpl implements AuthService {
 
         UserAuthResponseDto userAuthResponseDto = new UserAuthResponseDto();
         userAuthResponseDto.setUserInfo(userInfoDto);
-        userAuthResponseDto.setAccessToken(token);
-        userAuthResponseDto.setTokenExpiresIn((jwtServiceImpl.extractExpirationDate(token).getTime() - System.currentTimeMillis()) / 1000);
-        userAuthResponseDto.setTokenType(UserAuthResponseDto.TokenTypeEnum.BEARER);
+        userAuthResponseDto.getAuthTokens().setAccessToken(token);
 
         return userAuthResponseDto;
     }
 
-//    public UserInfoDto getOAuth2UserInfo(@AuthenticationPrincipal OAuth2User principal) {
-//        if (principal == null) {
-//            throw new RuntimeException("User not authenticated");
-//        }
-//
-//        String email = principal.getAttribute("email");
-//        if (email == null) {
-//            throw new RuntimeException("Email not found in principal");
-//        }
-//
-//        UserCredentialsEntity userCredentialsEntity = userCredentialsRepository.findByEmail(email)
-//                .orElseThrow(() -> new RuntimeException("User credentials not found"));
-//
-//        UserEntity userEntity = userRepository.findUserById(userCredentialsEntity.getUserId()).get();
-//
-//        UserInfoDto userInfoDto = new UserInfoDto();
-//        userInfoDto.setId(userEntity.getId());
-//        userInfoDto.setUsername(userEntity.getUsername());
-//        userInfoDto.setEmail(email);
-//        userInfoDto.setRole(userEntity.getRole().toString());
-//
-//        return userInfoDto;
-//    }
+    public UserAuthTokensDto refreshAuthTokens(String refreshToken) {
+        UserSessionDto session = userSessionsService.getSessionByRefreshToken(refreshToken);
+
+        if (session.getExpiresAt().isBefore(OffsetDateTime.now())) {
+            throw new UserIsNotAuthorized("User is not authorized");
+        }
+
+        UserAuthTokensDto newAuthTokens = new UserAuthTokensDto();
+
+        Optional<UserCredentialsEntity> userCredentials = userCredentialsRepository.findByUserId(session.getUserId());
+        if (userCredentials.isEmpty()) {
+            throw new UserNotFoundException("User's credentials are not found");
+        }
+
+        newAuthTokens.setRefreshToken(UUID.randomUUID().toString());
+        newAuthTokens.setRefreshTokenExpiresAt(OffsetDateTime.now().plus(Duration.ofDays(31)));
+        newAuthTokens.setAccessToken(jwtServiceImpl.generateToken(userCredentials.get().getEmail()));
+
+        session.setCreatedAt(newAuthTokens.getRefreshTokenExpiresAt());
+        session.setRefreshToken(newAuthTokens.getRefreshToken());
+
+        userSessionsService.updateUserSession(session);
+
+        return newAuthTokens;
+    }
 }

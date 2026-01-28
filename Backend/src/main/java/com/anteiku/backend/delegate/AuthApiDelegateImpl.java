@@ -5,34 +5,34 @@ import com.anteiku.backend.exception.InvalidCredentialsException;
 import com.anteiku.backend.exception.UserNotFoundException;
 import com.anteiku.backend.model.UserAuthDto;
 import com.anteiku.backend.model.UserAuthResponseDto;
-import com.anteiku.backend.model.UserInfoDto;
+import com.anteiku.backend.model.UserAuthTokensDto;
+import com.anteiku.backend.security.session.UserSessionsServiceImpl;
 import com.anteiku.backend.service.AuthServiceImpl;
-import com.nimbusds.openid.connect.sdk.claims.UserInfo;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
+import java.time.Duration;
+import java.time.OffsetDateTime;
 
 @RestController
 @RequestMapping("/api")
+@RequiredArgsConstructor
 public class AuthApiDelegateImpl implements AuthApi {
-    @Autowired
-    AuthServiceImpl authService;
+    private final AuthServiceImpl authService;
+    private final UserSessionsServiceImpl userSessionsService;
 
     @Override
     public ResponseEntity<UserAuthResponseDto> authenticateUser(UserAuthDto userAuthDto) {
         try {
             UserAuthResponseDto userAuthResponseDto = authService.authenticateUser(userAuthDto);
 
-            ResponseCookie cookie = ResponseCookie.from("jwt", userAuthResponseDto.getAccessToken())
+            ResponseCookie cookie = ResponseCookie.from("jwt", userAuthResponseDto.getAuthTokens().getAccessToken())
                     .httpOnly(true)
                     .secure(false)
                     .maxAge(3600)
@@ -49,17 +49,21 @@ public class AuthApiDelegateImpl implements AuthApi {
         }
     }
 
-// token with some uuid + payload
-//
+    @Override
+    public ResponseEntity<String> refreshAuthTokens(String refreshToken) {
+        try {
+            UserAuthTokensDto authTokens = authService.refreshAuthTokens(refreshToken);
 
-//    @Override
-//    public ResponseEntity<UserInfoDto> getOAuth2UserInfo(@AuthenticationPrincipal OAuth2User principal) {
-//        try {
-//            UserInfoDto userInfoDto = authService.getOAuth2UserInfo(principal);
-//            return ResponseEntity.ok(userInfoDto);
-//        } catch (Exception e) {
-//            return ResponseEntity
-//                    .status(HttpStatus.UNAUTHORIZED).body(null);
-//        }
-//    }
+            ResponseCookie cookie = ResponseCookie.from("refreshToken", authTokens.getRefreshToken())
+                    .httpOnly(true)
+                    .secure(false)
+                    .maxAge(Duration.between(OffsetDateTime.now(), authTokens.getRefreshTokenExpiresAt()).toSeconds())
+                    .path("/")
+                    .build();
+
+            return  ResponseEntity.status(HttpStatus.OK).header(HttpHeaders.SET_COOKIE, cookie.toString()).body(authTokens.getAccessToken());
+        } catch(Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+    }
 }

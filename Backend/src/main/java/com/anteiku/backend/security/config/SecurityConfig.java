@@ -5,22 +5,18 @@ import com.anteiku.backend.security.jwt.JwtServiceImpl;
 import com.anteiku.backend.security.oauth2.CustomOAuth2UserService;
 import com.anteiku.backend.security.oauth2.OAuth2AuthenticationSuccessHandler;
 import com.anteiku.backend.security.session.SessionLogoutHandler;
-import com.anteiku.backend.security.session.SessionServiceImpl;
+import com.anteiku.backend.security.session.UserSessionsServiceImpl;
 import com.anteiku.backend.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import com.anteiku.backend.security.config.CorsConfig;
 
 
 @Configuration
@@ -28,7 +24,7 @@ import com.anteiku.backend.security.config.CorsConfig;
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final JwtServiceImpl jwtService;
-    private final SessionServiceImpl sessionService;
+    private final UserSessionsServiceImpl sessionService;
     private final JwtAuthFilter jwtAuthFilter;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
