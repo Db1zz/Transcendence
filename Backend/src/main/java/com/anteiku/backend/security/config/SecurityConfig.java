@@ -1,11 +1,15 @@
 package com.anteiku.backend.security.config;
 
 import com.anteiku.backend.security.jwt.JwtAuthFilter;
+import com.anteiku.backend.security.jwt.JwtServiceImpl;
 import com.anteiku.backend.security.oauth2.CustomOAuth2UserService;
 import com.anteiku.backend.security.oauth2.OAuth2AuthenticationSuccessHandler;
+import com.anteiku.backend.security.session.SessionLogoutHandler;
+import com.anteiku.backend.security.session.SessionServiceImpl;
 import com.anteiku.backend.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -21,14 +25,16 @@ import com.anteiku.backend.security.config.CorsConfig;
 
 @Configuration
 @EnableWebSecurity
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class SecurityConfig {
-    private JwtAuthFilter jwtAuthFilter;
-    private CustomOAuth2UserService customOAuth2UserService;
-    private OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+    private final JwtServiceImpl jwtService;
+    private final SessionServiceImpl sessionService;
+    private final JwtAuthFilter jwtAuthFilter;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationConfiguration authenticationConfiguration, UserService userService) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationConfiguration authenticationConfiguration, UserService userService, JwtServiceImpl jwtServiceImpl) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(new CorsConfig().corsConfigurationSource()))
                 .authorizeHttpRequests(requests -> requests
@@ -38,14 +44,12 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/api/swagger-ui.html",
                                 "/v3/api-docs/swagger-config",
-                                "/api/users/register",
                                 "/api/users/check-email",
                                 "/api/users/check-username",
+                                "/api/users/register",
                                 "/api/auth/login",
-								"/openapi.yaml"
+                                "/openapi.yaml"
                         ).permitAll()
-                        .requestMatchers(HttpMethod.POST, "/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .anyRequest().authenticated())
 
                 .oauth2Login(oauth2 -> oauth2
@@ -55,9 +59,10 @@ public class SecurityConfig {
 
                 .logout(logout -> logout
                         .logoutSuccessUrl("http://localhost:3000/login")
+                        .addLogoutHandler(new SessionLogoutHandler(sessionService, jwtService))
                         .invalidateHttpSession(true)
                         .clearAuthentication(true)
-                        .deleteCookies("JSESSIONID")
+                        .deleteCookies("JSESSIONID", "jwt")
                         .permitAll())
 
                 .exceptionHandling(exceptions -> exceptions
@@ -68,7 +73,6 @@ public class SecurityConfig {
                             response.sendError(HttpServletResponse.SC_FORBIDDEN);
                         }))
          .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-//            .headers(headers -> #lamda function to configure how to react to request headers);
         return http.build();
     }
 }
