@@ -27,7 +27,7 @@ root.render(
           <Route path="/login" element={<LoginPage />}></Route>
           <Route path="/info" element={<ShowInfo />}></Route>
           <Route path="/testGrisha" element={<TestFriendsView />}></Route>
-		  <Route path="/signup" element={<SignupPage/>}></Route>
+          <Route path="/signup" element={<SignupPage />}></Route>
         </Routes>
       </Router>
     </AuthProvider>

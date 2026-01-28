@@ -25,7 +25,7 @@ export const AddFriendView: React.FC = () => {
           Add Friend
         </h2>
         <p className="font-roboto text-sm text-muted-foreground">
-          You can add friends with their 'names'.
+          you can add friends with their 'names'.
         </p>
       </div>
       <div className="mb-8">
@@ -47,9 +47,9 @@ export const AddFriendView: React.FC = () => {
             color={
               isValid
                 ? "bg-brand-brick"
-                : "bg-gray-400 cursor-not-allowed shadow-none"
+                : "bg-brand-brick hover:bg-brand-peach hover:text-brand-brick cursor-not-allowed shadow-none p-4 hover:-translate-y-[2px]"
             }
-            className={`!px-6 !py-3 !text-sm whitespace-nowrap -translate-y-[2px] ${!isValid ? "hover:translate-x-0 hover:translate-y-0 hover:shadow-none" : ""}`}
+            className={`m-2 mb-1 !px-6 !py-3 !text-sm whitespace-nowrap -translate-y-[4px] flex items-center gap-2 ${isValid ? "hover:-translate-y-[2px] hover:shadow-none" : "hover:translate-x-0 hover:translate-y-0 hover:shadow-none"}`}
           >
             <UserPlus className="w-4 h-4" />
             <span>send request</span>

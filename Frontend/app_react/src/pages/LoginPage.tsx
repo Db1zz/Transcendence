@@ -1,20 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { useLocation, useNavigate } from 'react-router-dom';
-import bgLogin from '../img/bg_login.png';
-import { Button } from '../components/Button';
-import { OAuthLogin } from '../components/OAuthLogin';
+import React, { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { useLocation, useNavigate } from "react-router-dom";
+import bgLogin from "../img/bg_login.png";
+import { Button } from "../components/Button";
+import { OAuthLogin } from "../components/OAuthLogin";
 
 const LoginPage: React.FC = () => {
-
-	const backendBase = process.env.REACT_APP_API_BASE_URL || '';
-	const { isAuthenticated, setUser, login } = useAuth();
-	const navigate = useNavigate();
-	const location = useLocation();
-	const [email, setEmail] = useState('');
-	const [password, setPassword] = useState('');
-	const [loading, setLoading] = useState(false);
-
+  const backendBase = process.env.REACT_APP_API_BASE_URL || "";
+  const { isAuthenticated, setUser, login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const fromLocation = location.state?.from?.pathname || "/";
   useEffect(() => {
@@ -23,18 +21,18 @@ const LoginPage: React.FC = () => {
     }
   }, [isAuthenticated, fromLocation, navigate]);
 
-	const handleLogin = async (e: React.FormEvent) => {
-		e.preventDefault();
-		setLoading(true);
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
 
-		const success = await login('credentials', { email, password });
+    const success = await login("credentials", { email, password });
 
-		setLoading(false);
+    setLoading(false);
 
-		if (success) {
-			navigate("/home");
-		}
-	};
+    if (success) {
+      navigate("/home");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-brand-green flex flex-col items-center justify-center p-4 relative overflow-hidden">
@@ -56,32 +54,33 @@ const LoginPage: React.FC = () => {
           sign in to continue
         </h3>
 
-				<form onSubmit={handleLogin} className="block px-8 space-y-4 font-roboto">
-					<div>
-						<label className="block text-sm text-brand-brick mb-2">
-							email
-						</label>
-						<input
-							type="email"
-							value={email}
-							onChange={(e) => setEmail(e.target.value)}
-							className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
-							placeholder="enter your email"
-						/>
-					</div>
+        <form
+          onSubmit={handleLogin}
+          className="block px-8 space-y-4 font-roboto"
+        >
+          <div>
+            <label className="block text-sm text-brand-brick mb-2">email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
+              placeholder="enter your email"
+            />
+          </div>
 
-					<div>
-						<label className="block text-sm text-brand-brick mb-2">
-							password
-						</label>
-						<input
-							type="password"
-							value={password}
-							onChange={(e) => setPassword(e.target.value)}
-							className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
-							placeholder="enter your password"
-						/>
-					</div>
+          <div>
+            <label className="block text-sm text-brand-brick mb-2">
+              password
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
+              placeholder="enter your password"
+            />
+          </div>
 
           <div className="text-sm">
             <a href="#!" className="text-brand-brick hover:text-brand-green">
@@ -89,30 +88,30 @@ const LoginPage: React.FC = () => {
             </a>
           </div>
 
-					<div className="flex justify-center">
-						<Button
-							type="submit"
-							text="login"
-							disabled={loading}
-							className="px-8 py-3 hover:bg-opacity-90" />
-					</div>
-				</form>
+          <div className="flex justify-center">
+            <Button
+              type="submit"
+              text="login"
+              disabled={loading}
+              className="px-8 py-3 hover:bg-opacity-90"
+            />
+          </div>
+        </form>
 
-				<div className="flex justify-center gap-4 my-6">
-					<OAuthLogin />
-				</div>
-				<div className="text-center font-roboto text-brand-brick">
-					<p>
-						don't have an account?{' '}
-						<a href="/signup" className="font-bold hover:underline">
-							sign up
-						</a>
-					</p>
-				</div>
-
-			</div>
-		</div >
-	);
+        <div className="flex justify-center gap-4 my-6">
+          <OAuthLogin />
+        </div>
+        <div className="text-center font-roboto text-brand-brick">
+          <p>
+            don't have an account?{" "}
+            <a href="/signup" className="font-bold hover:underline">
+              sign up
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default LoginPage;
