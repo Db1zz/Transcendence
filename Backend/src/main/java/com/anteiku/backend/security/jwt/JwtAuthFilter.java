@@ -1,8 +1,10 @@
 package com.anteiku.backend.security.jwt;
 
+import com.anteiku.backend.security.session.SessionService;
 import com.anteiku.backend.service.UserServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +21,9 @@ import java.util.Collections;
 @Component
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
-    private JwtServiceImpl jwtService;
-    private UserServiceImpl userService;
+    private final JwtServiceImpl jwtService;
+    private final SessionService sessionService;
+    private final UserServiceImpl userService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -28,10 +31,29 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String header = request.getHeader("Authorization");
         String userEmail = null;
         String token = null;
+        Cookie[] cookies = request.getCookies();
 
-        if (header != null && header.startsWith(lookupToken)) {
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("jwt")) {
+                    token = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        if (token == null && header != null && header.startsWith(lookupToken)) {
              token = header.substring(lookupToken.length());
-             userEmail = jwtService.extractUserEmail(token);
+        }
+
+        if (token != null) {
+            if (sessionService.isSessionLoggedOut(token)) {
+                System.out.println("Session is already logged out");
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            userEmail = jwtService.extractUserEmail(token);
         }
 
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
