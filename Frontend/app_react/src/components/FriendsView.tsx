@@ -112,7 +112,7 @@ export const FriendsView: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-brand-beige">
+    <div className="flex flex-col h-full bg-brand-beige border border-brand-green">
       <FriendsHeader
         activeTab={activeTab}
         onTabChange={setActiveTab}
