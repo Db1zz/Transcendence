@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { createContext, useContext, useEffect, type ReactNode } from "react";
-import defaultAvatar from '../img/default.png';
-
+import defaultAvatar from "../img/default.png";
 
 export type User = {
 	id: string;
