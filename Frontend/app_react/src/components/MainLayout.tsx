@@ -43,8 +43,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           </div>
         </main>
       </div>
-      <div className="hidden md:block md:fixed bottom-1.5 left-1 z-40">
-        <ProfileButton user={testUser} className="w-[390px]" />
+      <div className="fixed bottom-1.5 left-1 right-1 z-40 md:left-1 md:right-auto md:w-auto">
+        <ProfileButton user={testUser} className="w-full md:w-[390px]" />
       </div>
     </div>
   );

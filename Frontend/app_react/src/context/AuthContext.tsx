@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { createContext, useContext, useEffect, type ReactNode } from "react";
 import defaultAvatar from "../img/default.png";
 
 export type User = {
+  id: string;
   name: string;
   email: string;
   picture?: string;
@@ -22,7 +23,7 @@ type AuthContextType = {
     provider: "github" | "google" | "credentials",
     credentials?: { email: string; password: string },
   ) => Promise<boolean>;
-  logout: () => void;
+  logout: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -31,7 +32,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   setUser: () => {},
   login: async () => false,
-  logout: () => {},
+  logout: async () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -45,43 +46,22 @@ export const AuthProvider = ({ children }: Props) => {
   const [loading, setLoading] = useState(true);
 
   const saveAuthData = (data: any) => {
-    const userInfo = data.userInfo || data;
     const userData: User = {
-      name: userInfo.username || userInfo.name,
-      email: userInfo.email,
-      picture: userInfo.picture || defaultAvatar,
-      role: userInfo.role,
+      id: data.id || "",
+      name: data.username || data.name || "",
+      email: data.email || "",
+      picture: data.picture || defaultAvatar,
+      role: data.role || "USER",
       status: "online",
       about: "default text",
-      createdAt: "",
+      createdAt: data.createdAt || "",
     };
 
     localStorage.setItem("user", JSON.stringify(userData));
-    if (data.accessToken) {
-      localStorage.setItem("accessToken", data.accessToken);
-    }
     setUser(userData);
   };
 
-  useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    const savedUser = localStorage.getItem("user");
-
-    if (token && savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (error) {
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("user");
-        setUser(null);
-      }
-    } else if (!token && !savedUser) {
-      checkAuthStatus();
-    }
-    setLoading(false);
-  }, []);
-
-  const checkAuthStatus = async () => {
+  const checkAuthStatus = useCallback(async () => {
     try {
       const response = await fetch("http://localhost:8080/api/users/me", {
         credentials: "include",
@@ -90,9 +70,33 @@ export const AuthProvider = ({ children }: Props) => {
       if (response.ok) {
         const data = await response.json();
         saveAuthData(data);
+      } else {
+        setUser(null);
+        localStorage.removeItem("user");
       }
-    } catch (error) {}
-  };
+    } catch (error) {
+      setUser(null);
+      localStorage.removeItem("user");
+    }
+  }, []);
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem("user");
+
+    if (savedUser) {
+      try {
+        const parsedUser = JSON.parse(savedUser);
+        setUser(parsedUser);
+      } catch (error) {
+        localStorage.removeItem("user");
+        setUser(null);
+        checkAuthStatus();
+      }
+    } else {
+      checkAuthStatus();
+    }
+    setLoading(false);
+  }, [checkAuthStatus]);
 
   const login = async (
     provider: "github" | "google" | "credentials",
@@ -119,7 +123,6 @@ export const AuthProvider = ({ children }: Props) => {
 
         if (response.ok) {
           const data = await response.json();
-          //localStorage.setItem('accessToken', data.accessToken);
           saveAuthData(data);
           return true;
         } else {
@@ -134,14 +137,21 @@ export const AuthProvider = ({ children }: Props) => {
     return false;
   };
 
-  const isAuthenticated = !!user;
-
-  const logout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("user");
-    setUser(null);
+  const logout = async () => {
+    try {
+      await fetch("http://localhost:8080/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (error) {
+      console.error("error during logout:", error);
+    } finally {
+      localStorage.removeItem("user");
+      setUser(null);
+    }
   };
 
+  const isAuthenticated = !!user;
   return (
     <AuthContext.Provider
       value={{ isAuthenticated, loading, user, setUser, login, logout }}
