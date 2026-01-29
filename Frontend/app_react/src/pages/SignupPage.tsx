@@ -100,7 +100,7 @@ const SignupPage: React.FC = () => {
   };
 
   const validatePassword = (value: string): boolean => {
-    const checks = {
+    const Passwordchecks = {
       length: validator.isLength(value, { min: 8 }),
       lower: validator.matches(value, /[a-z]/),
       upper: validator.matches(value, /[A-Z]/),
@@ -108,14 +108,14 @@ const SignupPage: React.FC = () => {
       symbol: validator.matches(value, /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/),
     };
 
-    setPasswordChecks(checks);
+    setPasswordChecks(Passwordchecks);
 
     const missing: string[] = [];
-    if (!checks.length) missing.push("8+ characters");
-    if (!checks.lower) missing.push("1 lowercase");
-    if (!checks.upper) missing.push("1 uppercase");
-    if (!checks.number) missing.push("1 number");
-    if (!checks.symbol) missing.push("1 symbol");
+    if (!Passwordchecks.length) missing.push("8+ characters");
+    if (!Passwordchecks.lower) missing.push("1 lowercase");
+    if (!Passwordchecks.upper) missing.push("1 uppercase");
+    if (!Passwordchecks.number) missing.push("1 number");
+    if (!Passwordchecks.symbol) missing.push("1 symbol");
 
     if (missing.length === 0) {
       setErrorMessagePassword("");
@@ -234,7 +234,6 @@ const SignupPage: React.FC = () => {
                   placeholder="this is how others see you"
                   required
                 />
-
               </div>
 
               <div>
@@ -286,7 +285,6 @@ const SignupPage: React.FC = () => {
                   </span>
                 )}
               </div>
-
 
               <div className="flex justify-center">
                 <Button
