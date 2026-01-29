@@ -10,5 +10,6 @@ import java.util.UUID;
 @Repository
 public interface UserSessionsRepository extends JpaRepository<UserSessionEntity, UUID> {
     // Optional<UserSessionEntity> findByUserId(UUID userId);
-    Optional<UserSessionEntity> findByRefreshToken(String token);
+    Optional<UserSessionEntity> findByRefreshToken(byte[] refreshToken);
+    Optional <UserSessionEntity> findByAccessToken(byte[] accessToken);
 }

@@ -13,13 +13,14 @@ import com.anteiku.backend.security.jwt.JwtServiceImpl;
 import com.anteiku.backend.security.session.UserSessionsServiceImpl;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.Charset;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -32,6 +33,12 @@ public class AuthServiceImpl implements AuthService {
     final private UserCredentialsRepository userCredentialsRepository;
     final private JwtServiceImpl jwtServiceImpl;
     final private UserSessionsServiceImpl userSessionsService;
+
+    @Value("${app.security.refresh_token_expiration_period}")
+    private long refreshTokenExpiresIn;
+
+    @Value("${app.security.access_token_expiration_period}")
+    private long accessTokenExpiresIn;
 
     @Override
     public UserAuthResponseDto authenticateUser(UserAuthDto userAuthDto) {
@@ -54,9 +61,24 @@ public class AuthServiceImpl implements AuthService {
 
         String token = jwtServiceImpl.generateToken(userInfoDto.getEmail());
 
+        String refreshToken = UUID.randomUUID().toString();
+
+        UserAuthTokensDto authTokensDto = new UserAuthTokensDto();
+        authTokensDto.setAccessToken(token);
+        authTokensDto.setRefreshToken(refreshToken);
+
         UserAuthResponseDto userAuthResponseDto = new UserAuthResponseDto();
         userAuthResponseDto.setUserInfo(userInfoDto);
-        userAuthResponseDto.getAuthTokens().setAccessToken(token);
+        userAuthResponseDto.setAuthTokens(authTokensDto);
+
+        UserSessionEntity userSessionEntity = new UserSessionEntity();
+        userSessionEntity.setUserId(userEntity.getId());
+        userSessionEntity.setRefreshToken(refreshToken.getBytes());
+        userSessionEntity.setRefreshTokenExpiresAt(Instant.now().plus(refreshTokenExpiresIn, ChronoUnit.DAYS));
+        userSessionEntity.setAccessToken(authTokensDto.getAccessToken().getBytes());
+        userSessionEntity.setAccessTokenExpiresAt(Instant.now().plus(accessTokenExpiresIn, ChronoUnit.DAYS));
+
+        userSessionsService.updateUserSession(userSessionEntity);
 
         return userAuthResponseDto;
     }
@@ -64,7 +86,7 @@ public class AuthServiceImpl implements AuthService {
     public UserAuthTokensDto refreshAuthTokens(String refreshToken) {
         UserSessionDto session = userSessionsService.getSessionByRefreshToken(refreshToken);
 
-        if (session.getExpiresAt().isBefore(OffsetDateTime.now())) {
+        if (session.getRefreshTokenExpiresAt().isBefore(OffsetDateTime.now())) {
             throw new UserIsNotAuthorized("User is not authorized");
         }
 
@@ -76,11 +98,12 @@ public class AuthServiceImpl implements AuthService {
         }
 
         newAuthTokens.setRefreshToken(UUID.randomUUID().toString());
-        newAuthTokens.setRefreshTokenExpiresAt(OffsetDateTime.now().plus(Duration.ofDays(31)));
+        newAuthTokens.setRefreshTokenExpiresAt(OffsetDateTime.now().plus(Duration.ofDays(refreshTokenExpiresIn)));
         newAuthTokens.setAccessToken(jwtServiceImpl.generateToken(userCredentials.get().getEmail()));
 
         session.setCreatedAt(newAuthTokens.getRefreshTokenExpiresAt());
         session.setRefreshToken(newAuthTokens.getRefreshToken());
+        session.setAccessTokenExpiresAt(OffsetDateTime.now().plus(Duration.ofDays(accessTokenExpiresIn)));
 
         userSessionsService.updateUserSession(session);
 

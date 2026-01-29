@@ -15,14 +15,17 @@ CREATE TABLE IF NOT EXISTS users_credentials (
 );
 
 CREATE TABLE IF NOT EXISTS user_sessions (
-    refresh_token BYTEA PRIMARY KEY,
-    expires_at TIMESTAMPTZ NOT NULL,
+    id UUID PRIMARY KEY,
+    refresh_token BYTEA NOT NULL,
+    refresh_token_expires_at TIMESTAMPTZ NOT NULL,
+    access_token BYTEA NOT NULL,
+    access_token_expires_at TIMESTAMPTZ NOT NULL,
 
     user_id UUID NOT NULL,
 
-    public_key BYTEA DEFAULT NULL, -- idk, shall i keep it?
+    -- public_key BYTEA DEFAULT NULL, -- idk, shall i keep it?
 
-    device_id UUID NOT NULL,
+    -- device_id UUID NOT NULL,
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     last_active_at TIMESTAMPTZ NOT NULL DEFAULT now(),

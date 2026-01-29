@@ -17,6 +17,8 @@ public class SessionLogoutHandler implements LogoutHandler {
     public void logout(HttpServletRequest request, HttpServletResponse response, @Nullable Authentication authentication) {
         String token = null;
 
+        System.out.println("test1234");
+
         token = jwtService.extractTokenFromACookies(request.getCookies());
         if (token == null) {
             final String lookupKey = "Bearer ";

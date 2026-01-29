@@ -10,5 +10,7 @@ public interface UserSessionsService {
     void logout(String token);
     boolean isSessionLoggedOut(String token);
     UserSessionDto getSessionByRefreshToken(String refreshToken);
+    UserSessionDto getSessionByAccessToken(String accessToken);
     void updateUserSession(UserSessionDto session);
+    void updateUserSession(UserSessionEntity session);
 }

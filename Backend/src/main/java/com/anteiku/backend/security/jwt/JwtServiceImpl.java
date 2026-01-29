@@ -8,7 +8,6 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.Cookie;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
@@ -89,7 +88,7 @@ public class JwtServiceImpl  {
 
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("jwt")) {
+                if (cookie.getName().equals("accessToken")) {
                     token = cookie.getValue();
                     break;
                 }

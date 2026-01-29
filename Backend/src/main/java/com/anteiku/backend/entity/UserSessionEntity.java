@@ -4,13 +4,18 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.Instant;
-import java.util.Date;
 import java.util.UUID;
 
 @Entity
 @Table(name = "user_sessions")
 @Builder
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
+
+//refresh_token BYTEA NOT NULL,
+//refresh_token_expires_at TIMESTAMPTZ NOT NULL,
+//access_token BYTEA NOT NULL,
+//access_token_expires_at TIMESTAMPTZ NOT NULL,
+
 public class UserSessionEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -22,21 +27,34 @@ public class UserSessionEntity {
     @Column(name = "refresh_token", nullable = false)
     private byte[] refreshToken;
 
-    @Column(name = "expires_at", nullable = false)
-    private Instant expiresAt;
+    @Column(name = "refresh_token_expires_at", nullable = false)
+    private Instant refreshTokenExpiresAt;
 
-    @Column(name = "public_key", nullable = true)
-    private byte[] publicKey;
+    @Column(name = "access_token", nullable = false)
+    private byte[] accessToken;
+
+    @Column(name = "access_token_expires_at", nullable = false)
+    private Instant accessTokenExpiresAt;
 
     @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
+    @Builder.Default
+    private Instant createdAt = Instant.now();
 
     @Column(name = "last_active_at", nullable = false)
-    private Instant lastActiveAt;
+    @Builder.Default
+    private Instant lastActiveAt =  Instant.now();
 
     @Column(name = "revoked", nullable = false)
-    private Boolean revoked;
+    @Builder.Default
+    private Boolean revoked = false;
 
     @Column(name = "revoked_at", nullable = true)
     private Instant revokedAt;
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = Instant.now();
+        this.lastActiveAt = Instant.now();
+        this.revoked = false;
+    }
 }

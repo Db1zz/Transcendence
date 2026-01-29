@@ -55,7 +55,7 @@ public class SecurityConfig {
                         .addLogoutHandler(new SessionLogoutHandler(sessionService, jwtService))
                         .invalidateHttpSession(true)
                         .clearAuthentication(true)
-                        .deleteCookies("JSESSIONID", "jwt")
+                        .deleteCookies("JSESSIONID", "accessToken", "refreshToken")
                         .permitAll())
 
                 .exceptionHandling(exceptions -> exceptions

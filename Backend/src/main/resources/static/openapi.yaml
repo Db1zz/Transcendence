@@ -316,7 +316,13 @@ components:
         refreshToken:
           type: string
           format: jwt
-        expiresAt:
+        refreshTokenExpiresAt:
+          type: string
+          format: date-time
+        accessToken:
+          type: string
+          format: jwt
+        accessTokenExpiresAt:
           type: string
           format: date-time
         deviceId:

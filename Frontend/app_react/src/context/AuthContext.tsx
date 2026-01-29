@@ -55,8 +55,8 @@ export const AuthProvider = ({ children }: Props) => {
 		};
 
 		localStorage.setItem('user', JSON.stringify(userData));
-		if (data.accessToken) {
-			localStorage.setItem('accessToken', data.accessToken);
+		if (data.authTokens.accessToken) {
+			localStorage.setItem('accessToken', data.authTokens.accessToken);
 		}
 		setUser(userData);
 	};
@@ -118,7 +118,6 @@ export const AuthProvider = ({ children }: Props) => {
 
 				if (response.ok) {
 					const data = await response.json();
-					//localStorage.setItem('accessToken', data.accessToken);
 					saveAuthData(data);
 					return true;
 				} else {
