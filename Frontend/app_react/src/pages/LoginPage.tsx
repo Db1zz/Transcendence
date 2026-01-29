@@ -6,8 +6,7 @@ import { Button } from "../components/Button";
 import { OAuthLogin } from "../components/OAuthLogin";
 
 const LoginPage: React.FC = () => {
-  const backendBase = process.env.REACT_APP_API_BASE_URL || "";
-  const { isAuthenticated, setUser, login } = useAuth();
+  const { isAuthenticated, login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [email, setEmail] = useState("");

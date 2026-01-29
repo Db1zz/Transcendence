@@ -4,18 +4,8 @@ import { Navigate } from "react-router-dom";
 // import ProfileButton from "../components/ProfileButton";
 import MainLayout from "../components/MainLayout";
 
-const testUser = {
-  name: "kaneki",
-  email: "example@example.com",
-  picture: "https://media.tenor.com/I9qt03YKkjQAAAAe/monkey-thinking.png",
-  status: "online" as const,
-  role: "ADMIN" as const,
-  about: "privet",
-  createdAt: "2023-12-20T10:00:00Z",
-};
-
 const HomePage = () => {
-  const { isAuthenticated, loading, user, setUser } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
 
   if (loading) {
     return <div>loading...</div>;

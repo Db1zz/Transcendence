@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useAuth } from "../context/AuthContext";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import bgLogin from "../img/bg_login.png";
 import { Button } from "../components/Button";
 import { OAuthLogin } from "../components/OAuthLogin";
@@ -15,7 +14,6 @@ const SignupPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMessagePassword, setErrorMessagePassword] = useState("");
-  const [errorMessageCopyPassword, setErrorMessageCopyPassword] = useState("");
   const [emailValidation, setEmailValidation] = useState<
     "checking" | "available" | "taken" | ""
   >("");
@@ -107,7 +105,7 @@ const SignupPage: React.FC = () => {
       lower: validator.matches(value, /[a-z]/),
       upper: validator.matches(value, /[A-Z]/),
       number: validator.matches(value, /[0-9]/),
-      symbol: validator.matches(value, /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/),
+      symbol: validator.matches(value, /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/),
     };
 
     setPasswordChecks(checks);
@@ -130,8 +128,6 @@ const SignupPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    //const emailOk = validateEmail(email);
-    //check that all error messages are null instead
     const passwordOk = validatePassword(password);
     if (!passwordOk) return;
     setLoading(true);
@@ -149,10 +145,6 @@ const SignupPage: React.FC = () => {
         }),
       });
 
-      // add user with this email exists? validation : register
-      //incorrect email format
-      //password validation
-      //make a var msg that will be displayed in a div after error if isSuccess false (each block or separately?)
       if (response.ok) {
         console.log("success");
         setIsSuccess(true);
@@ -242,8 +234,7 @@ const SignupPage: React.FC = () => {
                   placeholder="this is how others see you"
                   required
                 />
-                {/* {errorMessageEmail === '' ? null :
-									<span className='font-bold text-brand-brick'>please enter correct email!</span>} */}
+
               </div>
 
               <div>
@@ -295,29 +286,7 @@ const SignupPage: React.FC = () => {
                   </span>
                 )}
               </div>
-              {/* 
-							<div>
-								<label className="block text-sm text-brand-brick mb-2">
-									confirm password <span className='text-red-600'> *</span>
-								</label>
-								<input
-									type="password"
-									value={passwordCopy}
-									onChange={(e) => {
-										const val = e.target.value;
-										setPasswordCopy(val);
-										validateCopyPassword(val);
-									}}
-									className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
-									placeholder="repeat your password"
-									required
-								/>
-								{errorMessageCopyPassword === '' ? null :
-									<span style={{
-										fontWeight: 'bold',
-										color: 'brand-brick',
-									}}>{errorMessageCopyPassword}</span>}
-							</div> */}
+
 
               <div className="flex justify-center">
                 <Button

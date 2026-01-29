@@ -41,12 +41,10 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
   const toggleExpand = () => {
     setIsExpanded(!isExpanded);
   };
-
   const handleLogout = () => {
     logout();
     handleClose();
   };
-
   return ReactDOM.createPortal(
     <div className="fixed inset-0 z-[9999] flex items-center justify-center font-roboto">
       <div
@@ -166,12 +164,12 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
             >
               {user.about || "This user is too lazy to write a bio."}
             </p>
-            {/* <Button
+            <Button
               onClick={handleLogout}
               className="bg- text-white px-4 py-2 rounded cursor-pointer mt-5"
             >
               logout
-            </Button> */}
+            </Button>
           </div>
           {isExpanded && (
             <div className="animate-fade-in flex flex-col h-full">

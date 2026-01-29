@@ -61,24 +61,6 @@ export const AuthProvider = ({ children }: Props) => {
     setUser(userData);
   };
 
-  useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-
-    if (savedUser) {
-      try {
-        const parsedUser = JSON.parse(savedUser);
-        setUser(parsedUser);
-      } catch (error) {
-        localStorage.removeItem("user");
-        setUser(null);
-        checkAuthStatus();
-      }
-    } else {
-      checkAuthStatus();
-    }
-    setLoading(false);
-  }, []);
-
   const checkAuthStatus = useCallback(async () => {
     try {
       const response = await fetch("http://localhost:8080/api/users/me", {
@@ -97,6 +79,24 @@ export const AuthProvider = ({ children }: Props) => {
       localStorage.removeItem("user");
     }
   }, []);
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem("user");
+
+    if (savedUser) {
+      try {
+        const parsedUser = JSON.parse(savedUser);
+        setUser(parsedUser);
+      } catch (error) {
+        localStorage.removeItem("user");
+        setUser(null);
+        checkAuthStatus();
+      }
+    } else {
+      checkAuthStatus();
+    }
+    setLoading(false);
+  }, [checkAuthStatus]);
 
   const login = async (
     provider: "github" | "google" | "credentials",
