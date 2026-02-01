@@ -1,6 +1,7 @@
 package com.anteiku.backend.entity;
 
 import com.anteiku.backend.model.Role;
+import com.anteiku.backend.model.UserStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -21,14 +22,17 @@ public class UserEntity {
     @Column(name = "display_name")
     private String displayName;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private String status;
+    @Builder.Default
+    private UserStatus status = UserStatus.OFFLINE;
 
     @Column(name = "about")
     private String about;
 
     @Column(name = "picture")
-    private String picture;
+    @Builder.Default
+    private String picture = "https://i.pinimg.com/736x/eb/e8/af/ebe8afd49d1a125b0950dec5d20bb98b.jpg";
 
     @Column(name = "username")
     private String username;
@@ -43,7 +47,8 @@ public class UserEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
-    private Role role;
+    @Builder.Default
+    private Role role = Role.USER;
 
     public UserEntity(String username) {
         this.username = username;

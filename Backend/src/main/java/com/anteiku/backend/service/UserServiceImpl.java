@@ -73,7 +73,7 @@ public class UserServiceImpl implements UserService {
 
         userEntity.setRole(Role.USER);
         userEntity = userRepository.save(userEntity); // the uuid will be generated automatically
-        userCredentialsEntity.setUserId(userEntity.getId());
+        userCredentialsEntity.setUser(userEntity);
         userCredentialsEntity.setPassword(passwordEncoder.encode(userCredentialsEntity.getPassword()));
         userCredentialsRepository.save(userCredentialsEntity);
         return userRegistrationDto;
