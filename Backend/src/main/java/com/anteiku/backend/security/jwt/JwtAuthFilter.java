@@ -1,5 +1,7 @@
 package com.anteiku.backend.security.jwt;
 
+import com.anteiku.backend.constant.TokenNames;
+import com.anteiku.backend.exception.InvalidToken;
 import com.anteiku.backend.security.session.UserSessionsServiceImpl;
 import com.anteiku.backend.service.UserServiceImpl;
 import jakarta.servlet.FilterChain;
@@ -35,7 +37,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("accessToken")) {
+                if (cookie.getName().equals(TokenNames.ACCESS_TOKEN)) {
                     token = cookie.getValue();
                     break;
                 }
@@ -47,8 +49,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         if (token != null) {
-            if (sessionService.isSessionLoggedOut(token)) {
-                System.out.println("Session is already logged out");
+            if (!jwtService.isTokenValid(token) || sessionService.isSessionLoggedOut(token)) {
                 filterChain.doFilter(request, response);
                 return;
             }

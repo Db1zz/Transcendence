@@ -141,13 +141,6 @@ paths:
     post:
       summary: "Refreshes the user's authentication tokens or redirects him to the login page"
       operationId: refreshAuthTokens
-      parameters:
-        - in: header
-          name: Authorization
-          schema:
-            type: string
-          required: true
-          description: "User's authentication token"
       responses:
         200:
           description: "Returns cookie with a refreshed authentication token"
@@ -158,9 +151,9 @@ paths:
                   schema:
                     type: string
           content:
-            text/plain:
+            application/json:
               schema:
-                type: string
+                $ref: '#/components/schemas/UserAuthTokensDto'
         303:
           description: "Refresh token is expired, authentication is required. User will be redirected to the login page"
           headers:

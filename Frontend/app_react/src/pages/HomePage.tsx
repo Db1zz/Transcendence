@@ -2,6 +2,8 @@ import React from "react";
 import { useAuth } from "../context/AuthContext";
 import { Navigate } from "react-router-dom";
 import ProfileButton from "../components/ProfileButton";
+import { resolve } from "path";
+import { error } from "console";
 
 const testUser = {
 	name: 'kaneki',
@@ -30,6 +32,21 @@ const HomePage = () => {
 		window.location.href = 'http://localhost:8080/logout';
 	}
 
+	const handleRefresh = async () => {
+		const response = await fetch('http://localhost:8080/api/auth/refresh', {
+				method: 'POST',
+				credentials: 'include'
+			});
+
+		if (!response.ok) {
+			throw new Error('Server failed to refresh tokens');
+		}
+
+		const data = await response.json();
+		localStorage.setItem('accessToken', data.accessToken);
+		localStorage.setItem('refreshToken', data.refreshToken);
+	}
+
 	return (
 		<div className="flex flex-col gap-4 items-center">
 			{user?.name} : {user?.email} 
@@ -44,6 +61,11 @@ const HomePage = () => {
 			<button 
 				onClick={handleLogout}
 				className="bg-red-500 text-white px-4 py-2 rounded cursor-pointer mt-5">logout
+			</button>
+
+			<button 
+				onClick={handleRefresh}
+				className="bg-red-500 text-white px-4 py-2 rounded cursor-pointer mt-5">refresh
 			</button>
 
 		</div>

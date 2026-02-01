@@ -1,13 +1,18 @@
 package com.anteiku.backend.delegate;
 
 import com.anteiku.backend.api.AuthApi;
+import com.anteiku.backend.constant.TokenNames;
 import com.anteiku.backend.exception.InvalidCredentialsException;
+import com.anteiku.backend.exception.UserIsNotAuthorized;
 import com.anteiku.backend.exception.UserNotFoundException;
 import com.anteiku.backend.model.UserAuthDto;
 import com.anteiku.backend.model.UserAuthResponseDto;
 import com.anteiku.backend.model.UserAuthTokensDto;
+import com.anteiku.backend.security.config.SecurityProperties;
 import com.anteiku.backend.security.session.UserSessionsServiceImpl;
 import com.anteiku.backend.service.AuthServiceImpl;
+import com.anteiku.backend.util.CookieUtils;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +22,8 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.time.Duration;
 import java.time.OffsetDateTime;
@@ -27,29 +34,24 @@ import java.time.OffsetDateTime;
 public class AuthApiDelegateImpl implements AuthApi {
     private final AuthServiceImpl authService;
     private final UserSessionsServiceImpl userSessionsService;
-
-    @Value("${app.security.refresh_token_expiration_period}")
-    private long refreshTokenExpiresIn;
-
-    @Value("${app.security.access_token_expiration_period}")
-    private long accessTokenExpiresIn;
+    private final SecurityProperties securityProperties;
 
     @Override
     public ResponseEntity<UserAuthResponseDto> authenticateUser(UserAuthDto userAuthDto) {
         try {
             UserAuthResponseDto userAuthResponseDto = authService.authenticateUser(userAuthDto);
 
-            ResponseCookie refreshToken = ResponseCookie.from("refreshToken", userAuthResponseDto.getAuthTokens().getRefreshToken())
+            ResponseCookie refreshToken = ResponseCookie.from(TokenNames.REFRESH_TOKEN, userAuthResponseDto.getAuthTokens().getRefreshToken())
                     .httpOnly(true)
                     .secure(false)
-                    .maxAge(Duration.ofDays(refreshTokenExpiresIn).toSeconds())
-                    .path("/api/auth")
+                    .maxAge(Duration.ofDays(securityProperties.getRefreshTokenExpirationPeriod()).toSeconds())
+                    .path("/api/auth/refresh")
                     .build();
 
-            ResponseCookie accessToken = ResponseCookie.from("accessToken", userAuthResponseDto.getAuthTokens().getAccessToken())
+            ResponseCookie accessToken = ResponseCookie.from(TokenNames.ACCESS_TOKEN, userAuthResponseDto.getAuthTokens().getAccessToken())
                     .httpOnly(true)
                     .secure(false)
-                    .maxAge(Duration.ofDays(accessTokenExpiresIn).toSeconds())
+                    .maxAge(Duration.ofDays(securityProperties.getAccessTokenExpirationPeriod()).toSeconds())
                     .path("/")
                     .build();
 
@@ -67,21 +69,32 @@ public class AuthApiDelegateImpl implements AuthApi {
     }
 
     @Override
-    public ResponseEntity<String> refreshAuthTokens(String refreshToken) {
+    public ResponseEntity<UserAuthTokensDto> refreshAuthTokens() {
         try {
-            UserAuthTokensDto authTokens = authService.refreshAuthTokens(refreshToken);
+            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+            HttpServletRequest request = attributes.getRequest();
 
-            ResponseCookie cookie = ResponseCookie.from("refreshToken", authTokens.getRefreshToken())
+            UserAuthTokensDto authTokens = authService.refreshAuthTokens(CookieUtils.getCookieValue(request, TokenNames.REFRESH_TOKEN));
+
+            ResponseCookie refreshCookie = ResponseCookie.from(TokenNames.REFRESH_TOKEN, authTokens.getRefreshToken())
                     .httpOnly(true)
                     .secure(false)
-                    .maxAge(Duration.ofDays(refreshTokenExpiresIn).toSeconds())
+                    .maxAge(Duration.ofDays(securityProperties.getRefreshTokenExpirationPeriod()).toSeconds())
+                    .path("/api/auth/refresh")
+                    .build();
+
+            ResponseCookie accessCookie = ResponseCookie.from(TokenNames.ACCESS_TOKEN, authTokens.getAccessToken())
+                    .httpOnly(true)
+                    .secure(false)
+                    .maxAge(Duration.ofDays(securityProperties.getAccessTokenExpirationPeriod()).toSeconds())
                     .path("/")
                     .build();
 
             return  ResponseEntity.status(HttpStatus.OK)
-                    .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                    .body(authTokens.getAccessToken());
-        } catch(Exception e) {
+                    .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                    .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
+                    .body(authTokens);
+        } catch(UserIsNotAuthorized e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
     }

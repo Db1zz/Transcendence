@@ -85,7 +85,6 @@ public class UserServiceImpl implements UserService {
                 () -> new UserServiceException("User not found")
         );
 
-
         return userMapper.toCredentialsDto(userCredentialsEntity);
     }
 

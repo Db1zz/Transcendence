@@ -10,12 +10,6 @@ import java.util.UUID;
 @Table(name = "user_sessions")
 @Builder
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
-
-//refresh_token BYTEA NOT NULL,
-//refresh_token_expires_at TIMESTAMPTZ NOT NULL,
-//access_token BYTEA NOT NULL,
-//access_token_expires_at TIMESTAMPTZ NOT NULL,
-
 public class UserSessionEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

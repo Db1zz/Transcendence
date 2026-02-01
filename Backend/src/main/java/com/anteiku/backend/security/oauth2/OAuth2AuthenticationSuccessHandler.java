@@ -1,5 +1,6 @@
 package com.anteiku.backend.security.oauth2;
 
+import com.anteiku.backend.constant.TokenNames;
 import com.anteiku.backend.security.jwt.JwtServiceImpl;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -14,6 +15,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -27,10 +29,16 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         String userEmail = oAuth2User.getAttribute("email");
         String token = jwtService.generateToken(userEmail);
 
-        Cookie responseCookie = new Cookie("jwt", token);
-        responseCookie.setPath("/");
 
-        response.addCookie(responseCookie);
+        Cookie accessToken = new Cookie(TokenNames.ACCESS_TOKEN, token);
+        accessToken.setPath("/");
+
+        Cookie refreshToken = new Cookie(TokenNames.REFRESH_TOKEN, UUID.randomUUID().toString());
+        refreshToken.setPath("/api/auth/refresh");
+
+
+        response.addCookie(accessToken);
+        response.addCookie(refreshToken);
         response.setStatus(HttpServletResponse.SC_OK);
 
         final String redirectUri = "http://localhost:3000/";

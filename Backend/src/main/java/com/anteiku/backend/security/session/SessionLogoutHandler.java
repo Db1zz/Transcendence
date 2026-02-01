@@ -1,8 +1,10 @@
 package com.anteiku.backend.security.session;
 
+import com.anteiku.backend.exception.UserIsNotAuthorized;
 import com.anteiku.backend.security.jwt.JwtServiceImpl;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.Authentication;
@@ -14,10 +16,8 @@ public class SessionLogoutHandler implements LogoutHandler {
     final private JwtServiceImpl jwtService;
 
     @Override
-    public void logout(HttpServletRequest request, HttpServletResponse response, @Nullable Authentication authentication) {
+    public void logout(@NotNull HttpServletRequest request, HttpServletResponse response, @Nullable Authentication authentication) {
         String token = null;
-
-        System.out.println("test1234");
 
         token = jwtService.extractTokenFromACookies(request.getCookies());
         if (token == null) {
@@ -29,10 +29,10 @@ public class SessionLogoutHandler implements LogoutHandler {
         }
 
         if (token == null) {
-            return;
+            throw new UserIsNotAuthorized("Failed to find user's access token");
         }
 
         sessionService.logout(token);
-        System.out.println("User has been logged out");
+        System.out.println("User has been successfully logged out");
     }
 }

@@ -1,5 +1,6 @@
 package com.anteiku.backend.security.config;
 
+import com.anteiku.backend.constant.TokenNames;
 import com.anteiku.backend.security.jwt.JwtAuthFilter;
 import com.anteiku.backend.security.jwt.JwtServiceImpl;
 import com.anteiku.backend.security.oauth2.CustomOAuth2UserService;
@@ -55,7 +56,7 @@ public class SecurityConfig {
                         .addLogoutHandler(new SessionLogoutHandler(sessionService, jwtService))
                         .invalidateHttpSession(true)
                         .clearAuthentication(true)
-                        .deleteCookies("JSESSIONID", "accessToken", "refreshToken")
+                        .deleteCookies("JSESSIONID", TokenNames.ACCESS_TOKEN, TokenNames.REFRESH_TOKEN)
                         .permitAll())
 
                 .exceptionHandling(exceptions -> exceptions

@@ -1,12 +1,16 @@
 package com.anteiku.backend.security.session;
 
+import com.anteiku.backend.constant.TokenNames;
 import com.anteiku.backend.entity.UserSessionEntity;
+import com.anteiku.backend.exception.InvalidToken;
 import com.anteiku.backend.exception.UserIsNotAuthorized;
 import com.anteiku.backend.exception.UserSessionNotFound;
 import com.anteiku.backend.mapper.UserSessionMapper;
 import com.anteiku.backend.model.UserAuthTokensDto;
 import com.anteiku.backend.model.UserSessionDto;
 import com.anteiku.backend.repository.UserSessionsRepository;
+import jakarta.annotation.Nullable;
+import jakarta.servlet.http.Cookie;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -54,12 +58,6 @@ public class UserSessionsServiceImpl implements UserSessionsService {
     @Override
     public UserSessionDto getSessionByRefreshToken(String refreshToken) {
         return userSessionMapper.toDto(userSessionsRepository.findByRefreshToken(refreshToken.getBytes())
-                .orElseThrow(() -> new UserSessionNotFound("User session not found")));
-    }
-
-    @Override
-    public UserSessionDto getSessionByAccessToken(String accessToken) {
-        return userSessionMapper.toDto(userSessionsRepository.findByRefreshToken(accessToken.getBytes())
                 .orElseThrow(() -> new UserSessionNotFound("User session not found")));
     }
 

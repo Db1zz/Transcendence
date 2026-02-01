@@ -1,5 +1,6 @@
 package com.anteiku.backend.security.jwt;
 
+import com.anteiku.backend.constant.TokenNames;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -88,7 +89,7 @@ public class JwtServiceImpl  {
 
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("accessToken")) {
+                if (cookie.getName().equals(TokenNames.ACCESS_TOKEN)) {
                     token = cookie.getValue();
                     break;
                 }
