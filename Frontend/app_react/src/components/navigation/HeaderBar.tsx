@@ -1,5 +1,5 @@
 import React from "react";
-import { MessageSquare, Contact, Server } from "lucide-react";
+import { MessageSquare, Contact } from "lucide-react";
 
 type PageType = "friends" | "messages" | "server";
 
