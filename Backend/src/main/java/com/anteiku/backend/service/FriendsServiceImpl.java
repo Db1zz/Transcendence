@@ -2,14 +2,18 @@ package com.anteiku.backend.service;
 
 import com.anteiku.backend.entity.FriendsEntity;
 import com.anteiku.backend.entity.UserEntity;
+import com.anteiku.backend.model.FriendDto;
 import com.anteiku.backend.model.FriendStatus;
+import com.anteiku.backend.model.UserStatus;
 import com.anteiku.backend.repository.FriendsRepository;
 import com.anteiku.backend.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -42,8 +46,8 @@ public class FriendsServiceImpl implements FriendsService {
 
     @Override
     public void acceptFriendRequest(UUID meId, UUID requesterId) {
-        UserEntity me = userRepository.findById(requesterId).orElseThrow(() -> new IllegalArgumentException("User not found"));
-        UserEntity requester = userRepository.findById(meId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        UserEntity me = userRepository.findById(meId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        UserEntity requester = userRepository.findById(requesterId).orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         FriendsEntity request = friendsRepository.findByRequesterAndAddressee(requester, me)
                 .orElseThrow(() -> new IllegalArgumentException("No pending friend request found"));
@@ -53,16 +57,42 @@ public class FriendsServiceImpl implements FriendsService {
 
     @Override
     public void removeFriend(UUID meId, UUID requesterId) {
-        
+        UserEntity me = userRepository.findById(meId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        UserEntity requester = userRepository.findById(requesterId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        FriendsEntity friend = friendsRepository.findByRequesterAndAddressee(me, requester)
+                .orElseGet(() -> friendsRepository.findByRequesterAndAddressee(requester, me)
+                        .orElseThrow(() -> new IllegalArgumentException("No pending friend request found")));
+        friendsRepository.delete(friend);
     }
 
     @Override
-    public List<FriendDto> getMyFriends(UUID requesterId) {
+    public List<FriendDto> getMyFriends(UUID meId) {
+        List<FriendsEntity> friends = friendsRepository.findAllAcceptedFriends(meId);
 
+        return friends.stream()
+                .map(f -> {
+                    UserEntity friend = f.getRequester().getId().equals(meId) ? f.getAddressee() : f.getRequester();
+                    return mapToFriendDto(friend, FriendStatus.FRIEND);
+                })
+                .collect(Collectors.toList());
     }
 
     @Override
-    public List<FriendDto> getMyPendingRequests(UUID requesterId) {
+    public List<FriendDto> getMyPendingRequests(UUID meId) {
+        return friendsRepository.findPendingFriendsForMe(meId).stream()
+                .map(f -> mapToFriendDto(f.getRequester(), FriendStatus.PENDING))
+                .collect(Collectors.toList());
+    }
 
+    private FriendDto mapToFriendDto(UserEntity friend, FriendStatus friendStatus) {
+        FriendDto friendDto = new FriendDto();
+        friendDto.setId(friend.getId());
+        friendDto.setUsername(friend.getUsername());
+        friendDto.setDisplayName(friend.getDisplayName());
+        UserStatus userStatus = friend.getStatus() != null ? friend.getStatus() : UserStatus.OFFLINE;
+        friendDto.setStatus(FriendDto.StatusEnum.fromValue(userStatus.name()));
+        friendDto.setFriendStatus(FriendDto.FriendStatusEnum.fromValue(friendStatus.name()));
+        return friendDto;
     }
 }

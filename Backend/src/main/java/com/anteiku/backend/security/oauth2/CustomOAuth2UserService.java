@@ -71,7 +71,11 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                     .username(name)
                     .role(Role.USER)
                     .build());
-            userCredentialsRepository.save(new UserCredentialsEntity(user.getId(), finalEmail));
+            UserCredentialsEntity newCredentials = UserCredentialsEntity.builder()
+                    .user(user)
+                    .email(finalEmail)
+                    .build();
+            userCredentialsRepository.save(newCredentials);
             log.info("New user created: {}", user);
         }
 

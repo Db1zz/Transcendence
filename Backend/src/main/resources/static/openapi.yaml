@@ -161,6 +161,68 @@ paths:
         403:
           description: "Forbidden - requires ADMIN role"
 
+  /friends:
+    get:
+      summary: "Get my friends list"
+      operationId: getMyFriends
+      security:
+        - bearerAuth: [ ]
+      responses:
+        200:
+          description: "List of friends"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FriendDto'
+
+  /friends/{userId}:
+      post:
+        summary: "Send a friend request"
+        operationId: addFriend
+        parameters:
+          - name: userId
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+        responses:
+          200:
+            description: "Request sent"
+          400:
+            description: "User not found or already friends"
+
+      put:
+        summary: "Accept a friend request"
+        operationId: acceptFriend
+        parameters:
+          - name: userId
+            in: path
+            required: true
+            description: "The ID of the person who sent the request"
+            schema:
+              type: string
+              format: uuid
+        responses:
+          200:
+            description: "Friendship accepted"
+
+      delete:
+        summary: "Remove friend or cancel request"
+        operationId: removeFriend
+        parameters:
+          - name: userId
+            in: path
+            required: true
+            schema:
+              type: string
+              format: uuid
+        responses:
+          200:
+            description: "Removed"
+
 components:
   responses:
     UnauthorizedError:
@@ -194,6 +256,15 @@ components:
           $ref: '#/components/schemas/UserId'
         username:
           type: string
+        displayName:
+          type: string
+        picture:
+          type: string
+        about:
+          type: string
+        status:
+          type: string
+          enum: [ONLINE, IDLE, DND, OFFLINE]
         timestamp:
           type: string
           format: date-time
@@ -260,3 +331,20 @@ components:
           $ref: '#/components/schemas/UserEmail'
         password:
           $ref: '#/components/schemas/UserPassword'
+
+    FriendDto:
+      type: object
+      description: "Friend relationship informational data"
+      properties:
+        id:
+          $ref: '#/components/schemas/UserId'
+        username:
+          type: string
+        displayName:
+          type: string
+        status:
+          type: string
+          enum: [ONLINE, IDLE, DND, OFFLINE]
+        friendStatus:
+          type: string
+          enum: [FRIEND, PENDING, BLOCKED]

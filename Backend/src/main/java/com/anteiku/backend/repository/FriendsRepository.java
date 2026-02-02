@@ -18,5 +18,5 @@ public interface FriendsRepository extends JpaRepository<FriendsEntity, UUID> {
     @Query("SELECT f FROM FriendsEntity  f WHERE (f.requester = :userId OR f.addressee.id = :userId) AND f.status = 'ACCEPTED'")
     List<FriendsEntity> findAllAcceptedFriends(@Param("userId") UUID userId);
     @Query("SELECT f FROM FriendsEntity f WHERE f.addressee.id = :userId AND f.status = 'PENDING'")
-    List<FriendsEntity> findAllPendingFriends(@Param("userId") UUID userId);
+    List<FriendsEntity> findPendingFriendsForMe(@Param("userId") UUID userId);
 }
