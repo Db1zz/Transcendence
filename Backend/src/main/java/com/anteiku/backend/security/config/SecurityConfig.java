@@ -4,6 +4,7 @@ import com.anteiku.backend.constant.TokenNames;
 import com.anteiku.backend.security.jwt.JwtAuthFilter;
 import com.anteiku.backend.security.jwt.JwtServiceImpl;
 import com.anteiku.backend.security.oauth2.CustomOAuth2UserService;
+import com.anteiku.backend.security.oauth2.CustomOidcUserService;
 import com.anteiku.backend.security.oauth2.OAuth2AuthenticationSuccessHandler;
 import com.anteiku.backend.security.session.SessionLogoutHandler;
 import com.anteiku.backend.security.session.UserSessionsServiceImpl;
@@ -30,6 +31,7 @@ public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+    private final CustomOidcUserService customOidcUserService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationConfiguration authenticationConfiguration, UserService userService, JwtServiceImpl jwtServiceImpl) throws Exception {
@@ -50,7 +52,8 @@ public class SecurityConfig {
 
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo
-                                .userService(customOAuth2UserService))
+                                .userService(customOAuth2UserService)
+                                .oidcUserService(customOidcUserService))
                         .successHandler(oAuth2AuthenticationSuccessHandler))
 
                 .logout(logout -> logout
