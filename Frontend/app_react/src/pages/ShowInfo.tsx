@@ -9,7 +9,7 @@ function ShowInfo() {
     if (!loading && isAuthenticated && user?.role === "ADMIN") {
       getInfo();
     }
-  }, [loading, isAuthenticated]);
+  }, [loading, isAuthenticated, user?.role]);
 
   const getInfo = () => {
     axios
