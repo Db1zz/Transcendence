@@ -57,57 +57,17 @@ public class AuthServiceImpl implements AuthService {
         userInfoDto.setEmail(userAuthDto.getEmail());
         userInfoDto.setRole(userEntity.getRole().toString());
 
-        String token = jwtServiceImpl.generateToken(userInfoDto.getEmail());
-
-        String refreshToken = UUID.randomUUID().toString();
-
-        UserAuthTokensDto authTokensDto = new UserAuthTokensDto();
-        authTokensDto.setAccessToken(token);
-        authTokensDto.setRefreshToken(refreshToken);
+        UserSessionDto userSessionDto = userSessionsService.createNewSession(userAuthDto.getEmail());
 
         UserAuthResponseDto userAuthResponseDto = new UserAuthResponseDto();
         userAuthResponseDto.setUserInfo(userInfoDto);
-        userAuthResponseDto.setAuthTokens(authTokensDto);
-
-        UserSessionEntity userSessionEntity = new UserSessionEntity();
-        userSessionEntity.setUserId(userEntity.getId());
-        userSessionEntity.setRefreshToken(refreshToken.getBytes());
-        userSessionEntity.setRefreshTokenExpiresAt(Instant.now().plus(securityProperties.getRefreshTokenExpirationPeriod(), ChronoUnit.DAYS));
-        userSessionEntity.setAccessToken(authTokensDto.getAccessToken().getBytes());
-        userSessionEntity.setAccessTokenExpiresAt(Instant.now().plus(securityProperties.getAccessTokenExpirationPeriod(), ChronoUnit.DAYS));
-
-        userSessionsService.updateUserSession(userSessionEntity);
+        userAuthResponseDto.setAuthTokens(userSessionsService.getUserSessionAuthTokens(userSessionDto.getId()));
 
         return userAuthResponseDto;
     }
 
     @Override
     public UserAuthTokensDto refreshAuthTokens(String refreshToken) {
-        UserSessionDto session = userSessionsService.getSessionByRefreshToken(refreshToken);
-
-        if (session.getRefreshTokenExpiresAt().isBefore(OffsetDateTime.now())) {
-            throw new UserIsNotAuthorized("User is not authorized");
-        }
-
-        Optional<UserCredentialsEntity> userCredentials = userCredentialsRepository.findByUserId(session.getUserId());
-        if (userCredentials.isEmpty()) {
-            throw new UserNotFoundException("User's credentials are not found");
-        }
-
-
-        session.setRefreshToken(UUID.randomUUID().toString());
-        session.setRefreshTokenExpiresAt(OffsetDateTime.now().plus(Duration.ofDays(securityProperties.getRefreshTokenExpirationPeriod())));
-        session.setAccessToken(jwtServiceImpl.generateToken(userCredentials.get().getEmail()));
-        session.setAccessTokenExpiresAt(OffsetDateTime.now().plus(Duration.ofDays(securityProperties.getAccessTokenExpirationPeriod())));
-        session.setLastActiveAt(OffsetDateTime.now());
-
-        userSessionsService.updateUserSession(session);
-
-        UserAuthTokensDto newAuthTokens = new UserAuthTokensDto();
-        newAuthTokens.setRefreshToken(session.getRefreshToken());
-        newAuthTokens.setRefreshTokenExpiresAt(session.getRefreshTokenExpiresAt());
-        newAuthTokens.setAccessToken(session.getAccessToken());
-
-        return newAuthTokens;
+        return userSessionsService.refreshSession(refreshToken);
     }
 }

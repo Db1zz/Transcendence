@@ -12,6 +12,7 @@ import java.util.UUID;
 public interface UserService {
     UserPublicDto getUserById(UUID id);
     UserPublicDto getUserByEmail(String email);
+    UserCredentialsDto getUserCredentialsById(UUID id);
     List<UserPublicDto> getUsersByUsername(String username);
     void deleteUserById(UUID id);
     UserRegistrationDto registerUser(UserRegistrationDto userRegistrationDto);

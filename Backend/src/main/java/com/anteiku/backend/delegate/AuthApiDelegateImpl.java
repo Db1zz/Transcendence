@@ -33,7 +33,6 @@ import java.time.OffsetDateTime;
 @RequiredArgsConstructor
 public class AuthApiDelegateImpl implements AuthApi {
     private final AuthServiceImpl authService;
-    private final UserSessionsServiceImpl userSessionsService;
     private final SecurityProperties securityProperties;
 
     @Override

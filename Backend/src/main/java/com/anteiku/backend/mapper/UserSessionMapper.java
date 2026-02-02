@@ -8,7 +8,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.util.Base64;
 
 @Mapper(componentModel = "spring")
 public interface UserSessionMapper {

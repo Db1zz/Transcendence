@@ -118,4 +118,10 @@ public class UserServiceImpl implements UserService {
     public boolean isUsernameAvailable(String username) {
         return userRepository.findUserByUsername(username).isEmpty();
     }
+
+    @Override
+    public UserCredentialsDto getUserCredentialsById(UUID id) {
+        return userMapper.toCredentialsDto(userCredentialsRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found")));
+    }
 }
