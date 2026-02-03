@@ -46,7 +46,9 @@ public class SecurityConfig {
                                 "/api/swagger-ui.html",
                                 "/v3/api-docs/swagger-config",
                                 "/api/users/register",
-                                "/api/auth/login"
+                                "/api/auth/login",
+                                "/api/users/check-username",
+                                "/api/users/check-email"
                         ).permitAll()
                         .anyRequest().authenticated())
 
