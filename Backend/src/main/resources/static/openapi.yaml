@@ -223,6 +223,54 @@ paths:
           200:
             description: "Removed"
 
+  /friends/blocked:
+    get:
+      summary: "Get users I have blocked"
+      operationId: getMyBlockedUsers
+      responses:
+        200:
+          description: "List of blocked users"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FriendDto'
+
+  /friends/{userId}/block:
+      post:
+        summary: "Block a user"
+        description: "Blocks the user. If a friendship or request exists, it is overridden."
+        operationId: blockUser
+        parameters:
+          - name: userId
+            in: path
+            required: true
+            description: "ID of the user to block"
+            schema:
+              type: string
+              format: uuid
+        responses:
+          200:
+            description: "User blocked successfully"
+          400:
+            description: "Cannot block self or user not found"
+
+      delete:
+        summary: "Unblock a user"
+        operationId: unblockUser
+        parameters:
+          - name: userId
+            in: path
+            required: true
+            description: "ID of the user to unblock"
+            schema:
+              type: string
+              format: uuid
+        responses:
+          200:
+            description: "User unblocked successfully"
+
 components:
   responses:
     UnauthorizedError:

@@ -15,8 +15,10 @@ import java.util.UUID;
 public interface FriendsRepository extends JpaRepository<FriendsEntity, UUID> {
     boolean existsByRequesterAndAddressee(UserEntity requester, UserEntity addressee);
     Optional<FriendsEntity> findByRequesterAndAddressee(UserEntity requester, UserEntity addressee);
-    @Query("SELECT f FROM FriendsEntity  f WHERE (f.requester = :userId OR f.addressee.id = :userId) AND f.status = 'ACCEPTED'")
+    @Query("SELECT f FROM FriendsEntity  f WHERE (f.requester.id = :userId OR f.addressee.id = :userId) AND f.status = 'FRIEND'")
     List<FriendsEntity> findAllAcceptedFriends(@Param("userId") UUID userId);
     @Query("SELECT f FROM FriendsEntity f WHERE f.addressee.id = :userId AND f.status = 'PENDING'")
     List<FriendsEntity> findPendingFriendsForMe(@Param("userId") UUID userId);
+    @Query("SELECT f FROM FriendsEntity f WHERE f.requester.id = :userId AND f.status = 'BLOCKED'")
+    List<FriendsEntity> findBlockedByMe(@Param("userId") UUID userId);
 }

@@ -49,4 +49,21 @@ public class FriendsApiDelegateImpl implements FriendsApi {
         friendsService.removeFriend(getCurrentUserId(), userId);
         return ResponseEntity.ok().build();
     }
+
+    @Override
+    public ResponseEntity<List<FriendDto>> getMyBlockedUsers() {
+        return ResponseEntity.ok(friendsService.getMyBlockedUsers(getCurrentUserId()));
+    }
+
+    @Override
+    public ResponseEntity<Void> blockUser(UUID userId) {
+        friendsService.blockUser(getCurrentUserId(), userId);
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<Void> unblockUser(UUID userId) {
+        friendsService.unblockUser(getCurrentUserId(), userId);
+        return ResponseEntity.ok().build();
+    }
 }

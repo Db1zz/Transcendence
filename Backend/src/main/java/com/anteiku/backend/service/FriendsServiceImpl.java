@@ -67,6 +67,45 @@ public class FriendsServiceImpl implements FriendsService {
     }
 
     @Override
+    public void blockUser(UUID requesterId, UUID addresseeId) {
+        UserEntity requester = userRepository.findById(requesterId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        UserEntity addressee = userRepository.findById(addresseeId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        FriendsEntity friend = friendsRepository.findByRequesterAndAddressee(requester, addressee)
+                .orElseGet(() -> friendsRepository.findByRequesterAndAddressee(addressee, requester)
+                .orElse(null));
+
+        if  (friend != null) {
+            friend.setRequester(requester);
+            friend.setAddressee(addressee);
+            friend.setStatus(FriendStatus.BLOCKED);
+            friendsRepository.save(friend);
+        } else {
+            FriendsEntity block = FriendsEntity.builder()
+                    .requester(requester)
+                    .addressee(addressee)
+                    .status(FriendStatus.BLOCKED)
+                    .build();
+            friendsRepository.save(block);
+        }
+    }
+
+    @Override
+    public void unblockUser(UUID requesterId, UUID addresseeId) {
+        UserEntity requester = userRepository.findById(requesterId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+        UserEntity addressee = userRepository.findById(addresseeId).orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        FriendsEntity block = friendsRepository.findByRequesterAndAddressee(requester, addressee)
+                .orElseThrow(() -> new IllegalArgumentException("Blocked user was not found"));
+
+        if (!block.getStatus().equals(FriendStatus.BLOCKED)) {
+            throw new IllegalStateException("Blocked user is not blocked");
+        }
+
+        friendsRepository.delete(block);
+    }
+
+    @Override
     public List<FriendDto> getMyFriends(UUID meId) {
         List<FriendsEntity> friends = friendsRepository.findAllAcceptedFriends(meId);
 
@@ -82,6 +121,13 @@ public class FriendsServiceImpl implements FriendsService {
     public List<FriendDto> getMyPendingRequests(UUID meId) {
         return friendsRepository.findPendingFriendsForMe(meId).stream()
                 .map(f -> mapToFriendDto(f.getRequester(), FriendStatus.PENDING))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<FriendDto> getMyBlockedUsers(UUID meId) {
+        return friendsRepository.findBlockedByMe(meId).stream()
+                .map(f -> mapToFriendDto(f.getAddressee(), FriendStatus.BLOCKED))
                 .collect(Collectors.toList());
     }
 

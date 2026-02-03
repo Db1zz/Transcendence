@@ -10,6 +10,9 @@ public interface FriendsService {
     void sendFriendRequest(UUID requesterId, UUID addresseeId);
     void acceptFriendRequest(UUID meId, UUID requesterId);
     void removeFriend(UUID meId, UUID requesterId);
+    void blockUser(UUID requesterId, UUID addressId);
+    void unblockUser(UUID requesterId, UUID addressId);
     List<FriendDto> getMyFriends(UUID meId);
     List<FriendDto> getMyPendingRequests(UUID meId);
+    List<FriendDto> getMyBlockedUsers(UUID meId);
 }

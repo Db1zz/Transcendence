@@ -25,9 +25,9 @@ CREATE TABLE IF NOT EXISTS friends (
     status VARCHAR NOT NULL DEFAULT 'PENDING',
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    UNIQUE (requester_id, addresse_id),
+    UNIQUE (requester_id, addressee_id),
     FOREIGN KEY (requester_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (addresse_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (addressee_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- CREATE TABLE IF NOT EXISTS user_sessions (
