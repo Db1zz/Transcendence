@@ -4,7 +4,6 @@ import com.anteiku.backend.entity.UserCredentialsEntity;
 import com.anteiku.backend.entity.UserEntity;
 import com.anteiku.backend.exception.EmailIsAlreadyUsedException;
 import com.anteiku.backend.exception.UserNotFoundException;
-import com.anteiku.backend.exception.UserServiceException;
 import com.anteiku.backend.mapper.UserMapper;
 import com.anteiku.backend.model.*;
 import com.anteiku.backend.repository.UserCredentialsRepository;
@@ -77,7 +76,7 @@ public class UserService {
 
     public UserCredentialsDto getUserCredentialsByEmail(String userEmail) {
         UserCredentialsEntity userCredentialsEntity = userCredentialsRepository.findByEmail(userEmail).orElseThrow(
-                () -> new UserServiceException("User not found")
+                () -> new UserNotFoundException("User not found")
         );
 
 
@@ -88,7 +87,7 @@ public class UserService {
         JwtUtils jwtUtils = new JwtUtils();
         Optional<String> optionalEmail = jwtUtils.getCurrentUserEmail();
         if (optionalEmail.isEmpty()) {
-            throw new AuthenticationCredentialsNotFoundException("User is not authenticated");
+                throw new AuthenticationCredentialsNotFoundException("User is not authenticated");
         }
 
         String email = optionalEmail.get();
