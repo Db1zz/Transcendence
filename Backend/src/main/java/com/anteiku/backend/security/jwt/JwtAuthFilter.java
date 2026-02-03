@@ -1,9 +1,8 @@
 package com.anteiku.backend.security.jwt;
 
 import com.anteiku.backend.constant.TokenNames;
-import com.anteiku.backend.exception.InvalidToken;
-import com.anteiku.backend.security.session.UserSessionsServiceImpl;
-import com.anteiku.backend.service.UserServiceImpl;
+import com.anteiku.backend.security.session.UserSessionsService;
+import com.anteiku.backend.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -23,9 +22,9 @@ import java.util.Collections;
 @Component
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
-    private final JwtServiceImpl jwtService;
-    private final UserSessionsServiceImpl sessionService;
-    private final UserServiceImpl userService;
+    private final JwtService jwtService;
+    private final UserSessionsService sessionService;
+    private final UserService userService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {

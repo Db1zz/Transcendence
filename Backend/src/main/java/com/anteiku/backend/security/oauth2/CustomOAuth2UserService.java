@@ -1,7 +1,6 @@
 package com.anteiku.backend.security.oauth2;
 
 import com.anteiku.backend.entity.UserCredentialsEntity;
-import com.anteiku.backend.exception.UserNotFoundException;
 import com.anteiku.backend.model.Role;
 import com.anteiku.backend.entity.UserEntity;
 import com.anteiku.backend.repository.UserCredentialsRepository;

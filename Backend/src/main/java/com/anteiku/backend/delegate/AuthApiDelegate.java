@@ -9,13 +9,10 @@ import com.anteiku.backend.model.UserAuthDto;
 import com.anteiku.backend.model.UserAuthResponseDto;
 import com.anteiku.backend.model.UserAuthTokensDto;
 import com.anteiku.backend.security.config.SecurityProperties;
-import com.anteiku.backend.security.session.UserSessionsServiceImpl;
-import com.anteiku.backend.service.AuthServiceImpl;
+import com.anteiku.backend.service.AuthService;
 import com.anteiku.backend.util.CookieUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -26,13 +23,12 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.time.Duration;
-import java.time.OffsetDateTime;
 
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
-public class AuthApiDelegateImpl implements AuthApi {
-    private final AuthServiceImpl authService;
+public class AuthApiDelegate implements AuthApi {
+    private final AuthService authService;
     private final SecurityProperties securityProperties;
 
     @Override

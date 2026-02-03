@@ -19,7 +19,7 @@ import java.util.function.Function;
 
 @Slf4j
 @Service
-public class JwtServiceImpl  {
+public class JwtService {
     @Value("${app.jwt.signing.private-key}")
     private String privateKey;
 

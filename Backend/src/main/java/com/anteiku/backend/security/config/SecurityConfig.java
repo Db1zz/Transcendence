@@ -2,12 +2,12 @@ package com.anteiku.backend.security.config;
 
 import com.anteiku.backend.constant.TokenNames;
 import com.anteiku.backend.security.jwt.JwtAuthFilter;
-import com.anteiku.backend.security.jwt.JwtServiceImpl;
+import com.anteiku.backend.security.jwt.JwtService;
 import com.anteiku.backend.security.oauth2.CustomOAuth2UserService;
 import com.anteiku.backend.security.oauth2.CustomOidcUserService;
 import com.anteiku.backend.security.oauth2.OAuth2AuthenticationSuccessHandler;
 import com.anteiku.backend.security.session.SessionLogoutHandler;
-import com.anteiku.backend.security.session.UserSessionsServiceImpl;
+import com.anteiku.backend.security.session.UserSessionsService;
 import com.anteiku.backend.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -26,15 +26,15 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-    private final JwtServiceImpl jwtService;
-    private final UserSessionsServiceImpl sessionService;
+    private final JwtService jwtService;
+    private final UserSessionsService sessionService;
     private final JwtAuthFilter jwtAuthFilter;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
     private final CustomOidcUserService customOidcUserService;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationConfiguration authenticationConfiguration, UserService userService, JwtServiceImpl jwtServiceImpl) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationConfiguration authenticationConfiguration, UserService userService, JwtService jwtService) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // check if it works with oauth2
                 .cors(cors -> cors.configurationSource(new CorsConfig().corsConfigurationSource()))
@@ -58,7 +58,7 @@ public class SecurityConfig {
 
                 .logout(logout -> logout
                         .logoutSuccessUrl("http://localhost:3000/login")
-                        .addLogoutHandler(new SessionLogoutHandler(sessionService, jwtService))
+                        .addLogoutHandler(new SessionLogoutHandler(sessionService, this.jwtService))
                         .invalidateHttpSession(true)
                         .clearAuthentication(true)
                         .deleteCookies("JSESSIONID", TokenNames.ACCESS_TOKEN, TokenNames.REFRESH_TOKEN)

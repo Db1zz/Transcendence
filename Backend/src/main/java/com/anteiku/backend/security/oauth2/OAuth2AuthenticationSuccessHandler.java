@@ -3,7 +3,7 @@ package com.anteiku.backend.security.oauth2;
 import com.anteiku.backend.constant.TokenNames;
 import com.anteiku.backend.model.UserSessionDto;
 import com.anteiku.backend.security.config.SecurityProperties;
-import com.anteiku.backend.security.session.UserSessionsServiceImpl;
+import com.anteiku.backend.security.session.UserSessionsService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,14 +22,14 @@ import java.time.Duration;
 @RequiredArgsConstructor
 @Slf4j
 public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccessHandler {
-    final private UserSessionsServiceImpl userSessionsServiceImpl;
+    final private UserSessionsService userSessionsService;
     final private SecurityProperties securityProperties;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)  throws IOException, ServletException {
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
 
-        UserSessionDto userSessionDto = userSessionsServiceImpl.createNewSession(oAuth2User.getAttribute("email"));
+        UserSessionDto userSessionDto = userSessionsService.createNewSession(oAuth2User.getAttribute("email"));
 
         Cookie accessCookie = new Cookie(TokenNames.ACCESS_TOKEN, userSessionDto.getAccessToken());
         accessCookie.setHttpOnly(true);
