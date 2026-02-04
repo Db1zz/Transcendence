@@ -1,5 +1,6 @@
 package com.anteiku.backend.security.jwt;
 
+import com.anteiku.backend.constant.TokenNames;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -8,36 +9,40 @@ import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.Cookie;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Function;
 
 @Slf4j
 @Service
-public class JwtServiceImpl  {
-    @Value("${app.jwt.secret}")
-    private String secret;
+public class JwtService {
+    @Value("${app.jwt.signing.private-key}")
+    private String privateKey;
 
-    public String generateToken(String userEmail) {
+    @Value("${app.jwt.issuer}")
+    private String issuer;
+
+    public String generateToken(String userEmail, Date expiryDate) {
         Date issuedDate = new Date();
-        Date expiryDate = Date.from(LocalDate.now().plusDays(1L).atStartOfDay(ZoneId.systemDefault()).toInstant());
         return Jwts.builder()
                 .setSubject(userEmail)
                 .claim("userEmail", userEmail)
                 .setIssuedAt(issuedDate)
+                .setIssuer(issuer)
                 .setExpiration(expiryDate)
-                .signWith(getSignKey(), SignatureAlgorithm.HS256).compact();
+                .signWith(getPrivateSignKey(), SignatureAlgorithm.HS256).compact();
     }
 
-    private Key getSignKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secret);
+    public String generateToken(String userEmail) {
+        return generateToken(userEmail, Date.from(LocalDate.now().plusDays(1L).atStartOfDay(ZoneId.systemDefault()).toInstant()));
+    }
+
+    private Key getPrivateSignKey() {
+        byte[] keyBytes = Decoders.BASE64.decode(privateKey);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
@@ -56,22 +61,27 @@ public class JwtServiceImpl  {
     private Claims extractAllClaims(String token) {
         return Jwts
                 .parser()
-                .setSigningKey(getSignKey())
+                .setSigningKey(getPrivateSignKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
     }
 
-    public String getTokenType(String token) {
-        return "Bearer";
-    }
-
-    private boolean isTokenExpired(String token) {
+    public boolean isTokenExpired(String token) {
         return extractExpirationDate(token).before(new Date());
     }
 
-    public boolean isTokenValid(String token, String userEmail) {
-        return userEmail.equals(extractUserEmail(token)) && !isTokenExpired(token);
+    public boolean isTokenValid(String token) {
+        return isTokenSignatureValid(token) && !isTokenExpired(token);
+    }
+
+    public boolean isTokenSignatureValid(String token) {
+        try {
+            extractAllClaims(token);
+        } catch(Exception e) {
+            return false;
+        }
+        return true;
     }
 
     public String extractTokenFromACookies(Cookie[] cookies) {
@@ -79,9 +89,8 @@ public class JwtServiceImpl  {
 
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("jwt")) {
+                if (cookie.getName().equals(TokenNames.ACCESS_TOKEN)) {
                     token = cookie.getValue();
-//                    System.out.println("TOKEN: " + token);
                     break;
                 }
             }
