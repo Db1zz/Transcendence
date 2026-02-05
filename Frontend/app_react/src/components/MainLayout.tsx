@@ -53,7 +53,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         <main className="flex-1 flex gap-0 pt-2 pl-2 pr-0 md:p-2 overflow-hidden relative">
           <div className="absolute inset-0 bg-brand-green opacity-80 -z-10"></div>
           <div className="w-full md:w-1/5 flex-shrink-0 overflow-auto">
-            <LeftBar />
+            <LeftBar onFriendsClick={() => handleViewChange("friends")} />
           </div>
           <div className="hidden md:block w-3/5 overflow-auto">
             {activeView === "friends" ? (
@@ -67,8 +67,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           </div>
         </main>
       </div>
-      <div className="fixed bottom-1.5 left-1 right-1 z-40 md:left-1 md:right-auto md:w-auto">
-        <ProfileButton user={testUser} className="w-full md:w-[390px]" />
+      <div className="fixed bottom-[15px] left-1 right-1 z-40 md:left-1 md:right-auto md:w-auto">
+        <ProfileButton user={testUser} className="w-full md:w-[386px]" />
       </div>
     </div>
   );

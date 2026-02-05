@@ -72,7 +72,6 @@ const Chat: React.FC<ChatProps> = ({ personName, onSendMessage }) => {
 
   return (
     <div className="flex flex-col h-full min-h-0  bg-brand-green">
-		
       <div className="bg-brand-peach border-y border-brand-green text-white p-4 shadow-md">
         <h2 className="text-xl font-bold">{personName}</h2>
         <p className="text-sm text-blue-100">online</p>
