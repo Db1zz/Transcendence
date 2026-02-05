@@ -318,8 +318,8 @@ components:
         accessTokenExpiresAt:
           type: string
           format: date-time
-        deviceId:
-          $ref: '#/components/schemas/Id'
+#        deviceId:
+#          $ref: '#/components/schemas/Id'
         createdAt:
           type: string
           format: date-time
