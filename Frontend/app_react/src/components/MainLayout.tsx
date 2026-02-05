@@ -2,7 +2,8 @@
 
 import { FriendsView } from "./FriendsView";
 import { NavigationSidebar } from "./navigation/NavigationSideBar";
-import React from "react";
+import Chat from "./Chat";
+import React, { useState, useEffect } from "react";
 import ProfileButton from "../components/ProfileButton";
 import { HeaderBar } from "./navigation/HeaderBar";
 import { LeftBar } from "./navigation/LeftBar";
@@ -23,12 +24,31 @@ interface MainLayoutProps {
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
+  const [activeView, setActiveView] = useState<"friends" | "chat">("friends");
+
+  useEffect(() => {
+    const savedView = localStorage.getItem("activeView") as
+      | "friends"
+      | "chat"
+      | null;
+    if (savedView) {
+      setActiveView(savedView);
+    }
+  }, []);
+
+  const handleViewChange = (view: "friends" | "chat") => {
+    setActiveView(view);
+    localStorage.setItem("activeView", view);
+  };
   return (
     <div className="min-h-screen flex flex-col relative">
       <HeaderBar type="friends" />
       <div className="flex flex-1 overflow-hidden">
         <div className="flex w-[72px] z-30 flex-col overflow-hidden">
-          <NavigationSidebar />
+          <NavigationSidebar
+            onChatClick={() => handleViewChange("chat")}
+            onFriendsClick={() => handleViewChange("friends")}
+          />
         </div>
         <main className="flex-1 flex gap-0 pt-2 pl-2 pr-0 md:p-2 overflow-hidden relative">
           <div className="absolute inset-0 bg-brand-green opacity-80 -z-10"></div>
@@ -36,7 +56,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             <LeftBar />
           </div>
           <div className="hidden md:block w-3/5 overflow-auto">
-            <FriendsView />
+            {activeView === "friends" ? (
+              <FriendsView />
+            ) : (
+              <Chat personName="kaneki" />
+            )}
           </div>
           <div className="hidden lg:block w-1/5 flex-shrink-0 overflow-auto">
             <RightBar />

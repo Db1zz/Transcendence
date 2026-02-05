@@ -4,6 +4,11 @@ import React from "react";
 import { NavigationItem } from "./NavigationItem";
 import { MessageSquare } from "lucide-react";
 
+interface NavigationSidebarProps {
+  onChatClick?: () => void;
+  onFriendsClick?: () => void;
+}
+
 const MOCK_SERVERS = [
   {
     id: "1",
@@ -24,10 +29,16 @@ const MOCK_SERVERS = [
   },
 ];
 
-export const NavigationSidebar = () => {
+export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
+  onChatClick,
+  onFriendsClick,
+}) => {
   return (
     <div className="space-y-4 flex flex-col items-center text-primary w-full bg-brand-green py-3 h-full border-r border-brand-peach overflow-hidden">
-      <button className="group relative flex items-center transition-all duration-150">
+      <button
+        onClick={onChatClick}
+        className="group relative flex items-center transition-all duration-150"
+      >
         <div className="flex h-[48px] w-[48px] rounded-[24px] group-hover:rounded-[16px] transition-all overflow-hidden items-center justify-center bg-brand-beige border border-brand-peach group-hover:border-brand-peach hover:bg-brand-peach shadow-sm hover:shadow-none">
           <MessageSquare
             size={24}
