@@ -49,7 +49,7 @@ export const AddFriendView: React.FC = () => {
                 ? "bg-brand-brick"
                 : "bg-brand-brick hover:bg-brand-peach hover:text-brand-brick cursor-not-allowed shadow-none p-4 hover:-translate-y-[2px]"
             }
-            className={`m-2 mb-1 !px-6 !py-3 !text-sm whitespace-nowrap -translate-y-[4px] flex items-center gap-2 ${isValid ? "hover:-translate-y-[2px] hover:shadow-none" : "hover:translate-x-0 hover:translate-y-0 hover:shadow-none"}`}
+            className={`m-2 mb-3 !px-6 !py-3 !text-sm whitespace-nowrap flex items-center gap-2`}
           >
             <UserPlus className="w-4 h-4" />
             <span>send request</span>

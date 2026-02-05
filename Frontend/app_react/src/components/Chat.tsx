@@ -120,7 +120,7 @@ const Chat: React.FC<ChatProps> = ({ personName, onSendMessage }) => {
           />
           <Button
             onClick={handleSendMessage}
-            className="bg-brand-peach text-brand-brick"
+            className="mb-1.5 bg-brand-peach text-brand-brick"
           >
             send
           </Button>
