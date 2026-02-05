@@ -8,20 +8,6 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import java.util.Optional;
 
 public class JwtUtils {
-//    public Optional<String> getCurrentJwt() {
-//        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-//        if (auth == null) {
-//            return Optional.empty();
-//        }
-//
-//        Object principal = auth.getPrincipal();
-//
-//        if (principal instanceof String) {
-//            return Optional.of((String) principal);
-//        }
-//        return Optional.empty();
-//    }
-
     public Optional<String> getCurrentUserEmail() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
