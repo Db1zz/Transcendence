@@ -137,6 +137,34 @@ paths:
         401:
           $ref: '#/components/responses/UnauthorizedError'
 
+  /auth/refresh:
+    post:
+      summary: "Refreshes the user's authentication tokens or redirects him to the login page"
+      operationId: refreshAuthTokens
+      responses:
+        200:
+          description: "Returns cookie with a refreshed authentication token"
+          headers:
+            set-cookie:
+              content:
+                text/plain:
+                  schema:
+                    type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserAuthTokensDto'
+        303:
+          description: "Refresh token is expired, authentication is required. User will be redirected to the login page"
+          headers:
+            Location:
+              content:
+                text/plain:
+                  schema:
+                    const: "http://0.0.0.0:3000/login" # https://github.com/OAI/OpenAPI-Specification/issues/2512
+        401:
+          description: "Invalid access token"
+
   /api/info:
     get:
       summary: "Get info"
@@ -288,6 +316,11 @@ components:
       format: uuid
       description: "User's universally unique identifier"
 
+    Id:
+      type: string
+      format: uuid
+      description: "universally unique identifier"
+
     UserPassword:
       type: string
       format: password
@@ -328,20 +361,24 @@ components:
         password:
           $ref: '#/components/schemas/UserPassword'
 
+    UserAuthTokensDto:
+      type: object
+      description: "User's access+refresh tokens"
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+        refreshTokenExpiresAt:
+          type: string
+          format: date-time
+
     UserAuthResponseDto:
       type: object
       description: "User and token info"
       properties:
-        accessToken:
-          type: string
-        tokenType:
-          type: string
-          enum: [bearer]
-        refreshToken:
-          type: string
-        tokenExpiresIn:
-          type: integer
-          format: int64
+        authTokens:
+          $ref: '#/components/schemas/UserAuthTokensDto'
         userInfo:
           $ref: '#/components/schemas/UserInfoDto'
 
@@ -396,3 +433,54 @@ components:
         friendStatus:
           type: string
           enum: [FRIEND, PENDING, BLOCKED]
+
+    FriendDto:
+      type: object
+      description: "Friend relationship informational data"
+      properties:
+        id:
+          $ref: '#/components/schemas/UserId'
+        username:
+          type: string
+        displayName:
+          type: string
+        status:
+          type: string
+          enum: [ONLINE, IDLE, DND, OFFLINE]
+        friendStatus:
+          type: string
+          enum: [FRIEND, PENDING, BLOCKED]
+
+    UserSessionDto:
+      type: object
+      description: "User session data"
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        userId:
+          $ref: '#/components/schemas/UserId'
+        refreshToken:
+          type: string
+          format: jwt
+        refreshTokenExpiresAt:
+          type: string
+          format: date-time
+        accessToken:
+          type: string
+          format: jwt
+        accessTokenExpiresAt:
+          type: string
+          format: date-time
+#        deviceId:
+#          $ref: '#/components/schemas/Id'
+        createdAt:
+          type: string
+          format: date-time
+        lastActiveAt:
+          type: string
+          format: date-time
+        revoked:
+          type: boolean
+        revokedAt:
+          type: string
+          format: date-time

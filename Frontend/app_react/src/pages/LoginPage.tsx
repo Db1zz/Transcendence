@@ -6,13 +6,13 @@ import { Button } from "../components/Button";
 import { OAuthLogin } from "../components/OAuthLogin";
 
 const LoginPage: React.FC = () => {
-  const backendBase = process.env.REACT_APP_API_BASE_URL || "";
-  const { isAuthenticated, setUser, login } = useAuth();
+  const { isAuthenticated, login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const fromLocation = location.state?.from?.pathname || "/";
   useEffect(() => {
@@ -24,6 +24,7 @@ const LoginPage: React.FC = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
 
     const success = await login("credentials", { email, password });
 
@@ -31,6 +32,8 @@ const LoginPage: React.FC = () => {
 
     if (success) {
       navigate("/home");
+    } else {
+      setError("incorrect credentials, try again");
     }
   };
 
@@ -64,7 +67,9 @@ const LoginPage: React.FC = () => {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
+              className={`w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick ${
+                error ? "border-2 border-red-600" : ""
+              }`}
               placeholder="enter your email"
             />
           </div>
@@ -77,7 +82,9 @@ const LoginPage: React.FC = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
+              className={`w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick ${
+                error ? "border-2 border-red-600" : ""
+              }`}
               placeholder="enter your password"
             />
           </div>
@@ -87,6 +94,10 @@ const LoginPage: React.FC = () => {
               forgot password?
             </a>
           </div>
+
+          {error && (
+            <div className="text-red-600 text-xl font-roboto">{error}</div>
+          )}
 
           <div className="flex justify-center">
             <Button

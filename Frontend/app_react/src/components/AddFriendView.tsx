@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { UserPlus, Sparkles, User } from "lucide-react";
+import { UserPlus, Sparkles } from "lucide-react";
 import { Button } from "./Button";
 
 export const AddFriendView: React.FC = () => {
