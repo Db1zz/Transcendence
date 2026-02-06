@@ -346,9 +346,12 @@ components:
         status:
           type: string
           enum: [ONLINE, IDLE, DND, OFFLINE]
-        timestamp:
+        createdAt:
           type: string
-          format: date-time
+          format: data-time
+        updatedAt:
+          type: string
+          format: data-time
         role:
           type: string
 
@@ -416,23 +419,6 @@ components:
           $ref: '#/components/schemas/UserEmail'
         password:
           $ref: '#/components/schemas/UserPassword'
-
-    FriendDto:
-      type: object
-      description: "Friend relationship informational data"
-      properties:
-        id:
-          $ref: '#/components/schemas/UserId'
-        username:
-          type: string
-        displayName:
-          type: string
-        status:
-          type: string
-          enum: [ONLINE, IDLE, DND, OFFLINE]
-        friendStatus:
-          type: string
-          enum: [FRIEND, PENDING, BLOCKED]
 
     FriendDto:
       type: object
