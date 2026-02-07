@@ -9,22 +9,30 @@ import com.anteiku.backend.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class FriendsApiDelegateImpl implements FriendsApi {
+public class FriendsApiDelegate implements FriendsApi {
     private final FriendsService friendsService;
     private final UserService userService;
-    private final JwtUtils jwtUtils;
+    private final HttpServletRequest request;
 
     private UUID getCurrentUserId() {
-        String email = jwtUtils.getCurrentUserEmail()
-                .orElseThrow(() -> new RuntimeException("Not authenticated"));
-        UserPublicDto user = userService.getUserByEmail(email);
-        return user.getId();
+        String headerId = request.getHeader("X-User-Id");
+
+        if (headerId != null && !headerId.isEmpty()) {
+            try {
+                return UUID.fromString(headerId);
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException("Invalid UUID in X-User-Id");
+            }
+        }
+
+        throw new RuntimeException("Missing UUID in X-User-Id");
     }
 
     @Override
