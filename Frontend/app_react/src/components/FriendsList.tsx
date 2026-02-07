@@ -2,7 +2,6 @@ import {
   Search,
   Users,
   MessageCircle,
-  MoreVertical,
   Ban,
   Check,
   X,
@@ -16,6 +15,10 @@ interface FriendsListProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   activeTab: FriendsTab;
+  onAccept: (id: string) => void;
+  onRemove: (id: string) => void;
+  onBlock: (id: string) => void;
+  onUnblock: (id: string) => void;
 }
 
 const getTabTitle = (tab: FriendsTab, count: number): string => {
@@ -38,6 +41,10 @@ export const FriendsList: React.FC<FriendsListProps> = ({
   searchQuery,
   onSearchChange,
   activeTab,
+  onAccept,
+  onRemove,
+  onBlock,
+  onUnblock
 }) => {
   return (
     <div className="flex flex-col h-full p-6">
@@ -67,14 +74,14 @@ export const FriendsList: React.FC<FriendsListProps> = ({
                   <>
                     <Button
                       color="bg-green-600"
-                      onClick={() => console.log("Accept", friend.id)}
+                      onClick={() => onAccept(friend.id)}
                       className="!p-2 !rounded-full !shadow-[2px_2px_0px_#000]"
                     >
                       <Check className="w-4 h-4" />
                     </Button>
                     <Button
                       color="bg-red-500"
-                      onClick={() => console.log("Decline", friend.id)}
+                      onClick={() => onRemove(friend.id)}
                       className="!p-2 !rounded-full !shadow-[2px_2px_0px_#000]"
                     >
                       <X className="w-4 h-4" />
@@ -89,22 +96,21 @@ export const FriendsList: React.FC<FriendsListProps> = ({
                     >
                       <MessageCircle className="w-4 h-4" />
                     </Button>
-
                     {activeTab === "blocked" ? (
                       <Button
                         color="bg-red-200"
-                        onClick={() => console.log("Unblock", friend.id)}
+                        onClick={() => onUnblock(friend.id)}
                         className="!p-2 !rounded-full !border-gray-800 !text-red-800 hover:!bg-red-500 hover:!text-white !shadow-[2px_2px_0px_#000]"
                       >
                         <Ban className="w-4 h-4" />
                       </Button>
                     ) : (
-                      <Button
+                        <Button
                         color="bg-transparent"
-                        onClick={() => console.log("Options", friend.id)}
+                        onClick={() => onBlock(friend.id)}
                         className="!p-2 !rounded-full !border-transparent !text-gray-500 hover:!bg-gray-200 !shadow-none hover:!shadow-none hover:translate-x-0 hover:translate-y-0"
                       >
-                        <MoreVertical className="w-4 h-4" />
+                        <Ban className="w-4 h-4" />
                       </Button>
                     )}
                   </>
