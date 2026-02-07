@@ -348,10 +348,10 @@ components:
           enum: [ONLINE, IDLE, DND, OFFLINE]
         createdAt:
           type: string
-          format: data-time
+          format: date-time
         updatedAt:
           type: string
-          format: data-time
+          format: date-time
         role:
           type: string
 

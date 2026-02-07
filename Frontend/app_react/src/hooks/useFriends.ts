@@ -9,10 +9,17 @@ export const useFriends = () => {
 
     const getHeaders = () => {
         const token = localStorage.getItem("accessToken");
-        return {
-            "Authorization": `Bearer ${token}`,
+        const headers: any = {
             "Content-type": "application/json"
         };
+        if (token && token !== "null" && token !== "undefined") {
+            headers["Authorization"] = `Bearer ${token}`;
+        }
+        if (user?.id) {
+            headers["X-User-Id"] = user.id;
+        }
+
+        return headers;
     };
 
     const fetchFriends = useCallback(async () => {

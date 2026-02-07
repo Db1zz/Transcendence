@@ -19,6 +19,10 @@ public class UserEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+    private UserCredentialsEntity credentials;
+
     @Column(name = "display_name")
     private String displayName;
 

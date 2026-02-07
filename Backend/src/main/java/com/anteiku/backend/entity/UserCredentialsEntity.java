@@ -11,7 +11,6 @@ import java.util.UUID;
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class UserCredentialsEntity {
     @Id
-    @Column(name = "user_id")
     private UUID userId;
 
     @OneToOne(fetch = FetchType.LAZY)
