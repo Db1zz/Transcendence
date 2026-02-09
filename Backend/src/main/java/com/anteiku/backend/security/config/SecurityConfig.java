@@ -48,7 +48,8 @@ public class SecurityConfig {
                                 "/api/users/register",
                                 "/api/auth/login",
                                 "/api/users/check-username",
-                                "/api/users/check-email"
+                                "/api/users/check-email",
+                                "/socket"
                         ).permitAll()
                         .anyRequest().authenticated())
 
