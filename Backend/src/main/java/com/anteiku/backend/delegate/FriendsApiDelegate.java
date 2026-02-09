@@ -10,11 +10,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
 import java.util.UUID;
 
 @Service
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class FriendsApiDelegate implements FriendsApi {
     private final FriendsService friendsService;

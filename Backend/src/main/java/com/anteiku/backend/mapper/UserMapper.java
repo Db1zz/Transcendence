@@ -17,6 +17,7 @@ import java.util.List;
 public interface UserMapper {
     @Mapping(target = "createdAt", source = "createdAt")
     @Mapping(target = "updatedAt", source = "updatedAt")
+    @Mapping(target = "credentials", ignore = true)
     UserEntity toEntity(UserPublicDto userDto);
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "role", ignore = true)
@@ -26,6 +27,7 @@ public interface UserMapper {
     @Mapping(target = "picture", ignore = true)
     @Mapping(target = "about", ignore = true)
     @Mapping(target = "displayName", source = "username")
+    @Mapping(target = "credentials", ignore = true)
     UserEntity toEntity(UserRegistrationDto userDto);
     UserPublicDto toDto(UserEntity userEntity);
     @Mapping(target = "userId", ignore = true)

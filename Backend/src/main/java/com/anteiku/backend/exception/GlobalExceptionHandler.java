@@ -10,7 +10,7 @@ import java.util.Map;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
-    @ExceptionHandler({EmailIsAlreadyUsedException.class, IllegalArgumentException.class})
+    @ExceptionHandler({EmailIsAlreadyUsedException.class, IllegalArgumentException.class, InvalidCredentialsException.class, UserNotFoundException.class})
     public ResponseEntity<Object> handleBadRequest(RuntimeException e) {
         Map<String, String> body = new HashMap<>();
         body.put("error", e.getMessage());
