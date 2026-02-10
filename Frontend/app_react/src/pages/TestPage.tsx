@@ -1,64 +1,101 @@
-import bgLogin from "../img/bg_login.png";
-import { NavigationSidebar } from "../components/navigation/NavigationSideBar";
+import React, { useState, useRef, useEffect } from "react";
 
-const TestPage: React.FC = () => {
-  return (      
-    <div
-      className="absolute inset-0 bg-cover bg-center"
-      // style={{ backgroundImage: `url(${bgLogin})` }}
-    >
-      {/* <div className="flex w-[72px] h-[100%] flex-col overflow-hidden">
-        <NavigationSidebar />
-      </div> */}
-      <div className="object-center">
-        Connect
-      </div>
-    </div>
-    );
+type Signal = 
+  | {type: "offer"; sdp: RTCSessionDescriptionInit}
+  | {type: "answer"; sdp: RTCSessionDescriptionInit}
+  | {type: "ice"; candidate: RTCIceCandidateInit};
+
+function handleEnter(userInput: string) {
+  console.log("User input: " + userInput);
 }
 
-export default TestPage;
-// // Create HTML
-// document.body.innerHTML = `
-//   <div style="font-family: sans-serif; padding: 20px;">
-//     <input
-//       id="userInput"
-//       type="text"
-//       placeholder="Type something..."
-//       style="padding: 8px; width: 200px;"
-//     />
-//     <button id="sendBtn" style="padding: 8px 12px; margin-left: 8px;">
-//       Send
-//     </button>
-//   </div>
-// `;
+export default function TestPage() {
+  const [userInput, setUserInput] = useState<string>("");
 
-// // // Grab elements
-// // const input = document.getElementById("userInput") as HTMLInputElement;
-// // const button = document.getElementById("sendBtn") as HTMLButtonElement;
+  const signalingRef = useRef<WebSocket | null>(null);
+  const pcRef = useRef<RTCPeerConnection | null>(null);
 
-// // // Target URL
-// // const TARGET_URL = "https://127.0.0.1:8080/socket";
+  useEffect(() => {
+    const signalingChannel = new WebSocket("ws://127.0.0.1:8080/socket");
+    signalingRef.current = signalingChannel;
 
-// // // Send input on click
-// // button.addEventListener("click", async () => {
-// //   const value = input.value;
+    const configuration: RTCConfiguration = {
+      iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+    };
+    const peerConnection = new RTCPeerConnection(configuration);
+    pcRef.current = peerConnection;
 
-// //   try {
-// //     const response = await fetch(TARGET_URL, {
-// //       method: "POST",
-// //       headers: {
-// //         "Content-Type": "application/json",
-// //       },
-// //       body: JSON.stringify({ message: value }),
-// //     });
+    peerConnection.onicecandidate = (ice) => {
+      if (!ice.candidate) return;
 
-// //     if (!response.ok) {
-// //       throw new Error("Request failed");
-// //     }
+      const message: Signal = { type: "ice", candidate: ice.candidate.toJSON() };
+      if (signalingChannel.readyState === WebSocket.OPEN) {
+        signalingChannel.send(JSON.stringify(message));
+      }
+    };
 
-// //     console.log("Sent:", value);
-// //   } catch (err) {
-// //     console.error("Error:", err);
-// //   }
-// // });
+    const onMessage = async (message: MessageEvent) => {
+      if (typeof message.data !== "string") return;
+
+      const parsedMessage = JSON.parse(message.data) as Signal;
+
+      switch (parsedMessage.type) {
+        case "offer": {
+          await peerConnection.setRemoteDescription(parsedMessage.sdp);
+          const answer = await peerConnection.createAnswer();
+          await peerConnection.setLocalDescription(answer);
+
+          const reply: Signal = { type: "answer", sdp: peerConnection.localDescription! };
+          signalingChannel.send(JSON.stringify(reply));
+          console.log("Offer accepted, responding with the answer!");
+          break;
+        }
+        case "answer": {
+          await peerConnection.setRemoteDescription(parsedMessage.sdp);
+          console.log("Offer was successfuly accepted, answer accpeted as well!");
+          break;
+        }
+        case "ice": {
+          await peerConnection.addIceCandidate(parsedMessage.candidate);
+          break;
+        }
+      }
+    };
+
+    const onOpen = async () => {
+      const offer = await peerConnection.createOffer();
+      await peerConnection.setLocalDescription(offer);
+
+      const message: Signal = { type: "offer", sdp: peerConnection.localDescription! };
+      signalingChannel.send(JSON.stringify(message));
+      console.log("Offer sent!");
+    };
+
+    signalingChannel.addEventListener("message", onMessage);
+    signalingChannel.addEventListener("open", onOpen);
+
+    return () => {
+      signalingChannel.removeEventListener("message", onMessage);
+      signalingChannel.removeEventListener("open", onOpen);
+      signalingChannel.close();
+      peerConnection.close();
+
+      signalingRef.current = null;
+      pcRef.current = null;
+    };
+  }, []);
+
+  return (
+    <div>
+      <input
+        value={userInput}
+        onChange={(e) => setUserInput(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            handleEnter(userInput);
+          }
+        }}
+      />
+    </div>
+  );
+}
