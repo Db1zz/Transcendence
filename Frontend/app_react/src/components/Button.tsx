@@ -24,7 +24,7 @@ export const Button: React.FC<ButtonProps> = ({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`border border-gray-800 px-11 py-3 rounded-lg font-medium transition-all duration-150 shadow-sharp-button font-ananias text-brand-beige hover:shadow-none hover:translate-x-[5px] hover:translate-y-[6px] disabled:opacity-50flex items-center justify-center gap-2 ${color} ${className}`}
+      className={`border border-gray-800 px-11 py-3 rounded-lg font-medium transition-all duration-150 shadow-sharp-button font-ananias text-brand-beige hover:shadow-none hover:translate-x-[5px] hover:translate-y-[3px] disabled:opacity-50flex items-center justify-center gap-2 ${color} ${className}`}
     >
       {text || children}
     </button>
