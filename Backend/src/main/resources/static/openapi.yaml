@@ -299,6 +299,20 @@ paths:
           200:
             description: "User unblocked successfully"
 
+  /friends/requests:
+    get:
+      summary: "Get my pending friend requests"
+      operationId: getMyRequests
+      responses:
+        200:
+          description: "List of pending friend requests"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FriendDto'
+
 components:
   responses:
     UnauthorizedError:

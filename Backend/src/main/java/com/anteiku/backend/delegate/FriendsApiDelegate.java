@@ -11,11 +11,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.UUID;
 
-@Service
+@RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
 public class FriendsApiDelegate implements FriendsApi {
@@ -74,6 +75,12 @@ public class FriendsApiDelegate implements FriendsApi {
     @Override
     public ResponseEntity<Void> unblockUser(UUID userId) {
         friendsService.unblockUser(getCurrentUserId(), userId);
+        return ResponseEntity.ok().build();
+    }
+
+    @Override
+    public ResponseEntity<List<FriendDto>> getMyRequests() {
+        friendsService.getMyPendingRequests(getCurrentUserId());
         return ResponseEntity.ok().build();
     }
 }

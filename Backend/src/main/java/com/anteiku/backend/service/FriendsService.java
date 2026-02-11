@@ -23,6 +23,7 @@ public class FriendsService {
     private final UserRepository userRepository;
 
     public void sendFriendRequest(UUID requesterId, UUID addresseeId) {
+        System.out.println("FIND BY id requesterId: " + userRepository.findById(requesterId) + "\nFIND BY ID addresseeId: " + userRepository.findById(addresseeId));
         if (requesterId.equals(addresseeId)) {
             throw new IllegalArgumentException("requesterId and addresseeId can't be the same");
         }

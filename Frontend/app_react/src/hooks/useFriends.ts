@@ -8,13 +8,14 @@ export const useFriends = () => {
     const [loading, setLoading] = useState(true);
 
     const getHeaders = () => {
-        const token = localStorage.getItem("accessToken");
+        // const token = localStorage.getItem("accessToken");
         const headers: any = {
             "Content-type": "application/json"
         };
-        if (token && token !== "null" && token !== "undefined") {
-            headers["Authorization"] = `Bearer ${token}`;
-        }
+        // if (token && token !== "null" && token !== "undefined") {
+        //     headers["Authorization"] = `Bearer ${token}`;
+        // }
+        console.log(`USER ID IS: ${user?.id}`)
         if (user?.id) {
             headers["X-User-Id"] = user.id;
         }
@@ -23,7 +24,10 @@ export const useFriends = () => {
     };
 
     const fetchFriends = useCallback(async () => {
-        if (!user) return;
+        if (!user || !user.id) {
+            setLoading(false); 
+            return;
+        }
         try {
             setLoading(true);
             const headers = getHeaders();
