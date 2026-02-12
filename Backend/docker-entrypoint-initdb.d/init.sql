@@ -34,3 +34,11 @@ CREATE TABLE IF NOT EXISTS user_sessions (
 
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 )
+
+CREATE TABLE IF NOT EXISTS chat_messages (
+    id UUID PRIMARY KEY,
+    room_id VARCHAR NOT NULL,
+    sender_id UUID,
+    content VARCHAR(2000) NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+)
