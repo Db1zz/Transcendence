@@ -1,7 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 
-let isInited: boolean = false;
-
 type Signal = 
   | {type: "offer"; sdp: RTCSessionDescriptionInit}
   | {type: "answer"; sdp: RTCSessionDescriptionInit}
@@ -77,8 +75,11 @@ function InitRtcSession(stunUrl: string, scUrl: string, id: string): RtcSession 
   };
 
   sc.addEventListener("message", (event) => OnMessageCallback(event, session));
-  // sc.addEventListener("open", () => OnOpenCallback(session));
   pc.addEventListener("icecandidate", (event) => OnIceCandidateCallback(event, session));
+  // pc.addEventListener("iceconnectionstatechange", (event) => {
+  //   const updEvent: RTCPeerConnectionIceEvent = event as RTCPeerConnectionIceEvent;
+  //   OnIceCandidateCallback(updEvent, session)}
+  // );
 
   return session;
 }
@@ -87,54 +88,56 @@ export default function TestPage() {
   const scUrl = "ws://127.0.0.1:8080/socket";
   const stunUrl = "stun:stun.l.google.com:19302";
 
+  const isInited = useRef(false);
+
   const s1Ref = useRef<RtcSession | null>(null);
   const s2Ref = useRef<RtcSession | null>(null);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteVideoRef = useRef<HTMLVideoElement>(null);
 
-  useEffect(() => {
-    if (isInited == true) {
-      return;
-    }
+useEffect(() => {
+  if (isInited.current) return;
+  isInited.current = true;
 
-    const s1 = InitRtcSession(stunUrl, scUrl, "pc1");
-    const s2 = InitRtcSession(stunUrl, scUrl, "pc2");
+  const s1 = InitRtcSession(stunUrl, scUrl, "u1");
+  const s2 = InitRtcSession(stunUrl, scUrl, "u2");
+  s1Ref.current = s1;
+  s2Ref.current = s2;
 
-    s1.sc.addEventListener("open", async () => { 
-      const offer = await s1.pc.createOffer();
-      await s1.pc.setLocalDescription(offer);
+  const localVideo = document.getElementById("localVideo") as HTMLVideoElement;
+  const remoteVideo = document.getElementById("remoteVideo") as HTMLVideoElement;
+  localVideoRef.current = localVideo;
+  remoteVideoRef.current = remoteVideo;
 
-      const message: Signal = {type: "offer", sdp: s1.pc.localDescription! };
-      s1.sc.send(JSON.stringify(message));
-      console.log("[" + s1.id + "]: Offer sent!");
-    });
+  s2.pc.addEventListener('track', (event) => {
+    remoteVideoRef.current!.srcObject = event.streams[0];
+    console.log("[" + s2.id + "]: has received remote stream!");
+  });
 
-    s1Ref.current = s1;
-    s2Ref.current = s2;
+  Promise.all([
+    new Promise<void>((resolve) => {
+      if (s1.sc.readyState === WebSocket.OPEN) resolve();
+      else s1.sc.addEventListener("open", () => resolve(), { once: true });
+    }),
+    new Promise<void>((resolve) => {
+      if (s2.sc.readyState === WebSocket.OPEN) resolve();
+      else s2.sc.addEventListener("open", () => resolve(), { once: true });
+    })
+  ]).then(async () => {
+    const localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+    localVideoRef.current!.srcObject = localStream;
+    localStream.getTracks().forEach(track => s1.pc.addTrack(track, localStream));
+    
+    const offer = await s1.pc.createOffer();
+    await s1.pc.setLocalDescription(offer);
+    const message: Signal = { type: "offer", sdp: s1.pc.localDescription! };
+    s1.sc.send(JSON.stringify(message));
+    console.log("[" + s1.id + "]: Offer sent!");
+  }).catch(console.error);
 
-    const localVideo = document.getElementById("localVideo") as HTMLVideoElement;
-    const remoteVideo = document.getElementById("remoteVideo") as HTMLVideoElement;
-
-    localVideoRef.current = localVideo;
-    remoteVideoRef.current = remoteVideo;
-
-    isInited = true;
-
-
-    navigator.mediaDevices.getUserMedia({audio: true, video: true}).then((localStream) => {
-      localVideoRef.current!.srcObject = localStream;
-      localStream.getTracks().forEach(track => s1.pc.addTrack(track, localStream));
-    });
-
-    s2.pc.addEventListener('track', (event) => {
-      remoteVideo.srcObject = event.streams[0];
-    });
-
-    return () => {
-      console.log("Closing everything....");
-    };
-  }, []);
+  return () => { /* cleanup(i'm lazy)*/ };
+}, []);
 
 return (
   <div className="min-h-screen flex items-center justify-center">

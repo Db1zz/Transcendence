@@ -16,7 +16,6 @@ const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement,
 );
 root.render(
-  <React.StrictMode>
     <AuthProvider>
       <Router>
         <Routes>
@@ -26,10 +25,7 @@ root.render(
           <Route path="/testGrisha" element={<TestFriendsView />}></Route>
           <Route path="/signup" element={<SignupPage />}></Route>
           <Route path="/test" element={<TestPage />}></Route>
-          {/* <Route path="/sender" element={<SenderPage />}></Route>
-          <Route path="/reciever" element={<RecieverPage />}></Route> */}
         </Routes>
       </Router>
     </AuthProvider>
-  </React.StrictMode>,
 );
