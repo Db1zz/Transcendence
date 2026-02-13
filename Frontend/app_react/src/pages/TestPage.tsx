@@ -159,3 +159,8 @@ return (
   </div>
 );
 }
+
+/*
+che delaem?
+we have simple video connection 1 v 1
+*/
