@@ -33,4 +33,41 @@ CREATE TABLE IF NOT EXISTS user_sessions (
     revoked_at TIMESTAMPTZ DEFAULT NULL,
 
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-)
+);
+
+CREATE TABLE IF NOT EXISTS organizations (
+    id UUID PRIMARY KEY,
+    name VARCHAR NOT NULL,
+    owner_id UUID NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+    FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS roles (
+  id UUID PRIMARY KEY,
+  organization_id UUID NOT NULL,
+  name VARCHAR NOT NULL,
+
+  FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS members (
+    id UUID PRIMARY KEY,
+    organization_id UUID NOT NULL,
+    user_id UUID NOT NULL,
+    joined_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+    FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS member_roles (
+    member_id UUID NOT NULL,
+    role_id UUID NOT NULL,
+
+    PRIMARY KEY (member_id, role_id),
+
+    FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE,
+    FOREIGN KEY (role_id) REFERENCES  roles(id) ON DELETE CASCADE
+);
