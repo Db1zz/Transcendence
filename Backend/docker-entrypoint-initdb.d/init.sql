@@ -86,5 +86,5 @@ CREATE TABLE IF NOT EXISTS channel_overrides (
     entity_id UUID NOT NULL,
 
     PRIMARY KEY (channel_id, entity_id),
-    FOREIGN KEY (channel_id) REFERENCES channel(id) ON DELETE CASCADE
+    FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE
 );
