@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS member_roles (
     FOREIGN KEY (role_id) REFERENCES  roles(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS channel (
+CREATE TABLE IF NOT EXISTS channels (
     id UUID PRIMARY KEY,
     organization_id UUID NOT NULL,
     type VARCHAR NOT NULL,
