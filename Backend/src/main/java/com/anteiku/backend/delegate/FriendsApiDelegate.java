@@ -80,7 +80,6 @@ public class FriendsApiDelegate implements FriendsApi {
 
     @Override
     public ResponseEntity<List<FriendDto>> getMyRequests() {
-        friendsService.getMyPendingRequests(getCurrentUserId());
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(friendsService.getMyPendingRequests(getCurrentUserId()));
     }
 }

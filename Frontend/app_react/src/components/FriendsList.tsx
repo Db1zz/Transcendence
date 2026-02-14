@@ -98,7 +98,7 @@ export const FriendsList: React.FC<FriendsListProps> = ({
                     </Button>
                     {activeTab === "blocked" ? (
                       <Button
-                        color="bg-red-200"
+                        color="bg-transparent"
                         onClick={() => onUnblock(friend.id)}
                         className="!p-2 !rounded-full !border-gray-800 !text-red-800 hover:!bg-red-500 hover:!text-white !shadow-[2px_2px_0px_#000]"
                       >
@@ -106,9 +106,9 @@ export const FriendsList: React.FC<FriendsListProps> = ({
                       </Button>
                     ) : (
                         <Button
-                        color="bg-transparent"
+                        color="bg-red-500"
                         onClick={() => onBlock(friend.id)}
-                        className="!p-2 !rounded-full !border-transparent !text-gray-500 hover:!bg-gray-200 !shadow-none hover:!shadow-none hover:translate-x-0 hover:translate-y-0"
+                        className="!p-2 !rounded-full !border-transparent !text-gray-500 hover:!bg-red-200 !shadow-none hover:!shadow-none hover:translate-x-0 hover:translate-y-0"
                       >
                         <Ban className="w-4 h-4" />
                       </Button>

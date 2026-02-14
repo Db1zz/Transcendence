@@ -444,6 +444,10 @@ components:
           type: string
         displayName:
           type: string
+        picture:
+          type: string
+        about:
+          type: string
         status:
           type: string
           enum: [ONLINE, IDLE, DND, OFFLINE]

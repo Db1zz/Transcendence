@@ -128,10 +128,13 @@ public class FriendsService {
         FriendDto friendDto = new FriendDto();
         friendDto.setId(friend.getId());
         friendDto.setUsername(friend.getUsername());
-        friendDto.setDisplayName(friend.getDisplayName());
+        friendDto.setDisplayName(friend.getDisplayName() != null ? friend.getDisplayName() : friend.getUsername());
+        friendDto.setPicture(friend.getPicture());
+        friendDto.setAbout(friend.getAbout());
         UserStatus userStatus = friend.getStatus() != null ? friend.getStatus() : UserStatus.OFFLINE;
         friendDto.setStatus(FriendDto.StatusEnum.fromValue(userStatus.name()));
         friendDto.setFriendStatus(FriendDto.FriendStatusEnum.fromValue(friendStatus.name()));
+
         return friendDto;
     }
 }
