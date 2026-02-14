@@ -67,6 +67,7 @@ paths:
                 $ref: '#/components/schemas/UserPublicDto'
         404:
           description: "GG, user not found :("
+
   /users/me:
     get:
       summary: "Get information about myself"
@@ -165,29 +166,160 @@ paths:
         401:
           description: "Invalid access token"
 
-  /api/info:
-    get:
-      summary: "Get info"
-      description: "Returns some info. Requires ADMIN role."
-      operationId: getAppInfo
-      security:
-        - oauth2: [ ]
+  /organizations:
+    post:
+      summary: "Creates an organization with specific name"
+      operationId: createOrganization
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+
+  /organizations/{id}:
+    delete:
+      summary: "Delete specified organization"
+      operationId: deleteOrganization
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/OrganizationId'
+      responses:
+        204:
+          description: "Organization successfully deleted"
+        403:
+          description: "Forbidden – not the owner or insufficient permissions"
+        404:
+          description: "Organization not found"
+
+  /channels:
+    post:
+      summary: "Creates channel"
+      operationId: createChannel
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+              name:
       responses:
         200:
-          description: "info retrieved successfully"
+            description: "Channel successfully created"
+        403:
+          description: "Forbidden – not the owner or insufficient permissions"
+
+  /channels/{id}:
+    delete:
+      summary: "Delete specified organization"
+      operationId: deleteOrganization
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+            description: "ID of the organization to delete"
+      responses:
+        204:
+          description: "Organization successfully deleted"
+        403:
+          description: "Forbidden – not the owner or insufficient permissions"
+        404:
+          description: "Organization not found"
+
+  /roles:
+    post:
+      summary: "Creates a new role"
+      operationId: createNewRole
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRoleDto'
+      responses:
+        '201':
+          description: "Role created successfully"
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  app:
-                    type: string
-                  version:
-                    type: string
-        401:
-          description: "User not authenticated"
-        403:
-          description: "Forbidden - requires ADMIN role"
+                $ref: '#/components/schemas/CreateRoleResponseDto'
+        '400':
+          description: "Invalid input (validation failed)"
+        '403':
+          description: "Forbidden – insufficient permissions"
+        '404':
+          description: "Organization not found"
+        '409':
+          description: "Role with the same name already exists in this organization"
+
+  /roles/{roleId}:
+    delete:
+      summary: "Delete role"
+      operationId: deleteRole
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: "ID of the role to delete"
+      responses:
+        '204':
+          description: "Role successfully deleted (no content)"
+        '403':
+          description: "Forbidden – insufficient permissions"
+        '404':
+          description: "Role not found"
+
+  /members:
+    post:
+      summary: "Add a new member to organization"
+      operationId: addMember
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddMemberDto'
+      responses:
+        '201':
+          description: "Member added successfully"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddMemberResponseDto'
+        '400':
+          description: "Invalid input"
+        '403':
+          description: "Forbidden – insufficient permissions"
+        '404':
+          description: "Organization or user not found"
+        '409':
+          description: "User is already a member of this organization"
+
+  /members/{memberId}:
+    delete:
+      summary: "Remove member"
+      operationId: removeMember
+      parameters:
+        - name: memberId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/MemberId'
+          description: "ID of the member to remove"
+      responses:
+        '204':
+          description: "Member successfully removed"
+        '403':
+          description: "Forbidden – insufficient permissions"
+        '404':
+          description: "Member not found"
 
 components:
   responses:
@@ -218,6 +350,18 @@ components:
     UserEmail:
       type: string
       format: email
+
+    OrganizationId:
+      type: string
+      format: uuid
+
+    MemberId:
+      type: string
+      format: uuid
+
+    RoleId:
+      type: string
+      format: uuid
 
     UserPublicDto:
       type: object
@@ -329,5 +473,50 @@ components:
         revoked:
           type: boolean
         revokedAt:
+          type: string
+          format: date-time
+
+    CreateRoleDto:
+      type: object
+      description: "Information about the role to create"
+      properties:
+        name:
+          type: string
+        organizationId:
+          type: string
+          format: uuid
+
+    CreateRoleResponseDto:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/RoleId'
+        name:
+          type: string
+        organizationId:
+          $ref: '#/components/schemas/OrganizationId'
+        createdAt:
+            type: string
+            format: date-time
+
+    AddMemberDto:
+      type: object
+      description: "Information about the user and organization to add user in"
+      properties:
+        userId:
+          $ref: '#/components/schemas/UserId'
+        OrganizationId:
+          $ref: '#/components/schemas/OrganizationId'
+
+    AddMemberResponseDto:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/MemberId'
+        userId:
+          $ref: '#/components/schemas/UserId'
+        organizationId:
+          $ref: '#/components/schemas/OrganizationId'
+        joinedAt:
           type: string
           format: date-time
