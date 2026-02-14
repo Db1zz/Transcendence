@@ -8,7 +8,6 @@ export type User = {
   email: string;
   picture?: string;
   status: "online" | "idle" | "dnd" | "offline";
-  //i will add it to db maybe we can migrate to redis later idk
   about: string;
   createdAt: string;
   role: "USER" | "ADMIN";
@@ -46,17 +45,20 @@ export const AuthProvider = ({ children }: Props) => {
   const [loading, setLoading] = useState(true);
 
   const saveAuthData = (data: any) => {
+    const userPayload = data.userInfo || data;
+
     const userData: User = {
-      id: data.id || "",
-      name: data.username || data.name || "",
-      email: data.email || "",
-      picture: data.picture || defaultAvatar,
-      role: data.role || "USER",
+      id: userPayload.id || "",
+      name: userPayload.username || userPayload.name || "",
+      email: userPayload.email || "",
+      picture: userPayload.picture || defaultAvatar,
+      role: userPayload.role || "USER",
       status: "online",
       about: "default text",
-      createdAt: data.createdAt || "",
+      createdAt: userPayload.createdAt || "",
     };
 
+    console.log("SAVING USER");
     localStorage.setItem("user", JSON.stringify(userData));
     setUser(userData);
   };

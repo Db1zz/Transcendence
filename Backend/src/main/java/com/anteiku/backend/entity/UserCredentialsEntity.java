@@ -1,9 +1,6 @@
 package com.anteiku.backend.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.Column;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.UUID;
@@ -14,17 +11,16 @@ import java.util.UUID;
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class UserCredentialsEntity {
     @Id
-    @Column(name = "user_id")
     private UUID userId;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @MapsId
+    @JoinColumn(name = "user_id")
+    private UserEntity user;
 
     @Column(name = "password", nullable = true)
     private String password;
 
     @Column(name = "email", nullable = false, unique = true)
     private String email;
-
-    public UserCredentialsEntity(UUID userId, String email) {
-        this.userId = userId;
-        this.email = email;
-    }
 }

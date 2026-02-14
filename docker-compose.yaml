@@ -5,7 +5,7 @@ services:
       - .env
     volumes:
       - ./Backend/docker-entrypoint-initdb.d/init.sql:/docker-entrypoint-initdb.d/init.sql
-      - ./Backend/src/main/resources/db/data:/var/lib/postgresql
+      - db_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
   backend:

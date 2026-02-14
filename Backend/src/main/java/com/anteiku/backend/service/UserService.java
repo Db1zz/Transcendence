@@ -59,18 +59,20 @@ public class UserService {
     }
 
     public UserRegistrationDto registerUser(UserRegistrationDto userRegistrationDto) {
-        UserCredentialsEntity userCredentialsEntity = userMapper.toCredentialsEntity(userRegistrationDto);
-        UserEntity userEntity = userMapper.toEntity(userRegistrationDto);
-
-        if (userCredentialsRepository.existsByEmail(userCredentialsEntity.getEmail())) {
-            throw new EmailIsAlreadyUsedException("Email " + userCredentialsEntity.getEmail() + " is already used");
+        if (userCredentialsRepository.existsByEmail(userRegistrationDto.getEmail())) {
+            throw new EmailIsAlreadyUsedException("Email " + userRegistrationDto.getEmail() + " is already in use");
         }
-
+        if (!isUsernameAvailable(userRegistrationDto.getUsername())) {
+            throw new IllegalArgumentException("Username " + userRegistrationDto.getUsername() + " is already taken");
+        }
+        UserEntity userEntity = userMapper.toEntity(userRegistrationDto);
         userEntity.setRole(Role.USER);
-        userEntity = userRepository.save(userEntity); // the uuid will be generated automatically
-        userCredentialsEntity.setUserId(userEntity.getId());
+        userEntity.setStatus(UserStatus.OFFLINE);
+        UserCredentialsEntity userCredentialsEntity = userMapper.toCredentialsEntity(userRegistrationDto);
         userCredentialsEntity.setPassword(passwordEncoder.encode(userCredentialsEntity.getPassword()));
-        userCredentialsRepository.save(userCredentialsEntity);
+        userEntity.setCredentials(userCredentialsEntity);
+        userCredentialsEntity.setUser(userEntity);
+        userRepository.save(userEntity);
         return userRegistrationDto;
     }
 

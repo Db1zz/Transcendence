@@ -2,17 +2,26 @@ import React, { useState } from "react";
 import { UserPlus, Sparkles } from "lucide-react";
 import { Button } from "./Button";
 
-export const AddFriendView: React.FC = () => {
+interface AddFriendViewProps {
+  onAddFriend: (username: string) => Promise<void>;
+}
+
+export const AddFriendView: React.FC<AddFriendViewProps> = ({ onAddFriend }) => {
   const [name, setName] = useState("");
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (name.trim()) {
-      setStatus("success");
-      setTimeout(() => {
-        setStatus("idle");
-        setName("");
-      }, 3000);
+      try {
+        await onAddFriend(name);
+        setStatus("success");
+        setTimeout(() => {
+          setStatus("idle");
+          setName("");
+        }, 3000);
+      } catch (error) {
+        setStatus("error");
+      }
     }
   };
 
