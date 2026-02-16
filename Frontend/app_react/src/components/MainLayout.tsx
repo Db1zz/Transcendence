@@ -10,6 +10,7 @@ import { LeftBar } from "./navigation/LeftBar";
 import RightBar from "./navigation/RightBar";
 
 const testUser = {
+  id: "42",
   name: "kaneki",
   email: "example@example.com",
   picture: "https://media.tenor.com/I9qt03YKkjQAAAAe/monkey-thinking.png",
@@ -60,7 +61,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               {activeView === "friends" ? (
                 <FriendsView />
               ) : (
-                <Chat personName="kaneki" />
+                <Chat
+                  personName={testUser.name}
+                  userId={testUser.id}
+                  roomId="global"
+                />
               )}
             </div>
           </div>

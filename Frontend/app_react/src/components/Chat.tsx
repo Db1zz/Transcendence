@@ -1,39 +1,21 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "./Button";
-
-interface Message {
-  id: string;
-  sender: "user" | "other";
-  text: string;
-  timestamp: Date;
-}
+import { useChat, ChatMessage } from "../hooks/useChat";
 
 interface ChatProps {
   personName: string;
+  userId: string;
+  roomId: string;
   onSendMessage?: (message: string) => void;
 }
 
-const Chat: React.FC<ChatProps> = ({ personName, onSendMessage }) => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      sender: "other",
-      text: "aboba?",
-      timestamp: new Date(Date.now() - 300000),
-    },
-    {
-      id: "2",
-      sender: "user",
-      text: "aboba.",
-      timestamp: new Date(Date.now() - 240000),
-    },
-    {
-      id: "3",
-      sender: "other",
-      text: "swaga",
-      timestamp: new Date(Date.now() - 180000),
-    },
-  ]);
+const Chat: React.FC<ChatProps> = ({
+  personName,
+  userId,
+  roomId,
+  onSendMessage,
+}) => {
+  const { messages: wsMessages, sendMessage, connected } = useChat(roomId);
   const [inputValue, setInputValue] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -49,17 +31,11 @@ const Chat: React.FC<ChatProps> = ({ personName, onSendMessage }) => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [wsMessages]);
 
   const handleSendMessage = () => {
     if (inputValue.trim()) {
-      const newMessage: Message = {
-        id: Date.now().toString(),
-        sender: "user",
-        text: inputValue,
-        timestamp: new Date(),
-      };
-      setMessages((prevMessages) => [...prevMessages, newMessage]);
+      sendMessage(inputValue, userId);
       setInputValue("");
       onSendMessage?.(inputValue);
     }
@@ -80,36 +56,40 @@ const Chat: React.FC<ChatProps> = ({ personName, onSendMessage }) => {
     <div className="flex flex-col h-full min-h-0  bg-brand-green">
       <div className="bg-brand-peach border-y border-brand-green text-white p-4 shadow-md">
         <h2 className="text-xl font-bold">{personName}</h2>
-        <p className="text-sm text-blue-100">online</p>
+        <p
+          className={`text-sm ${connected ? "text-green-100" : "text-red-100"}`}
+        >
+          {connected ? "online" : "connecting..."}
+        </p>
       </div>
 
       <div
         ref={messagesContainerRef}
         className="flex-1 min-h-0 overflow-y-auto scrollbar-hide p-4 space-y-4"
       >
-        {messages.map((message) => (
+        {wsMessages.map((message) => (
           <div
             key={message.id}
             className={`flex ${
-              message.sender === "user" ? "justify-end" : "justify-start"
+              message.senderId === userId ? "justify-end" : "justify-start"
             }`}
           >
             <div
               className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                message.sender === "user"
+                message.senderId === userId
                   ? "bg-brand-beige text-gray-600 rounded-br-none"
                   : "bg-brand-peach text-white rounded-bl-none"
               }`}
             >
-              <p className="break-words">{message.text}</p>
+              <p className="break-words">{message.content}</p>
               <p
                 className={`text-xs mt-1 ${
-                  message.sender === "user"
+                  message.senderId === userId
                     ? "text-brand-green"
                     : "text-gray-500"
                 }`}
               >
-                {formatTime(message.timestamp)}
+                {formatTime(new Date(message.createdAt))}
               </p>
             </div>
           </div>
