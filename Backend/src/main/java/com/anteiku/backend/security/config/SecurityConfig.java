@@ -49,7 +49,11 @@ public class SecurityConfig {
                                 "/api/users/register",
                                 "/api/auth/login",
                                 "/api/users/check-username",
-                                "/api/users/check-email"
+                                "/api/users/check-email",
+                                "/api/friends/**",
+                                "/friends/**",
+                                "/error",
+                                "/api/users/public/**"
                         ).permitAll()
                         .anyRequest().authenticated())
 
