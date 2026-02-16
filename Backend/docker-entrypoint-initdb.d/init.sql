@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS user_sessions (
     revoked_at TIMESTAMPTZ DEFAULT NULL,
 
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-)
+);
 
 CREATE TABLE IF NOT EXISTS chat_messages (
     id UUID PRIMARY KEY,
@@ -41,4 +41,4 @@ CREATE TABLE IF NOT EXISTS chat_messages (
     sender_id UUID,
     content VARCHAR(2000) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-)
+);
