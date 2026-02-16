@@ -38,7 +38,7 @@ export const useFriends = () => {
                 fetch("http://localhost:8080/api/friends/blocked", { headers })
             ]);
 
-            if (friendsRes.status == 401) {
+            if (friendsRes.status === 401) {
                 logout();
                 return;
             }

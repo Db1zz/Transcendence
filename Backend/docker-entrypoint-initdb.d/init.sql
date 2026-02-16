@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR NOT NULL UNIQUE,
     status VARCHAR,
     about VARCHAR,
-    picture VARCHAR DEFAULT("https://i.pinimg.com/736x/eb/e8/af/ebe8afd49d1a125b0950dec5d20bb98b.jpg"),
+    picture VARCHAR DEFAULT 'https://i.pinimg.com/736x/eb/e8/af/ebe8afd49d1a125b0950dec5d20bb98b.jpg',
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
     role VARCHAR(50) NOT NULL DEFAULT 'USER'
