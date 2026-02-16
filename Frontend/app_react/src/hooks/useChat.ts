@@ -15,6 +15,41 @@ export const useChat = (roomId: string) => {
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
+    let isActive = true;
+
+    const loadHistory = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:8080/api/chat/rooms/${roomId}/messages`,
+          {
+            credentials: "include",
+          },
+        );
+
+        if (!response.ok) {
+          return;
+        }
+
+        const data = (await response.json()) as ChatMessage[];
+        if (isActive) {
+          setMessages(data);
+        }
+      } catch (error) {
+        if (isActive) {
+          setMessages([]);
+        }
+      }
+    };
+
+    setMessages([]);
+    loadHistory();
+
+    return () => {
+      isActive = false;
+    };
+  }, [roomId]);
+
+  useEffect(() => {
     const stompClient = new Client({
       brokerURL: "ws://localhost:8080/ws",
       onConnect: () => {
