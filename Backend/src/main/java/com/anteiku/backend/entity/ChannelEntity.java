@@ -13,12 +13,15 @@ import java.util.UUID;
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class ChannelEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organization_id", nullable = false)
     private OrganizationEntity organization;
+
+    @Column(name = "name", nullable = false)
+    private String name;
 
     @Column(name = "type", nullable = false)
     @Enumerated(EnumType.STRING)

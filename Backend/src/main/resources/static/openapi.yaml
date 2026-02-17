@@ -171,10 +171,25 @@ paths:
       summary: "Creates an organization with specific name"
       operationId: createOrganization
       requestBody:
+        required: true
         content:
           application/json:
             schema:
-              type: string
+              $ref: '#/components/schemas/CreateOrganizationDto'
+      responses:
+        201:
+          description: "Organization successfully created"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateOrganizationResponseDto'
+        '400':
+          description: "Invalid input (validation failed)"
+        '403':
+          description: "Forbidden – insufficient permissions"
+        '409':
+          description: "Organization with the same name already exist" # Not sure
+
 
   /organizations/{id}:
     delete:
@@ -202,33 +217,37 @@ paths:
         content:
           application/json:
             schema:
-              type: string
-              name:
+              $ref: '#/components/schemas/CreateChannelDto'
       responses:
-        200:
+        201:
             description: "Channel successfully created"
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/CreateChannelResponseDto'
         403:
           description: "Forbidden – not the owner or insufficient permissions"
+        404:
+          description: "Organization not found"
 
   /channels/{id}:
     delete:
-      summary: "Delete specified organization"
-      operationId: deleteOrganization
+      summary: "Delete specified channel"
+      operationId: deleteChannel
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: string
-            format: uuid
-            description: "ID of the organization to delete"
+            $ref: '#/components/schemas/ChannelId'
+            description: "ID of the channel to delete"
       responses:
         204:
-          description: "Organization successfully deleted"
+          description: "channel successfully deleted"
         403:
           description: "Forbidden – not the owner or insufficient permissions"
         404:
-          description: "Organization not found"
+          description: "channel not found"
 
   /roles:
     post:
@@ -265,8 +284,7 @@ paths:
           in: path
           required: true
           schema:
-            type: string
-            format: uuid
+            $ref: '#/components/schemas/RoleId'
           description: "ID of the role to delete"
       responses:
         '204':
@@ -356,6 +374,10 @@ components:
       format: uuid
 
     MemberId:
+      type: string
+      format: uuid
+
+    ChannelId:
       type: string
       format: uuid
 
@@ -476,6 +498,56 @@ components:
           type: string
           format: date-time
 
+    CreateOrganizationDto:
+      type: object
+      properties:
+        name:
+          type: string
+
+    CreateOrganizationResponseDto:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/OrganizationId'
+        name:
+          type: string
+        ownerId:
+          $ref: '#/components/schemas/UserId'
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateChannelDto:
+      type: object
+      properties:
+        name:
+          type: string
+        organizationId:
+          $ref: '#/components/schemas/OrganizationId'
+        channelType:
+          type: string
+          enum:
+            - TEXT
+            - VOICE
+
+    CreateChannelResponseDto:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/ChannelId'
+        name:
+          type: string
+        organizationId:
+          $ref: '#/components/schemas/OrganizationId'
+        channelType:
+          type: string
+          enum:
+            - TEXT
+            - VOICE
+        createdAt:
+          type: string
+          format: date-time
+
     CreateRoleDto:
       type: object
       description: "Information about the role to create"
@@ -505,7 +577,7 @@ components:
       properties:
         userId:
           $ref: '#/components/schemas/UserId'
-        OrganizationId:
+        organizationId:
           $ref: '#/components/schemas/OrganizationId'
 
     AddMemberResponseDto:

@@ -5,7 +5,7 @@ import com.anteiku.backend.model.UserInfoDto;
 import com.anteiku.backend.model.UserPublicDto;
 import com.anteiku.backend.model.UserRegistrationDto;
 import com.anteiku.backend.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,13 +18,9 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api")
-public class UserApiDelegate implements UsersApi {
+@RequiredArgsConstructor
+public class UsersApiDelegate implements UsersApi {
     private final UserService userService;
-
-    @Autowired
-    public UserApiDelegate(UserService userService) {
-        this.userService = userService;
-    }
 
     @Override
     public ResponseEntity<UserRegistrationDto> registerUser(UserRegistrationDto user) {

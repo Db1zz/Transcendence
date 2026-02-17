@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS roles (
     id UUID PRIMARY KEY,
     organization_id UUID NOT NULL,
     name VARCHAR NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 
     FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE
 );
@@ -76,6 +77,7 @@ CREATE TABLE IF NOT EXISTS member_roles (
 CREATE TABLE IF NOT EXISTS channels (
     id UUID PRIMARY KEY,
     organization_id UUID NOT NULL,
+    name VARCHAR NOT NULL,
     type VARCHAR NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );

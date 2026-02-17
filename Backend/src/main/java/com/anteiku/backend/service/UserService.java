@@ -3,7 +3,7 @@ package com.anteiku.backend.service;
 import com.anteiku.backend.entity.UserCredentialsEntity;
 import com.anteiku.backend.entity.UserEntity;
 import com.anteiku.backend.exception.EmailIsAlreadyUsedException;
-import com.anteiku.backend.exception.UserNotFoundException;
+import com.anteiku.backend.exception.ResourceNotFoundException;
 import com.anteiku.backend.mapper.UserMapper;
 import com.anteiku.backend.model.*;
 import com.anteiku.backend.repository.UserCredentialsRepository;
@@ -32,7 +32,7 @@ public class UserService {
     public List<UserPublicDto> getUsersByUsername(String username) {
         List<UserEntity> users = userRepository.findUserByUsername(username);
         if (users.isEmpty()) {
-            throw new UserNotFoundException("User not found");
+            throw new ResourceNotFoundException("User not found");
         }
 
         return userMapper.toDtoList(users);
@@ -40,7 +40,7 @@ public class UserService {
 
     public UserPublicDto getUserById(UUID id) {
         UserEntity userEntity = userRepository.findUserById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         return userMapper.toDto(userEntity);
     }
@@ -76,7 +76,7 @@ public class UserService {
 
     public UserCredentialsDto getUserCredentialsByEmail(String userEmail) {
         UserCredentialsEntity userCredentialsEntity = userCredentialsRepository.findByEmail(userEmail).orElseThrow(
-                () -> new UserNotFoundException("User not found")
+                () -> new ResourceNotFoundException("User not found")
         );
 
 
@@ -113,6 +113,6 @@ public class UserService {
 
     public UserCredentialsDto getUserCredentialsById(UUID id) {
         return userMapper.toCredentialsDto(userCredentialsRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found")));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found")));
     }
 }

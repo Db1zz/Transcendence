@@ -3,6 +3,7 @@ package com.anteiku.backend.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -11,7 +12,7 @@ import java.util.UUID;
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class RoleEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -20,4 +21,7 @@ public class RoleEntity {
 
     @Column(name = "name", nullable = false)
     private String name;
+
+    @Column(name = "created_at", nullable = false)
+    private Instant createdAt;
 }
