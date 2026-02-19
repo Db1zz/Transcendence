@@ -249,6 +249,23 @@ paths:
         404:
           description: "channel not found"
 
+  /voice:
+    post:
+      summary: "Creates a voice room and sends invitations to join to other users"
+      operationId: createVoiceRoom
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateVoiceRoomDto'
+      responses:
+        201:
+          description: "aboba"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateVoiceRoomResponseDto'
+
   /roles:
     post:
       summary: "Creates a new role"
@@ -547,6 +564,23 @@ components:
         createdAt:
           type: string
           format: date-time
+
+    CreateVoiceRoomDto:
+      type: object
+      properties:
+        creatorId:
+          $ref: '#/components/schemas/UserId'
+        invitedUsers:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserId'
+
+    CreateVoiceRoomResponseDto:
+      type: object
+      properties:
+        roomId:
+          type: string
+          format: uuid
 
     CreateRoleDto:
       type: object

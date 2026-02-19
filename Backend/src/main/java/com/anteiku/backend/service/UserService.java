@@ -8,7 +8,7 @@ import com.anteiku.backend.mapper.UserMapper;
 import com.anteiku.backend.model.*;
 import com.anteiku.backend.repository.UserCredentialsRepository;
 import com.anteiku.backend.repository.UserRepository;
-import com.anteiku.backend.security.jwt.JwtUtils;
+import com.anteiku.backend.util.SecurityUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
@@ -84,19 +84,19 @@ public class UserService {
     }
 
     public UserInfoDto getMe() throws AuthenticationException {
-        JwtUtils jwtUtils = new JwtUtils();
-        Optional<String> optionalEmail = jwtUtils.getCurrentUserEmail();
-        if (optionalEmail.isEmpty()) {
+        UUID userId = SecurityUtils.getCurrentUserId();
+        if (userId == null) {
                 throw new AuthenticationCredentialsNotFoundException("User is not authenticated");
         }
 
-        String email = optionalEmail.get();
-
         UserInfoDto userInfoDto = new UserInfoDto();
 
-        UserPublicDto userPublicDto = getUserByEmail(email);
 
-        userInfoDto.setEmail(email);
+        UserPublicDto userPublicDto = getUserById(userId);
+        UserCredentialsEntity userCredentialsEntity = userCredentialsRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User credentials not found"));
+
+        userInfoDto.setEmail(userCredentialsEntity.getEmail());
         userInfoDto.setUsername(userPublicDto.getUsername());
         userInfoDto.setRole(userPublicDto.getRole());
         userInfoDto.setId(userPublicDto.getId());

@@ -27,7 +27,7 @@ public class RoleService {
         OrganizationEntity organizationEntity = organizationRepository.findById(createRoleDto.getOrganizationId())
                 .orElseThrow(() -> new ResourceNotFoundException("Organization with id '"  + createRoleDto.getOrganizationId() + "' not found"));
 
-        if (roleRepository.existsByNameInAndOrganizationId(createRoleDto.getName(), createRoleDto.getOrganizationId())) {
+        if (roleRepository.existsByNameAndOrganizationId(createRoleDto.getName(), createRoleDto.getOrganizationId())) {
             throw new ResourceNotFoundException("Role with name '" + createRoleDto.getName() + "' is already exists in organization '" + createRoleDto.getOrganizationId() + "'");
         }
 
