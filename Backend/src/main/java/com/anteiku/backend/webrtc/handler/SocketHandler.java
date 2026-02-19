@@ -57,6 +57,7 @@ public class SocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws  Exception {
+        // TODO remove from DB as well, if the connection counter is === to 1
         sessions.remove(session);
     }
 }

@@ -5,7 +5,6 @@ import com.anteiku.backend.model.CreateVoiceRoomDto;
 import com.anteiku.backend.model.CreateVoiceRoomResponseDto;
 import com.anteiku.backend.util.TempVoiceRoomDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
