@@ -19,6 +19,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [selectedChatFriend, setSelectedChatFriend] = useState<Friend | null>(
     null,
   );
+  const [selectedChatUser, setSelectedChatUser] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const { user, loading } = useAuth();
 
   useEffect(() => {
@@ -38,6 +42,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
   const handleOpenChat = (friend: Friend) => {
     setSelectedChatFriend(friend);
+    setSelectedChatUser(null);
+    handleViewChange("chat");
+  };
+
+  const handleChatRoomClick = (userId: string, userName: string) => {
+    setSelectedChatUser({ id: userId, name: userName });
+    setSelectedChatFriend(null);
     handleViewChange("chat");
   };
 
@@ -51,11 +62,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   }
 
   const chatUserId = user?.id ?? "";
+  const chatFriendId = selectedChatFriend?.id ?? selectedChatUser?.id;
   const chatRoomId =
-    user && selectedChatFriend
-      ? createDmRoomId(user.id, selectedChatFriend.id)
-      : null;
-  const chatPersonName = selectedChatFriend?.name ?? "";
+    user && chatFriendId ? createDmRoomId(user.id, chatFriendId) : null;
+  const chatPersonName =
+    selectedChatFriend?.name ?? selectedChatUser?.name ?? "";
 
   return (
     <div className="h-screen flex flex-col overflow-hidden relative">
@@ -70,7 +81,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         <main className="flex-1 flex gap-0 pt-2 pl-2 pr-0 md:p-2 overflow-hidden relative min-h-0">
           <div className="absolute inset-0 bg-brand-green opacity-80 -z-10"></div>
           <div className="w-full md:w-1/5 flex-shrink-0 overflow-hidden">
-            <LeftBar onFriendsClick={() => handleViewChange("friends")} />
+            <LeftBar
+              onFriendsClick={() => handleViewChange("friends")}
+              onChatRoomClick={handleChatRoomClick}
+            />
           </div>
           <div className="hidden md:flex w-3/5 min-h-0 overflow-hidden">
             <div className="flex-1 min-h-0">
