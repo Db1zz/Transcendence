@@ -4,7 +4,7 @@ import "./index.css";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider } from "./contexts/AuthContext";
 import ShowInfo from "./pages/ShowInfo";
 import TestFriendsView from "./pages/TestFriendsView";
 import SignupPage from "./pages/SignupPage";

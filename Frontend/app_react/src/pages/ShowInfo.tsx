@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import axios from "axios";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../contexts/AuthContext";
 
 function ShowInfo() {
   const { user, loading, isAuthenticated } = useAuth();

@@ -8,6 +8,8 @@ import ProfileButton from "../components/ProfileButton";
 import { HeaderBar } from "./navigation/HeaderBar";
 import { LeftBar } from "./navigation/LeftBar";
 import RightBar from "./navigation/RightBar";
+import { VoiceView } from "./VoiceView";
+import { useCallContext } from "../contexts/CallContext";
 
 const testUser = {
   name: "kaneki",
@@ -24,19 +26,27 @@ interface MainLayoutProps {
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
-  const [activeView, setActiveView] = useState<"friends" | "chat">("friends");
+  const [activeView, setActiveView] = useState<"friends" | "chat" | "voice">("friends");
+  const { activeCall } = useCallContext();
 
   useEffect(() => {
     const savedView = localStorage.getItem("activeView") as
       | "friends"
       | "chat"
+      | "voice"
       | null;
     if (savedView) {
       setActiveView(savedView);
     }
   }, []);
 
-  const handleViewChange = (view: "friends" | "chat") => {
+  useEffect(() => {
+    if (activeCall) {
+      setActiveView("voice");
+    }
+  }, [activeCall]);
+
+  const handleViewChange = (view: "friends" | "chat" | "voice") => {
     setActiveView(view);
     localStorage.setItem("activeView", view);
   };
@@ -59,9 +69,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             <div className="flex-1 min-h-0">
               {activeView === "friends" ? (
                 <FriendsView />
-              ) : (
-                <Chat personName="kaneki" />
-              )}
+              ) : activeView === "voice" ? (
+                 <VoiceView/>
+              ) : <Chat personName="kaneki"></Chat>}
             </div>
           </div>
           <div className="hidden lg:block w-1/5 flex-shrink-0 overflow-hidden">

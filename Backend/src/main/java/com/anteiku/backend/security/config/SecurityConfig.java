@@ -53,6 +53,7 @@ public class SecurityConfig {
                                 "/friends/**",
                                 "/error",
                                 "/api/users/public/**",
+                                "/api/voice",
                                 "/socket"
                         ).permitAll()
                         .anyRequest().authenticated())

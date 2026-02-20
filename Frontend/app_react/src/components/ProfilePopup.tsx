@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import ReactDOM from "react-dom";
 import { X, Expand, Coffee, Shield, Minimize2 } from "lucide-react";
-import { User, useAuth } from "../context/AuthContext";
+import { User, useAuth } from "../contexts/AuthContext";
 import { StatusColors } from "./ProfileButton";
 import { Button } from "./Button";
 

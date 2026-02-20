@@ -2,13 +2,10 @@ package com.anteiku.backend.delegate;
 
 import com.anteiku.backend.api.FriendsApi;
 import com.anteiku.backend.model.FriendDto;
-import com.anteiku.backend.model.UserPublicDto;
-import com.anteiku.backend.security.jwt.JwtUtils;
 import com.anteiku.backend.service.FriendsService;
 import com.anteiku.backend.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

@@ -3,6 +3,7 @@ import { FriendsHeader } from "./FriendsHeader";
 import { AddFriendView } from "./AddFriendView";
 import { FriendsList } from "./FriendsList";
 import { useFriends } from "../hooks/useFriends";
+import { useCall } from "../hooks/useCall";
 
 export type FriendsTab = "online" | "all" | "pending" | "blocked" | "add";
 export interface Friend {
@@ -22,6 +23,8 @@ export const FriendsView: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const { friends, addFriend, acceptFriend, removeFriend, blockUser, unblockUser, refresh } = useFriends();
+  const { callToAUser } = useCall();
+
   const getFiltered = () => {
     let filtered = friends;
 
@@ -75,6 +78,7 @@ export const FriendsView: React.FC = () => {
             onRemove={removeFriend}
             onBlock={blockUser}
             onUnblock={unblockUser}
+            onCall={callToAUser}
           />
         )}
       </div>

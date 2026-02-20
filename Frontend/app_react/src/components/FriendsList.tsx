@@ -5,6 +5,7 @@ import {
   Ban,
   Check,
   X,
+  Phone,
 } from "lucide-react";
 import { Friend, FriendsTab } from "./FriendsView";
 import { ProfileButton } from "./ProfileButton";
@@ -19,6 +20,7 @@ interface FriendsListProps {
   onRemove: (id: string) => void;
   onBlock: (id: string) => void;
   onUnblock: (id: string) => void;
+  onCall: (id: string) => void;
 }
 
 const getTabTitle = (tab: FriendsTab, count: number): string => {
@@ -44,7 +46,8 @@ export const FriendsList: React.FC<FriendsListProps> = ({
   onAccept,
   onRemove,
   onBlock,
-  onUnblock
+  onUnblock,
+  onCall
 }) => {
   return (
     <div className="flex flex-col h-full p-6">
@@ -89,6 +92,13 @@ export const FriendsList: React.FC<FriendsListProps> = ({
                   </>
                 ) : (
                   <>
+                    <Button
+                      color="bg-green-300"
+                      onClick={() => onCall(friend.id)}
+                      className="!p-2 !rounded-full !border-gray-800 !text-gray-800 hover:!bg-brand-brick hover:!text-brand-beige !shadow-[2px_2px_0px_#000]"
+                    >
+                      <Phone className="w-4 h-4"/>
+                    </Button>
                     <Button
                       color="bg-gray-200"
                       onClick={() => console.log("Message", friend.id)}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../contexts/AuthContext";
 import { useLocation, useNavigate } from "react-router-dom";
 import bgLogin from "../img/bg_login.png";
 import { Button } from "../components/Button";
