@@ -1,7 +1,7 @@
 package com.anteiku.backend.chat;
 
-import com.anteiku.backend.chat.dto.ChatMessageResponse;
-import com.anteiku.backend.chat.dto.ChatRoomDto;
+import com.anteiku.backend.model.ChatMessageResponse;
+import com.anteiku.backend.model.ChatRoomDto;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;

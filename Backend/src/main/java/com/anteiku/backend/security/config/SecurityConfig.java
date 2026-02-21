@@ -45,6 +45,7 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/api/swagger-ui.html",
                                 "/v3/api-docs/swagger-config",
+                                "/openapi.yaml",
                                 "/ws/**",
                                 "/api/users/register",
                                 "/api/auth/login",
@@ -52,6 +53,7 @@ public class SecurityConfig {
                                 "/api/users/check-email",
                                 "/api/friends/**",
                                 "/friends/**",
+                                "/api/chat/**",
                                 "/error",
                                 "/api/users/public/**"
                         ).permitAll()

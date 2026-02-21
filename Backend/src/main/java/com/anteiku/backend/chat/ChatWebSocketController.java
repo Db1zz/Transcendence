@@ -1,7 +1,7 @@
 package com.anteiku.backend.chat;
 
-import com.anteiku.backend.chat.dto.ChatMessageRequest;
-import com.anteiku.backend.chat.dto.ChatMessageResponse;
+import com.anteiku.backend.model.ChatMessageRequest;
+import com.anteiku.backend.model.ChatMessageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -16,6 +16,6 @@ public class ChatWebSocketController {
     @MessageMapping("/chat.send")
     public void send(ChatMessageRequest request) {
         ChatMessageResponse saved = chatMessageService.save(request);
-        messagingTemplate.convertAndSend("/topic/chat/" + saved.roomId(), saved);
+        messagingTemplate.convertAndSend("/topic/chat/" + saved.getRoomId(), saved);
     }
 }

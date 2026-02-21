@@ -1,8 +1,8 @@
 package com.anteiku.backend.chat;
 
-import com.anteiku.backend.chat.dto.ChatMessageRequest;
-import com.anteiku.backend.chat.dto.ChatMessageResponse;
-import com.anteiku.backend.chat.dto.ChatRoomDto;
+import com.anteiku.backend.model.ChatMessageRequest;
+import com.anteiku.backend.model.ChatMessageResponse;
+import com.anteiku.backend.model.ChatRoomDto;
 import com.anteiku.backend.entity.ChatMessageEntity;
 import com.anteiku.backend.entity.UserEntity;
 import com.anteiku.backend.repository.ChatMessageRepository;
@@ -10,6 +10,7 @@ import com.anteiku.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -23,29 +24,31 @@ public class ChatMessageService {
 
     public ChatMessageResponse save(ChatMessageRequest request) {
         ChatMessageEntity entity = new ChatMessageEntity();
-        entity.setRoomId(request.roomId());
-        entity.setSenderId(request.senderId());
-        entity.setContent(request.content());
+        entity.setRoomId(request.getRoomId());
+        entity.setSenderId(request.getSenderId());
+        entity.setContent(request.getContent());
 
         ChatMessageEntity saved = chatMessageRepository.save(entity);
-        return new ChatMessageResponse(
-                saved.getId(),
-                saved.getRoomId(),
-                saved.getSenderId(),
-                saved.getContent(),
-                saved.getCreatedAt()
-        );
+        ChatMessageResponse response = new ChatMessageResponse();
+        response.setId(saved.getId());
+        response.setRoomId(saved.getRoomId());
+        response.setSenderId(saved.getSenderId());
+        response.setContent(saved.getContent());
+        response.setCreatedAt(saved.getCreatedAt().atZone(ZoneId.systemDefault()).toOffsetDateTime());
+        return response;
     }
 
     public List<ChatMessageResponse> lastMessages(String roomId) {
         return chatMessageRepository.findTop50ByRoomIdOrderByCreatedAtAsc(roomId).stream()
-                .map(entity -> new ChatMessageResponse(
-                        entity.getId(),
-                        entity.getRoomId(),
-                        entity.getSenderId(),
-                        entity.getContent(),
-                        entity.getCreatedAt()
-                ))
+                .map(entity -> {
+                    ChatMessageResponse response = new ChatMessageResponse();
+                    response.setId(entity.getId());
+                    response.setRoomId(entity.getRoomId());
+                    response.setSenderId(entity.getSenderId());
+                    response.setContent(entity.getContent());
+                    response.setCreatedAt(entity.getCreatedAt().atZone(ZoneId.systemDefault()).toOffsetDateTime());
+                    return response;
+                })
                 .collect(Collectors.toList());
     }
     
@@ -60,12 +63,12 @@ public class ChatMessageService {
             UserEntity otherUser = userRepository.findById(otherUserId).orElse(null);
             if (otherUser == null) continue;
             
-            chatRooms.add(new ChatRoomDto(
-                    roomId,
-                    otherUserId,
-                    otherUser.getUsername(),
-                    otherUser.getPicture()
-            ));
+            ChatRoomDto room = new ChatRoomDto();
+            room.setRoomId(roomId);
+            room.setOtherUserId(otherUserId);
+            room.setOtherUserName(otherUser.getUsername());
+            room.setOtherUserPicture(otherUser.getPicture());
+            chatRooms.add(room);
         }
         
         return chatRooms;
