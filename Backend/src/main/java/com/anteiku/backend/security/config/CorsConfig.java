@@ -14,12 +14,12 @@ public class CorsConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-
-        // corsConfiguration.addAllowedOrigin("http://localhost:3000");
+		corsConfiguration.addAllowedOrigin("http://localhost:3000");
         corsConfiguration.setAllowedOriginPatterns(List.of("*"));
         corsConfiguration.setAllowedMethods(List.of("*"));
         corsConfiguration.setAllowedHeaders(List.of("*"));
         corsConfiguration.setAllowCredentials(true);
+        corsConfiguration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 

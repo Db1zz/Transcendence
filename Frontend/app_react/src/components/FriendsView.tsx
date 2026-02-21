@@ -17,7 +17,11 @@ export interface Friend {
   role: "USER" | "ADMIN";
 }
 
-export const FriendsView: React.FC = () => {
+interface FriendsViewProps {
+  onOpenChat?: (friend: Friend) => void;
+}
+
+export const FriendsView: React.FC<FriendsViewProps> = ({ onOpenChat }) => {
   const [activeTab, setActiveTab] = useState<FriendsTab>("online");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -71,6 +75,7 @@ export const FriendsView: React.FC = () => {
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
             activeTab={activeTab}
+            onMessage={(friend) => onOpenChat?.(friend)}
             onAccept={acceptFriend}
             onRemove={removeFriend}
             onBlock={blockUser}
