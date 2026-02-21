@@ -25,15 +25,7 @@ export const FriendsView: React.FC<FriendsViewProps> = ({ onOpenChat }) => {
   const [activeTab, setActiveTab] = useState<FriendsTab>("online");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const {
-    friends,
-    addFriend,
-    acceptFriend,
-    removeFriend,
-    blockUser,
-    unblockUser,
-    refresh,
-  } = useFriends();
+  const { friends, addFriend, acceptFriend, removeFriend, blockUser, unblockUser, refresh } = useFriends();
   const getFiltered = () => {
     let filtered = friends;
 
@@ -71,10 +63,7 @@ export const FriendsView: React.FC<FriendsViewProps> = ({ onOpenChat }) => {
     <div className="flex flex-col h-full bg-brand-beige border border-brand-green">
       <FriendsHeader
         activeTab={activeTab}
-        onTabChange={(tab) => {
-          setActiveTab(tab);
-          refresh();
-        }}
+        onTabChange={(tab) => { setActiveTab(tab); refresh(); }}
         counts={counts}
       />
       <div className="flex-1 overflow-hidden">

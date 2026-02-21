@@ -6,9 +6,7 @@ interface AddFriendViewProps {
   onAddFriend: (username: string) => Promise<void>;
 }
 
-export const AddFriendView: React.FC<AddFriendViewProps> = ({
-  onAddFriend,
-}) => {
+export const AddFriendView: React.FC<AddFriendViewProps> = ({ onAddFriend }) => {
   const [name, setName] = useState("");
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
 
