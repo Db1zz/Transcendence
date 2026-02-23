@@ -1,15 +1,11 @@
 package com.anteiku.backend.webrtc.handler;
 
 import com.anteiku.backend.exception.ResourceNotFoundException;
-import com.anteiku.backend.service.VoiceService;
-import com.anteiku.backend.util.QueryUtils;
-import com.nimbusds.jose.util.Pair;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
-import org.springframework.web.socket.handler.ConcurrentWebSocketSessionDecorator;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -31,16 +27,15 @@ public class SocketHandler extends TextWebSocketHandler {
 
         JsonNode root = objectMapper.readTree(jsonMessage);
         ObjectNode objectNode = (ObjectNode) root;
-
-        String to = objectNode.get("to").toString();
+        String xd = objectNode.get("to").asString();
         objectNode.put("from", session.getId());
 
-        WebSocketSession receiver = sessions.get(to);
+        WebSocketSession receiver = sessions.get(xd);
         if (receiver == null) {
             throw new ResourceNotFoundException("WebRtc Session not found");
         }
 
-        receiver.sendMessage(new TextMessage(root.toString()));
+        receiver.sendMessage(new TextMessage(root.toString())); // TODO try/catch block
     }
 
     /* A new-connection[from: A] -> B offer[to: A] -> server[B offer[from: B, to: A]] -> A answer[to: B] -> server[A answer[from: A, to: B]] -> B ok. */
@@ -57,7 +52,7 @@ public class SocketHandler extends TextWebSocketHandler {
         sessions.put(session.getId(), session);
 
         sessions.forEach(((uuid, webSocketSession) -> {
-            if (!session.getId().equals(webSocketSession.getId())) {
+            if (!session.getId().equals(uuid)) {
                 try {
                     webSocketSession.sendMessage(textMessage);
                 } catch (IOException e) {

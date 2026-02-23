@@ -178,7 +178,7 @@ useEffect(() => {
             const offer = await s1.pc.createOffer();
             await s1.pc.setLocalDescription(offer);
             console.log("Test: ", s1.roomId)
-            const message = {roomId: s1.roomId, type: "offer", sdp: s1.pc.localDescription! };
+            const message = { roomId: s1.roomId, type: "offer", sdp: s1.pc.localDescription! };
             s1.sc.send(JSON.stringify(message));
             console.log("[" + s1.id + "]: Offer sent!");
           }).catch(console.error);

@@ -33,12 +33,12 @@ export const useCall = () => {
 
 		// const roomId = responseData.roomId;
 
-    const signalingServerAddress = process.env.REACT_APP_SIGNALING_SERVER;
-    const stunAddress = process.env.REACT_APP_STUN_SERVER;
+		const signalingServerAddress = process.env.REACT_APP_SIGNALING_SERVER;
+		const stunAddress = process.env.REACT_APP_STUN_SERVER;
 
-    const webRtcSession = new WebRtcSession("cb9b647f-59a7-4580-934f-7da9b41eb7a8", signalingServerAddress!, stunAddress!);
-    webRtcSession.joinCall();
-    startCall({ webRtcSession });
+		const webRtcSession = new WebRtcSession("cb9b647f-59a7-4580-934f-7da9b41eb7a8", signalingServerAddress!, stunAddress!);
+		webRtcSession.joinCall();
+		startCall({ webRtcSession });
 	};
 
 	const joinCall = async () => {

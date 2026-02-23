@@ -4,6 +4,8 @@ export class WebRtcSession {
 	public roomId: string;
 	public signalingServerSocket: WebSocket | null;
 	public peers: Map<string, RTCPeerConnection>;
+	public localStream: MediaStream | null;
+	public remoteSteams: Map <string, MediaStream>;
 
 	private stunAddress: string;
 	private signalingServerAddress: URL;
@@ -15,6 +17,8 @@ export class WebRtcSession {
 		this.signalingServerAddress = new URL(signalingServerAddress);
 		this.signalingServerAddress.searchParams.append("roomId", roomId);
 		this.stunAddress = stunAddress;
+		this.localStream = null;
+		this.remoteSteams = new Map<string, MediaStream>;
 	}
 
 	public destroy() {
@@ -27,9 +31,10 @@ export class WebRtcSession {
 
 	public async joinCall() {
 		this.signalingServerSocket = new WebSocket(this.signalingServerAddress);
+		this.localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
 		
 		new Promise<void>((resolve) => {
-			if (this.signalingServerSocket!.readyState === WebSocket.OPEN) {
+			if (this.signalingServerSocket!.readyState === WebSocket.OPEN && this.localStream != null) {
 				resolve();
 			} else {
 				this.signalingServerSocket!.addEventListener("open", () => resolve(), { once: true });
@@ -40,9 +45,7 @@ export class WebRtcSession {
 	}
 
 	private onMessageCallback(message: MessageEvent) {
-		console.log("GOT MY MESSAGE WOW!!!!!");
 		console.log("Message data: ", message.data);
-
 		const pm = JSON.parse(message.data) as RtcSignal;
 
 		switch (pm.type) {
@@ -110,6 +113,9 @@ export class WebRtcSession {
 		const pcConfig: RTCConfiguration = { iceServers: [{ urls: this.stunAddress }] };
 		const pc =  new RTCPeerConnection(pcConfig);
 
+		this.localStream!.getTracks().forEach(track => pc.addTrack(track, this.localStream!));
+
+		pc.addEventListener("track", event => this.onTrackCallback(peerId, event));
 		pc.addEventListener("icecandidate", event => this.onIceCandidateCallback(event, peerId));
 
 		this.peers.set(peerId, pc);
@@ -120,5 +126,9 @@ export class WebRtcSession {
 	private onIceCandidateCallback(event: RTCPeerConnectionIceEvent, to: string) {
 		const message = { type: "ice", to: to, candidate: event.candidate!.toJSON() };
 		this.signalingServerSocket!.send(JSON.stringify(message));
+	}
+
+	private onTrackCallback(from: string, event: RTCTrackEvent) {
+		this.remoteSteams.set(from, event.streams[0]);
 	}
 }
