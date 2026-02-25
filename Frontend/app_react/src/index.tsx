@@ -8,9 +8,6 @@ import { AuthProvider } from "./contexts/AuthContext";
 import ShowInfo from "./pages/ShowInfo";
 import TestFriendsView from "./pages/TestFriendsView";
 import SignupPage from "./pages/SignupPage";
-// import SenderPage from "./pages/SenderPage";
-// import RecieverPage from "./pages/RecieverPage";
-import TestPage from "./pages/TestPage";
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement,
@@ -24,7 +21,6 @@ root.render(
           <Route path="/info" element={<ShowInfo />}></Route>
           <Route path="/testGrisha" element={<TestFriendsView />}></Route>
           <Route path="/signup" element={<SignupPage />}></Route>
-          <Route path="/test" element={<TestPage />}></Route>
         </Routes>
       </Router>
     </AuthProvider>

@@ -70,9 +70,26 @@ public class SocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws  Exception {
-        // TODO remove from DB as well, if the connection counter is === to 1
+        ObjectNode root = objectMapper.createObjectNode();
+        root.put("type", "user-disconnection");
+        root.put("from", session.getId());
+
+        String jsonMessage = objectMapper.writeValueAsString(root);
+
+        TextMessage textMessage = new TextMessage(jsonMessage);
+
         synchronized (sessions){
             sessions.remove(session.getId());
         }
+
+        sessions.forEach((uuid,  webSocketSession) -> {
+            try {
+                synchronized (webSocketSession) {
+                    webSocketSession.sendMessage(textMessage);
+                }
+            } catch (IOException e) {
+                System.out.println("Unable to send a message to a websocket: " + e.getMessage());
+            }
+        });
     }
 }

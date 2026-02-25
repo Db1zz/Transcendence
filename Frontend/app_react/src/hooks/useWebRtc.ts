@@ -15,6 +15,13 @@ export function useWebRtc(roomId: string, signalingServerAddress: string, stunAd
 				onLocalStream: setLocalStream,
 				onRemoteStream: (peerId, stream) => {
 					setRemoteStream(prev => new Map(prev.set(peerId, stream)));
+				},
+				onRemoteStreamDelete: (peerId) => {
+					setRemoteStream(perv => {
+						const newMap = new Map(perv);
+						newMap.delete(peerId);
+						return newMap;
+					});
 				}
 			}
 		);

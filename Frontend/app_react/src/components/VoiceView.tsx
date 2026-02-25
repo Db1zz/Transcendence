@@ -11,6 +11,8 @@ export const VoiceView: React.FC = () => {
     );
     
     const remoteVideoRef = useRef<Map<string, HTMLVideoElement>>(new Map());
+    var streamArray = Array.from(remoteStreams.entries());
+    var count = streamArray.length;
 
     useEffect(() => {
         remoteStreams.forEach((stream, peerId) => {
@@ -19,10 +21,13 @@ export const VoiceView: React.FC = () => {
                 videoElement.srcObject = stream;
             }
         });
-    }, [remoteStreams]);
 
-    const streamArray = Array.from(remoteStreams.entries());
-    const count = streamArray.length;
+        remoteVideoRef.current.forEach((_, peerId) => {
+            if (!remoteStreams.get(peerId)) {
+                remoteVideoRef.current.delete(peerId);
+            }
+        });
+    }, [remoteStreams]);
 
     const getGridConfig = () => {
         if (count === 1) return "grid-cols-1 max-w-[800px]";
@@ -35,7 +40,7 @@ export const VoiceView: React.FC = () => {
     return (
         <div className="w-full h-full min-h-[80vh] p-4 flex items-center justify-center bg-[#313338]">
             <div className={`grid gap-4 w-full transition-all duration-300 ${getGridConfig()}`}>
-                {streamArray.map(([peerId]) => (
+                {streamArray!.map(([peerId, stream]: [string, MediaStream]) => (
                     <div 
                         key={peerId} 
                         className="relative aspect-video bg-black rounded-xl overflow-hidden shadow-lg border border-transparent hover:border-indigo-500 transition-colors"

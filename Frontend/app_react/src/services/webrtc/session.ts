@@ -3,6 +3,7 @@ import { RtcSignal } from "./types";
 type WebRtcSessionCallbacks = {
 	onLocalStream?: (stream: MediaStream) => void;
 	onRemoteStream?: (peerId: string, stream: MediaStream) => void;
+	onRemoteStreamDelete?: (peerId: string) => void;
 }
 
 export class WebRtcSession {
@@ -51,6 +52,10 @@ export class WebRtcSession {
 				this.handleNewConnectionEvent(pm.from);
 				break;
 			}
+			case "user-disconnection": {
+				this.handleUserDisconnectionEvent(pm.from);
+				break;
+			}
 			case "offer": {
 				this.handleOfferEvent(pm.from, pm.sdp);
 				break;
@@ -75,6 +80,14 @@ export class WebRtcSession {
 		this.signalingServerSocket!.send(JSON.stringify(message));
 	}
 
+	private handleUserDisconnectionEvent(from: string) {
+		this.peers.delete(from);
+
+		if (this.callbacks.onRemoteStreamDelete) {
+			this.callbacks.onRemoteStreamDelete(from);
+		}
+	}
+
 	private async handleOfferEvent(from: string, sdp: RTCSessionDescriptionInit) {
 		const pc = this.createPeerConnection(from);
 
@@ -87,13 +100,12 @@ export class WebRtcSession {
 	}
 
 	private async handleAnswerEvent(from: string, sdp: RTCSessionDescriptionInit) {
-		const search = this.peers.get(from);
-		if (search === undefined) {
+		const pc = this.peers.get(from);
+		if (pc === undefined) {
 			throw new Error("TODO2");
 		}
 
-		const peer: RTCPeerConnection = search;
-		peer.setRemoteDescription(sdp);
+		pc.setRemoteDescription(sdp);
 	}
 
 	private async handleIceEvent(from: string, candidate: RTCIceCandidateInit) {
