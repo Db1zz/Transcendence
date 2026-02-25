@@ -1,6 +1,5 @@
 import { useAuth } from "../contexts/AuthContext"
 import { useCallContext } from "../contexts/CallContext";
-import { WebRtcSession } from "../services/webrtc/session";
 
 const getHeaders = () => {
 	const headers: any = {
@@ -33,12 +32,11 @@ export const useCall = () => {
 
 		// const roomId = responseData.roomId;
 
-		const signalingServerAddress = process.env.REACT_APP_SIGNALING_SERVER;
-		const stunAddress = process.env.REACT_APP_STUN_SERVER;
-
-		const webRtcSession = new WebRtcSession("cb9b647f-59a7-4580-934f-7da9b41eb7a8", signalingServerAddress!, stunAddress!);
-		webRtcSession.joinCall();
-		startCall({ webRtcSession });
+		startCall({
+			roomId: "cb9b647f-59a7-4580-934f-7da9b41eb7a8",
+			signalingServerAddress: process.env.REACT_APP_SIGNALING_SERVER!,
+			stunAddress: process.env.REACT_APP_STUN_SERVER!
+		});
 	};
 
 	const joinCall = async () => {
