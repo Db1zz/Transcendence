@@ -38,6 +38,11 @@ export class WebRtcSession {
 	public async start() {
 		navigator.mediaDevices.getUserMedia({ audio: true, video: true }).then((stream) => {
 			this.localStream = stream;
+
+			if (this.callbacks.onLocalStream) {
+				this.callbacks.onLocalStream(this.localStream);
+			}
+
 			this.signalingServerSocket = new WebSocket(this.signalingServerAddress);
 			this.signalingServerSocket!.addEventListener("message", (message) => this.onMessageCallback(message));
 		});
