@@ -4,6 +4,7 @@ import bgLogin from "../img/bg_login.png";
 import { Button } from "../components/Button";
 import { OAuthLogin } from "../components/OAuthLogin";
 import validator from "validator";
+import axios from "axios";
 
 const SignupPage: React.FC = () => {
   const navigate = useNavigate();
@@ -39,14 +40,10 @@ const SignupPage: React.FC = () => {
     setEmailValidation("checking");
 
     try {
-      const response = await fetch(
+      const response = await axios.get(
         `http://localhost:8080/api/users/check-email?email=${encodeURIComponent(emailToCheck)}`,
       );
-      if (response.ok) {
-        const available = await response.json();
-        //console.log("response: ", available);
-        setEmailValidation(available ? "available" : "taken");
-      }
+      setEmailValidation(response.data ? "available" : "taken");
     } catch (error) {
       console.error("error checking email:", error);
       setEmailValidation("");
@@ -62,13 +59,10 @@ const SignupPage: React.FC = () => {
     setUsernameValidation("checking");
 
     try {
-      const response = await fetch(
+      const response = await axios.get(
         `http://localhost:8080/api/users/check-username?username=${encodeURIComponent(usernameToCheck)}`,
       );
-      if (response.ok) {
-        const available = await response.json();
-        setUsernameValidation(available ? "available" : "taken");
-      }
+      setUsernameValidation(response.data ? "available" : "taken");
     } catch (error) {
       console.error("error checking username:", error);
       setUsernameValidation("");
@@ -133,24 +127,12 @@ const SignupPage: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:8080/api/users/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username,
-          email,
-          password,
-        }),
+      await axios.post("http://localhost:8080/api/users/register", {
+        username,
+        email,
+        password,
       });
-
-      if (response.ok) {
-        console.log("success");
-        setIsSuccess(true);
-      } else {
-        console.error("signup failed:", response.statusText);
-      }
+      setIsSuccess(true);
     } catch (error) {
       console.error("error during signup:", error);
     } finally {

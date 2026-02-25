@@ -1,6 +1,8 @@
 import React, { useState, useCallback } from "react";
 import { createContext, useContext, useEffect, type ReactNode } from "react";
 import defaultAvatar from "../img/default.png";
+import api from "../utils/api";
+import axios from "axios";
 
 export type User = {
   id: string;
@@ -65,17 +67,8 @@ export const AuthProvider = ({ children }: Props) => {
 
   const checkAuthStatus = useCallback(async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/users/me", {
-        credentials: "include",
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        saveAuthData(data);
-      } else {
-        setUser(null);
-        localStorage.removeItem("user");
-      }
+      const response = await api.get("/users/me");
+      saveAuthData(response.data);
     } catch (error) {
       setUser(null);
       localStorage.removeItem("user");
@@ -111,25 +104,15 @@ export const AuthProvider = ({ children }: Props) => {
 
     if (provider === "credentials" && credentials) {
       try {
-        const response = await fetch("http://localhost:8080/api/auth/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
+        const response = await axios.post("http://localhost:8080/api/auth/login",
+          {
+          email: credentials.email,
+          password: credentials.password,
           },
-          body: JSON.stringify({
-            email: credentials.email,
-            password: credentials.password,
-          }),
-          credentials: "include",
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          saveAuthData(data);
-          return true;
-        } else {
-          return false;
-        }
+          { withCredentials: true }
+        );
+        saveAuthData(response.data);
+        return true;
       } catch (error) {
         console.error("error during login:", error);
         return false;
@@ -141,10 +124,7 @@ export const AuthProvider = ({ children }: Props) => {
 
   const logout = async () => {
     try {
-      await fetch("http://localhost:8080/logout", {
-        method: "POST",
-        credentials: "include",
-      });
+      await axios.post("http://localhost:8080/logout", {}, { withCredentials: true });
     } catch (error) {
       console.error("error during logout:", error);
     } finally {
