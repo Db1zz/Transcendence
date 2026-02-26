@@ -313,6 +313,57 @@ paths:
                 items:
                   $ref: '#/components/schemas/FriendDto'
 
+  /chat/rooms:
+    get:
+      summary: "Get all chat rooms for the current user"
+      operationId: getUserChatRooms
+      description: "Retrieves a list of all chat rooms (conversations) the current user is part of"
+      parameters:
+        - name: X-User-Id
+          in: header
+          description: "Current user's ID"
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: "List of chat rooms"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChatRoomDto'
+        400:
+          description: "Missing or invalid user ID in header"
+        401:
+          description: "Unauthorized"
+
+  /chat/rooms/{roomId}/messages:
+    get:
+      summary: "Get messages from a chat room"
+      operationId: getRoomMessages
+      description: "Retrieves the last 50 messages from a specific chat room, ordered by creation time"
+      parameters:
+        - name: roomId
+          in: path
+          description: "The room ID (format: dm-userId1-userId2)"
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "List of messages in the room"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChatMessageResponse'
+        404:
+          description: "Room not found"
+
 components:
   responses:
     UnauthorizedError:
@@ -488,3 +539,58 @@ components:
         revokedAt:
           type: string
           format: date-time
+
+    ChatRoomDto:
+      type: object
+      description: "Chat room information"
+      properties:
+        roomId:
+          type: string
+          description: "The unique room identifier (format: dm-userId1-userId2)"
+        otherUserId:
+          $ref: '#/components/schemas/UserId'
+        otherUserName:
+          type: string
+          description: "The username of the other person in the chat"
+        otherUserPicture:
+          type: string
+          format: url
+          description: "URL to the other user's profile picture"
+
+    ChatMessageResponse:
+      type: object
+      description: "Chat message data"
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        roomId:
+          type: string
+          description: "The room ID where this message was sent"
+        senderId:
+          $ref: '#/components/schemas/UserId'
+        content:
+          type: string
+          description: "Message content (max 2000 characters)"
+          maxLength: 2000
+        createdAt:
+          type: string
+          format: date-time
+          description: "Timestamp when the message was created"
+
+    ChatMessageRequest:
+      type: object
+      description: "Request to send a chat message"
+      required:
+        - roomId
+        - senderId
+        - content
+      properties:
+        roomId:
+          type: string
+          description: "The room ID where the message will be sent (format: dm-userId1-userId2)"
+        senderId:
+          $ref: '#/components/schemas/UserId'
+        content:
+          type: string
+          description: "Message content (max 2000 characters)"
+          maxLength: 2000

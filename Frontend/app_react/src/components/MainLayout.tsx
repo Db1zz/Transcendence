@@ -1,6 +1,6 @@
 "use client";
 
-import { FriendsView } from "./FriendsView";
+import { Friend, FriendsView } from "./FriendsView";
 import { NavigationSidebar } from "./navigation/NavigationSideBar";
 import Chat from "./Chat";
 import React, { useState, useEffect } from "react";
@@ -8,16 +8,7 @@ import ProfileButton from "../components/ProfileButton";
 import { HeaderBar } from "./navigation/HeaderBar";
 import { LeftBar } from "./navigation/LeftBar";
 import RightBar from "./navigation/RightBar";
-
-const testUser = {
-  name: "kaneki",
-  email: "example@example.com",
-  picture: "https://media.tenor.com/I9qt03YKkjQAAAAe/monkey-thinking.png",
-  status: "online" as const,
-  role: "ADMIN" as const,
-  about: "privet",
-  createdAt: "2023-12-20T10:00:00Z",
-};
+import { useAuth } from "../context/AuthContext";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -25,6 +16,14 @@ interface MainLayoutProps {
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [activeView, setActiveView] = useState<"friends" | "chat">("friends");
+  const [selectedChatFriend, setSelectedChatFriend] = useState<Friend | null>(
+    null,
+  );
+  const [selectedChatUser, setSelectedChatUser] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const { user, loading } = useAuth();
 
   useEffect(() => {
     const savedView = localStorage.getItem("activeView") as
@@ -40,6 +39,35 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     setActiveView(view);
     localStorage.setItem("activeView", view);
   };
+
+  const handleOpenChat = (friend: Friend) => {
+    setSelectedChatFriend(friend);
+    setSelectedChatUser(null);
+    handleViewChange("chat");
+  };
+
+  const handleChatRoomClick = (userId: string, userName: string) => {
+    setSelectedChatUser({ id: userId, name: userName });
+    setSelectedChatFriend(null);
+    handleViewChange("chat");
+  };
+
+  const createDmRoomId = (userId: string, friendId: string) => {
+    const [first, second] = [userId, friendId].sort();
+    return `dm-${first}-${second}`;
+  };
+
+  if (loading) {
+    return null;
+  }
+
+  const chatUserId = user?.id ?? "";
+  const chatFriendId = selectedChatFriend?.id ?? selectedChatUser?.id;
+  const chatRoomId =
+    user && chatFriendId ? createDmRoomId(user.id, chatFriendId) : null;
+  const chatPersonName =
+    selectedChatFriend?.name ?? selectedChatUser?.name ?? "";
+
   return (
     <div className="h-screen flex flex-col overflow-hidden relative">
       <HeaderBar type="friends" />
@@ -53,14 +81,29 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         <main className="flex-1 flex gap-0 pt-2 pl-2 pr-0 md:p-2 overflow-hidden relative min-h-0">
           <div className="absolute inset-0 bg-brand-green opacity-80 -z-10"></div>
           <div className="w-full md:w-1/5 flex-shrink-0 overflow-hidden">
-            <LeftBar onFriendsClick={() => handleViewChange("friends")} />
+            <LeftBar
+              onFriendsClick={() => handleViewChange("friends")}
+              onChatRoomClick={handleChatRoomClick}
+            />
           </div>
           <div className="hidden md:flex w-3/5 min-h-0 overflow-hidden">
             <div className="flex-1 min-h-0">
               {activeView === "friends" ? (
-                <FriendsView />
+                <FriendsView onOpenChat={handleOpenChat} />
+              ) : !user ? (
+                <div className="flex h-full items-center justify-center text-brand-beige">
+                  please log in to use chat
+                </div>
+              ) : !chatRoomId ? (
+                <div className="flex h-full items-center justify-center text-brand-beige">
+                  select a friend to start a chat
+                </div>
               ) : (
-                <Chat personName="kaneki" />
+                <Chat
+                  personName={chatPersonName}
+                  userId={chatUserId}
+                  roomId={chatRoomId}
+                />
               )}
             </div>
           </div>
@@ -69,9 +112,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           </div>
         </main>
       </div>
-      <div className="fixed bottom-[15px] left-1 right-1 z-40 md:left-1 md:right-auto md:w-auto">
-        <ProfileButton user={testUser} className="w-full md:w-[386px]" />
-      </div>
+      {user && (
+        <div className="fixed bottom-[15px] left-1 right-1 z-40 md:left-1 md:right-auto md:w-auto">
+          <ProfileButton user={user} className="w-full md:w-[386px]" />
+        </div>
+      )}
     </div>
   );
 };
