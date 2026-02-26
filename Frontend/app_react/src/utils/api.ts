@@ -15,6 +15,10 @@ api.interceptors.response.use(
     async (error) => {
         const originalReq = error.config;
 
+        if (originalReq === "/auth/refresh") {
+            return Promise.reject(error);
+        }
+    
         if (error.response?.status === 401 && !originalReq._retry) {
             originalReq._retry = true;
 
@@ -27,6 +31,11 @@ api.interceptors.response.use(
                 return api(originalReq);
             } catch (refreshError) {
                 console.error("Refresh token expired");
+                localStorage.removeItem("user");
+                const currentPath = window.location.pathname;
+                if (currentPath !== "/login" && currentPath !== "/signup") {
+                    window.location.href = "/login";
+                }
                 return Promise.reject(refreshError);
             }
         }
