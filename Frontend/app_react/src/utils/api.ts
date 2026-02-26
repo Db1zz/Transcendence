@@ -27,8 +27,6 @@ api.interceptors.response.use(
                 return api(originalReq);
             } catch (refreshError) {
                 console.error("Refresh token expired");
-                localStorage.removeItem("user");
-                window.location.href = "/login";
                 return Promise.reject(refreshError);
             }
         }
