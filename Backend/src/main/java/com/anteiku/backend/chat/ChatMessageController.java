@@ -1,7 +1,11 @@
 package com.anteiku.backend.chat;
 
+import com.anteiku.backend.exception.UserIsNotAuthorized;
 import com.anteiku.backend.model.ChatMessageResponse;
 import com.anteiku.backend.model.ChatRoomDto;
+import com.anteiku.backend.model.UserPublicDto;
+import com.anteiku.backend.security.jwt.JwtUtils;
+import com.anteiku.backend.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +22,8 @@ import java.util.UUID;
 public class ChatMessageController {
     private final ChatMessageService chatMessageService;
     private final HttpServletRequest request;
+    private final JwtUtils jwtUtils;
+    private final UserService userService;
 
     @GetMapping("/rooms/{roomId}/messages")
     public List<ChatMessageResponse> getRoomMessages(@PathVariable String roomId) {
@@ -31,16 +37,9 @@ public class ChatMessageController {
     }
     
     private UUID getCurrentUserId() {
-        String headerId = request.getHeader("X-User-Id");
-        
-        if (headerId != null && !headerId.isEmpty()) {
-            try {
-                return UUID.fromString(headerId);
-            } catch (IllegalArgumentException e) {
-                throw new RuntimeException("Invalid UUID in X-User-Id");
-            }
-        }
-        
-        throw new RuntimeException("Missing UUID in X-User-Id");
+        String email = jwtUtils.getCurrentUserEmail()
+                .orElseThrow(() -> new UserIsNotAuthorized("User is not authorized"));
+        UserPublicDto user = userService.getUserByEmail(email);
+        return user.getId();
     }
 }

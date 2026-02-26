@@ -1,6 +1,7 @@
 package com.anteiku.backend.delegate;
 
 import com.anteiku.backend.api.FriendsApi;
+import com.anteiku.backend.exception.UserIsNotAuthorized;
 import com.anteiku.backend.model.FriendDto;
 import com.anteiku.backend.model.UserPublicDto;
 import com.anteiku.backend.security.jwt.JwtUtils;
@@ -22,20 +23,13 @@ import java.util.UUID;
 public class FriendsApiDelegate implements FriendsApi {
     private final FriendsService friendsService;
     private final UserService userService;
-    private final HttpServletRequest request;
+    private final JwtUtils jwtUtils;
 
     private UUID getCurrentUserId() {
-        String headerId = request.getHeader("X-User-Id");
-
-        if (headerId != null && !headerId.isEmpty()) {
-            try {
-                return UUID.fromString(headerId);
-            } catch (IllegalArgumentException e) {
-                throw new RuntimeException("Invalid UUID in X-User-Id");
-            }
-        }
-
-        throw new RuntimeException("Missing UUID in X-User-Id");
+        String email = jwtUtils.getCurrentUserEmail()
+                .orElseThrow(() -> new UserIsNotAuthorized("User is not authorized"));
+        UserPublicDto user = userService.getUserByEmail(email);
+        return user.getId();
     }
 
     @Override

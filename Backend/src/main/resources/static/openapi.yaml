@@ -318,14 +318,8 @@ paths:
       summary: "Get all chat rooms for the current user"
       operationId: getUserChatRooms
       description: "Retrieves a list of all chat rooms (conversations) the current user is part of"
-      parameters:
-        - name: X-User-Id
-          in: header
-          description: "Current user's ID"
-          required: true
-          schema:
-            type: string
-            format: uuid
+      security:
+        - bearerAuth: []
       responses:
         200:
           description: "List of chat rooms"
