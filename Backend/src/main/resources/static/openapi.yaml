@@ -696,8 +696,6 @@ components:
       properties:
         name:
           type: string
-        organizationId:
-          $ref: '#/components/schemas/OrganizationId'
         channelType:
           type: string
           enum:
@@ -711,8 +709,6 @@ components:
           $ref: '#/components/schemas/ChannelId'
         name:
           type: string
-        organizationId:
-          $ref: '#/components/schemas/OrganizationId'
         channelType:
           type: string
           enum:

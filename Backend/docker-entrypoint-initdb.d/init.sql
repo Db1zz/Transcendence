@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS member_roles (
 
 CREATE TABLE IF NOT EXISTS channels (
     id UUID PRIMARY KEY,
-    organization_id UUID NOT NULL,
+--     organization_id UUID NOT NULL,
     name VARCHAR NOT NULL,
     type VARCHAR NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()

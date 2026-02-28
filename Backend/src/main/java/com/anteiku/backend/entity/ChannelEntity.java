@@ -16,9 +16,9 @@ public class ChannelEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "organization_id", nullable = false)
-    private OrganizationEntity organization;
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "organization_id", nullable = false)
+//    private OrganizationEntity organization;
 
     @Column(name = "name", nullable = false)
     private String name;
