@@ -1,8 +1,8 @@
 package com.anteiku.backend.delegate;
 
 import com.anteiku.backend.api.ChannelsApi;
+import com.anteiku.backend.model.ChannelDto;
 import com.anteiku.backend.model.CreateChannelDto;
-import com.anteiku.backend.model.CreateChannelResponseDto;
 import com.anteiku.backend.service.ChannelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -15,12 +15,12 @@ import java.util.UUID;
 @RequestMapping("/api")
 @RequiredArgsConstructor
 public class ChannelsApiDelegate implements ChannelsApi {
-    private ChannelService channelService;
+    private final ChannelService channelService;
 
     @Override
-    public ResponseEntity<CreateChannelResponseDto> createChannel(CreateChannelDto createChannelDto) {
-        CreateChannelResponseDto createChannelResponseDto = channelService.createChannel(createChannelDto);
-        return ResponseEntity.status(201).body(createChannelResponseDto);
+    public ResponseEntity<ChannelDto> createChannel(CreateChannelDto createChannelDto) {
+        ChannelDto channelDto = channelService.createChannel(createChannelDto);
+        return ResponseEntity.status(201).body(channelDto);
     }
 
     @Override

@@ -3,10 +3,10 @@ package com.anteiku.backend.service;
 import com.anteiku.backend.entity.ChannelEntity;
 import com.anteiku.backend.entity.ChannelType;
 import com.anteiku.backend.exception.ResourceNotFoundException;
+import com.anteiku.backend.mapper.ChannelMapper;
+import com.anteiku.backend.model.ChannelDto;
 import com.anteiku.backend.model.CreateChannelDto;
-import com.anteiku.backend.model.CreateChannelResponseDto;
 import com.anteiku.backend.repository.ChannelRepository;
-import com.anteiku.backend.repository.OrganizationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,9 +22,10 @@ import java.util.UUID;
 public class ChannelService {
 
     private final ChannelRepository channelRepository;
-    private final OrganizationRepository organizationRepository;
+    private final ChannelMapper channelMapper;
+    // private final OrganizationRepository organizationRepository;
 
-    public CreateChannelResponseDto createChannel(CreateChannelDto dto) {
+    public ChannelDto createChannel(CreateChannelDto dto) {
 //        OrganizationEntity organization = organizationRepository.findById(dto.getOrganizationId())
 //                .orElseThrow(() -> new ResourceNotFoundException("Organization not found with id: " + dto.getOrganizationId()));
 //
@@ -47,18 +48,23 @@ public class ChannelService {
                 .build();
 
         channelRepository.save(channel);
-        
-        CreateChannelResponseDto response = new CreateChannelResponseDto();
+
+        ChannelDto response = new ChannelDto();
         response.setId(channel.getId());
         response.setName(channel.getName());
 //        response.setOrganizationId(organization.getId());
-        response.setChannelType(CreateChannelResponseDto.ChannelTypeEnum.valueOf(channel.getType().name()));
+        response.setChannelType(ChannelDto.ChannelTypeEnum.valueOf(channel.getType().name()));
         response.setCreatedAt(OffsetDateTime.ofInstant(channel.getCreatedAt(), ZoneId.systemDefault()));
 
         return response;
     }
 
-    
+    public ChannelDto getChannel(UUID channelId) {
+        ChannelEntity channel = channelRepository.findById(channelId)
+                .orElseThrow(() -> new ResourceNotFoundException("Channel not found"));
+        return channelMapper.toDto(channel);
+    }
+
     public void deleteChannel(UUID channelId) {
         ChannelEntity channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new ResourceNotFoundException("Channel not found"));

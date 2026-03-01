@@ -1,6 +1,7 @@
 services:
   redis:
     image: 'redis:latest'
+    container_name: redis_container
     volumes:
       - ./Backend/docker-configs/redis/redis.conf:/usr/local/etc/redis/redis.conf
     command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
@@ -28,6 +29,7 @@ services:
       - "5005:5005"
     depends_on:
       - postgres
+      - redis
     env_file:
       - .env
     environment:

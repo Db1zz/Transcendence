@@ -36,6 +36,10 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-r2dbc</artifactId>
         </dependency>
         <dependency>
@@ -193,6 +197,7 @@
                             <modelPackage>com.anteiku.backend.model</modelPackage>
                             <generatorName>spring</generatorName>
                             <configOptions>
+                                <serializableModel>true</serializableModel>
                                 <interfaceOnly>true</interfaceOnly>
                                 <useJakartaEe>true</useJakartaEe>
                             </configOptions>
