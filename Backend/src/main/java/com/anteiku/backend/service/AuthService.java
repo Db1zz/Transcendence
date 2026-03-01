@@ -25,16 +25,15 @@ public class AuthService {
     final private UserSessionsService userSessionsService;
 
     public UserAuthResponseDto authenticateUser(UserAuthDto userAuthDto) {
-        Optional<UserCredentialsEntity> userCredentials = userCredentialsRepository.findByEmail(userAuthDto.getEmail());
-        if (userCredentials.isEmpty()) {
-            throw new ResourceNotFoundException("User not found");
-        }
+        UserCredentialsEntity userCredentials = userCredentialsRepository.findByEmail(userAuthDto.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userAuthDto.getEmail()));
 
-        if (!passwordEncoder.matches(userAuthDto.getPassword(), userCredentials.get().getPassword())) {
+        if (!passwordEncoder.matches(userAuthDto.getPassword(), userCredentials.getPassword())) {
             throw new InvalidCredentialsException("Invalid password");
         }
 
-        UserEntity userEntity = userRepository.findUserById(userCredentials.get().getUserId()).get();
+        UserEntity userEntity = userRepository.findUserById(userCredentials.getUserId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userCredentials.getUserId()));
 
         UserInfoDto userInfoDto = new UserInfoDto();
         userInfoDto.setId(userEntity.getId());

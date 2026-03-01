@@ -6,7 +6,7 @@ import com.anteiku.backend.exception.EmailIsAlreadyUsedException;
 import com.anteiku.backend.exception.ResourceNotFoundException;
 import com.anteiku.backend.mapper.UserMapper;
 import com.anteiku.backend.model.*;
-import com.anteiku.backend.repository.UserCredentialsRepository;
+        import com.anteiku.backend.repository.UserCredentialsRepository;
 import com.anteiku.backend.repository.UserRepository;
 import com.anteiku.backend.util.SecurityUtils;
 import jakarta.transaction.Transactional;
@@ -82,33 +82,21 @@ public class UserService {
         return userRegistrationDto;
     }
 
-
     public UserInfoDto getMe() throws AuthenticationException {
         UUID userId = SecurityUtils.getCurrentUserId();
         if (userId == null) {
-                throw new AuthenticationCredentialsNotFoundException("User is not authenticated");
+            throw new AuthenticationCredentialsNotFoundException("User is not authenticated");
         }
 
         UserInfoDto userInfoDto = new UserInfoDto();
-
-
         UserPublicDto userPublicDto = getUserById(userId);
-        UserCredentialsEntity userCredentialsEntity = userCredentialsRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User credentials not found"));
+        UserCredentialsDto userCredentialsDto = getUserCredentialsById(userId);
 
-        userInfoDto.setEmail(userCredentialsEntity.getEmail());
+        userInfoDto.setEmail(userCredentialsDto.getEmail());
         userInfoDto.setUsername(userPublicDto.getUsername());
         userInfoDto.setRole(userPublicDto.getRole());
         userInfoDto.setId(userPublicDto.getId());
         return userInfoDto;
-    }
-
-    public boolean isEmailAvailable(String email) {
-        return !userCredentialsRepository.existsByEmail(email);
-    }
-
-    public boolean isUsernameAvailable(String username) {
-        return userRepository.findUserByUsername(username).isEmpty();
     }
 
     @Cacheable(value="userCredentials", key="#userEmail")
@@ -123,6 +111,14 @@ public class UserService {
     @Cacheable(value="userCredentials", key="#id")
     public UserCredentialsDto getUserCredentialsById(UUID id) {
         return userMapper.toCredentialsDto(userCredentialsRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found")));
+                .orElseThrow(() -> new ResourceNotFoundException("User credentials not found")));
+    }
+
+    public boolean isEmailAvailable(String email) {
+        return !userCredentialsRepository.existsByEmail(email);
+    }
+
+    public boolean isUsernameAvailable(String username) {
+        return userRepository.findUserByUsername(username).isEmpty();
     }
 }
