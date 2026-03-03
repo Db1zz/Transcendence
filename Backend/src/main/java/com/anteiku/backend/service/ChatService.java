@@ -1,4 +1,4 @@
-package com.anteiku.backend.chat;
+package com.anteiku.backend.service;
 
 import com.anteiku.backend.model.ChatMessageRequest;
 import com.anteiku.backend.model.ChatMessageResponse;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class ChatMessageService {
+public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final UserRepository userRepository;
 

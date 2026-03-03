@@ -43,7 +43,6 @@ public class UserSessionsService {
             throw new UserIsNotAuthorized(accessToken);
         }
 
-        // we can delete the line or mark it as "revoked"
         // userSessionsRepository.deleteById(userSession.get().getId());
         userSession.get().setRevoked(true);
         userSession.get().setRevokedAt(Instant.now());

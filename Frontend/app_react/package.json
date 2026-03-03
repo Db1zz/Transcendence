@@ -3,6 +3,7 @@
 	"version": "0.1.0",
 	"private": true,
 	"type": "module",
+	"proxy": "http://localhost:8080",
 	"dependencies": {
 		"@stomp/stompjs": "^7.0.0",
 		"@testing-library/dom": "^10.4.1",
@@ -15,10 +16,11 @@
 		"@types/react-dom": "^19.2.3",
 		"axios": "^1.13.2",
 		"lucide-react": "^0.562.0",
+		"peerjs": "^1.5.5",
 		"react": "^19.2.1",
 		"react-dom": "^19.2.1",
 		"react-router-dom": "^7.10.1",
-		"react-scripts": "5.0.1",
+		"react-scripts": "^5.0.1",
 		"typescript": "^4.9.5",
 		"validator": "^13.15.26",
 		"web-vitals": "^2.1.4"

@@ -39,8 +39,12 @@ services:
       - /app/node_modules
     ports:
       - "3000:3000"
+    env_file:
+      - .env
     environment:
       - CHOKIDAR_USEPOLLING=true
+      - REACT_APP_STUN_SERVER=${REACT_APP_STUN_SERVER}
+      - REACT_APP_SIGNALING_SERVER=${REACT_APP_SIGNALING_SERVER}
     stdin_open: true
 
 volumes:

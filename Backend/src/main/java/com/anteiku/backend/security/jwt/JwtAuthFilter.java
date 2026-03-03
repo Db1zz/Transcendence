@@ -1,6 +1,8 @@
 package com.anteiku.backend.security.jwt;
 
 import com.anteiku.backend.constant.TokenNames;
+import com.anteiku.backend.model.UserInfoDto;
+import com.anteiku.backend.model.UserPublicDto;
 import com.anteiku.backend.security.session.UserSessionsService;
 import com.anteiku.backend.service.UserService;
 import jakarta.servlet.FilterChain;
@@ -58,9 +60,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             if (jwtService.isTokenValid(token)) {
-                SimpleGrantedAuthority authority = new SimpleGrantedAuthority(userService.getUserByEmail(userEmail).getRole());
+                UserPublicDto userPublicDto = userService.getUserByEmail(userEmail);
 
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userEmail, null, Collections.singleton(authority));
+                SimpleGrantedAuthority authority = new SimpleGrantedAuthority(userPublicDto.getRole());
+
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userPublicDto.getId(), null, Collections.singleton(authority));
 
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
