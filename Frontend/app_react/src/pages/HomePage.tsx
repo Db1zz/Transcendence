@@ -1,8 +1,9 @@
 import React from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../contexts/AuthContext";
 import { Navigate } from "react-router-dom";
 // import ProfileButton from "../components/ProfileButton";
 import MainLayout from "../components/MainLayout";
+import { CallProvider } from "../contexts/CallContext";
 
 const HomePage = () => {
   const { isAuthenticated, loading, user } = useAuth();
@@ -13,6 +14,7 @@ const HomePage = () => {
   if (!isAuthenticated || !user) return <Navigate to="/login" replace />;
 
   return (
+    <CallProvider>
     <MainLayout>
       <div>
         {/* <ProfileButton
@@ -25,7 +27,8 @@ const HomePage = () => {
 				className="bg-red-500 text-white px-4 py-2 rounded cursor-pointer mt-5">logout
 			</button> */}
       </div>
-    </MainLayout>
+      </MainLayout>
+    </CallProvider>
   );
 };
 

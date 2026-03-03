@@ -3,7 +3,7 @@ package com.anteiku.backend.service;
 import com.anteiku.backend.entity.UserCredentialsEntity;
 import com.anteiku.backend.entity.UserEntity;
 import com.anteiku.backend.exception.InvalidCredentialsException;
-import com.anteiku.backend.exception.UserNotFoundException;
+import com.anteiku.backend.exception.ResourceNotFoundException;
 import com.anteiku.backend.model.*;
 import com.anteiku.backend.repository.UserCredentialsRepository;
 import com.anteiku.backend.repository.UserRepository;
@@ -27,7 +27,7 @@ public class AuthService {
     public UserAuthResponseDto authenticateUser(UserAuthDto userAuthDto) {
         Optional<UserCredentialsEntity> userCredentials = userCredentialsRepository.findByEmail(userAuthDto.getEmail());
         if (userCredentials.isEmpty()) {
-            throw new UserNotFoundException("User not found");
+            throw new ResourceNotFoundException("User not found");
         }
 
         if (!passwordEncoder.matches(userAuthDto.getPassword(), userCredentials.get().getPassword())) {

@@ -8,14 +8,28 @@ import ProfileButton from "../components/ProfileButton";
 import { HeaderBar } from "./navigation/HeaderBar";
 import { LeftBar } from "./navigation/LeftBar";
 import RightBar from "./navigation/RightBar";
-import { useAuth } from "../context/AuthContext";
+import { VoiceView } from "./VoiceView";
+import { useCallContext } from "../contexts/CallContext";
+import { useAuth } from "../contexts/AuthContext";
+
+const testUser = {
+  name: "kaneki",
+  email: "example@example.com",
+  picture: "https://media.tenor.com/I9qt03YKkjQAAAAe/monkey-thinking.png",
+  status: "online" as const,
+  role: "ADMIN" as const,
+  about: "privet",
+  createdAt: "2023-12-20T10:00:00Z",
+};
 
 interface MainLayoutProps {
   children: React.ReactNode;
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
-  const [activeView, setActiveView] = useState<"friends" | "chat">("friends");
+  const [activeView, setActiveView] = useState<"friends" | "chat" | "voice">("friends");
+  const { activeCall } = useCallContext();
+
   const [selectedChatFriend, setSelectedChatFriend] = useState<Friend | null>(
     null,
   );
@@ -29,13 +43,20 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     const savedView = localStorage.getItem("activeView") as
       | "friends"
       | "chat"
+      | "voice"
       | null;
     if (savedView) {
       setActiveView(savedView);
     }
   }, []);
 
-  const handleViewChange = (view: "friends" | "chat") => {
+  useEffect(() => {
+    if (activeCall) {
+      setActiveView("voice");
+    }
+  }, [activeCall]);
+
+  const handleViewChange = (view: "friends" | "chat" | "voice") => {
     setActiveView(view);
     localStorage.setItem("activeView", view);
   };
@@ -88,23 +109,25 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           </div>
           <div className="hidden md:flex w-3/5 min-h-0 overflow-hidden">
             <div className="flex-1 min-h-0">
-              {activeView === "friends" ? (
-                <FriendsView onOpenChat={handleOpenChat} />
-              ) : !user ? (
-                <div className="flex h-full items-center justify-center text-brand-beige">
-                  please log in to use chat
-                </div>
-              ) : !chatRoomId ? (
-                <div className="flex h-full items-center justify-center text-brand-beige">
-                  select a friend to start a chat
-                </div>
-              ) : (
-                <Chat
-                  personName={chatPersonName}
-                  userId={chatUserId}
-                  roomId={chatRoomId}
-                />
-              )}
+                {activeView === "friends" ? (
+                    <FriendsView onOpenChat={handleOpenChat} />
+                ) : activeView === "voice" ? (
+                    <VoiceView/>
+                ) : !user ? (
+                    <div className="flex h-full items-center justify-center text-brand-beige">
+                        please log in to use chat
+                    </div>
+                ) : !chatRoomId ? (
+                    <div className="flex h-full items-center justify-center text-brand-beige">
+                        select a friend to start a chat
+                    </div>
+                ) : (
+                    <Chat
+                        personName={chatPersonName}
+                        userId={chatUserId}
+                        roomId={chatRoomId}
+                    />
+                )}
             </div>
           </div>
           <div className="hidden lg:block w-1/5 flex-shrink-0 overflow-hidden">

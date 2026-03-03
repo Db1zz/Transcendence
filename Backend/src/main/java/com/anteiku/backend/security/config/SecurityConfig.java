@@ -53,6 +53,8 @@ public class SecurityConfig {
                                 "/api/users/check-email",
                                 "/error",
                                 "/api/users/public/**",
+                                "/api/voice",
+                                "/socket",
                                 "/api/auth/refresh"
                         ).permitAll()
                         .anyRequest().authenticated())
