@@ -35,7 +35,7 @@ export const FriendsView: React.FC<FriendsViewProps> = ({ onOpenChat }) => {
     removeFriend,
     blockUser,
     unblockUser,
-    refresh
+    refresh,
   } = useFriends();
 
   const getFiltered = () => {

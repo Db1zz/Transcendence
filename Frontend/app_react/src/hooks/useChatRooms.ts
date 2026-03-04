@@ -1,4 +1,4 @@
-import {useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import api from "../utils/api";
 
@@ -15,7 +15,7 @@ export const useChatRooms = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchChatRooms = async () => {
+  const fetchChatRooms = useCallback(async () => {
     if (!user?.id) {
       setLoading(false);
       setChatRooms([]);
@@ -34,11 +34,11 @@ export const useChatRooms = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
 
   useEffect(() => {
     fetchChatRooms();
-  }, [user?.id]);
+  }, [fetchChatRooms]);
 
   return { chatRooms, loading, error, refetch: fetchChatRooms };
 };

@@ -5,7 +5,7 @@ import {
   Ban,
   Check,
   X,
-  Phone
+  Phone,
 } from "lucide-react";
 
 import { Friend, FriendsTab } from "./FriendsView";
@@ -50,7 +50,7 @@ export const FriendsList: React.FC<FriendsListProps> = ({
   onRemove,
   onBlock,
   onUnblock,
-  onCall
+  onCall,
 }) => {
   return (
     <div className="flex flex-col h-full p-6">
@@ -100,7 +100,7 @@ export const FriendsList: React.FC<FriendsListProps> = ({
                       onClick={() => onCall(friend.id)}
                       className="!p-2 !rounded-full !border-gray-800 !text-gray-800 hover:!bg-brand-brick hover:!text-brand-beige !shadow-[2px_2px_0px_#000]"
                     >
-                      <Phone className="w-4 h-4"/>
+                      <Phone className="w-4 h-4" />
                     </Button>
                     <Button
                       color="bg-gray-200"

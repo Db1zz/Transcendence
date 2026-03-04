@@ -17,7 +17,9 @@ interface MainLayoutProps {
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
-  const [activeView, setActiveView] = useState<"friends" | "chat" | "voice">("friends");
+  const [activeView, setActiveView] = useState<"friends" | "chat" | "voice">(
+    "friends",
+  );
   const { activeCall } = useCallContext();
 
   const [selectedChatFriend, setSelectedChatFriend] = useState<Friend | null>(
@@ -99,25 +101,25 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           </div>
           <div className="hidden md:flex w-3/5 min-h-0 overflow-hidden">
             <div className="flex-1 min-h-0">
-                {activeView === "friends" ? (
-                    <FriendsView onOpenChat={handleOpenChat} />
-                ) : activeView === "voice" ? (
-                    <VoiceView/>
-                ) : !user ? (
-                    <div className="flex h-full items-center justify-center text-brand-beige">
-                        please log in to use chat
-                    </div>
-                ) : !chatRoomId ? (
-                    <div className="flex h-full items-center justify-center text-brand-beige">
-                        select a friend to start a chat
-                    </div>
-                ) : (
-                    <Chat
-                        personName={chatPersonName}
-                        userId={chatUserId}
-                        roomId={chatRoomId}
-                    />
-                )}
+              {activeView === "friends" ? (
+                <FriendsView onOpenChat={handleOpenChat} />
+              ) : activeView === "voice" ? (
+                <VoiceView />
+              ) : !user ? (
+                <div className="flex h-full items-center justify-center text-brand-beige">
+                  please log in to use chat
+                </div>
+              ) : !chatRoomId ? (
+                <div className="flex h-full items-center justify-center text-brand-beige">
+                  select a friend to start a chat
+                </div>
+              ) : (
+                <Chat
+                  personName={chatPersonName}
+                  userId={chatUserId}
+                  roomId={chatRoomId}
+                />
+              )}
             </div>
           </div>
           <div className="hidden lg:block w-1/5 flex-shrink-0 overflow-hidden">

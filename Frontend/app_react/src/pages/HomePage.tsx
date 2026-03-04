@@ -15,18 +15,18 @@ const HomePage = () => {
 
   return (
     <CallProvider>
-    <MainLayout>
-      <div>
-        {/* <ProfileButton
+      <MainLayout>
+        <div>
+          {/* <ProfileButton
 				user={testUser}
 				className="w-[280px] mt-5"
 				/> */}
 
-        {/* <button
+          {/* <button
 				onClick={handleLogout}
 				className="bg-red-500 text-white px-4 py-2 rounded cursor-pointer mt-5">logout
 			</button> */}
-      </div>
+        </div>
       </MainLayout>
     </CallProvider>
   );

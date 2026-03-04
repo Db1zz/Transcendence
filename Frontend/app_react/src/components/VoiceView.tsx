@@ -1,4 +1,10 @@
-import React, { useRef, useEffect, useState, useCallback, useMemo } from "react";
+import React, {
+  useRef,
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+} from "react";
 import { useCallContext } from "../contexts/CallContext";
 import { useWebRtc } from "../hooks/useWebRtc";
 
@@ -38,11 +44,19 @@ const VideoTile: React.FC<VideoTileProps> = ({
   return (
     <div
       className={`relative aspect-video bg-black rounded-xl overflow-hidden shadow-lg border-2 transition-all cursor-pointer ${
-        isSelected ? "border-indigo-500 ring-2 ring-indigo-500" : "border-transparent hover:border-indigo-500"
+        isSelected
+          ? "border-indigo-500 ring-2 ring-indigo-500"
+          : "border-transparent hover:border-indigo-500"
       } ${className}`}
       onClick={() => onClick?.(peerId)}
     >
-      <video ref={videoRef} playsInline autoPlay muted={isLocal} className="w-full h-full object-cover" />
+      <video
+        ref={videoRef}
+        playsInline
+        autoPlay
+        muted={isLocal}
+        className="w-full h-full object-cover"
+      />
       <div className="absolute bottom-2 left-2 bg-black/50 px-2 py-1 rounded text-white text-xs">
         {displayName}
       </div>
@@ -55,7 +69,7 @@ export const VoiceView: React.FC = () => {
   const { remoteStreams, localStream } = useWebRtc(
     callContext.activeCall?.roomId!,
     callContext.activeCall?.signalingServerAddress!,
-    callContext.activeCall?.stunAddress!
+    callContext.activeCall?.stunAddress!,
   );
 
   const audioEnabled = false;
@@ -86,7 +100,9 @@ export const VoiceView: React.FC = () => {
       <button
         // onClick={toggleAudio}
         className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-          audioEnabled ? "bg-gray-700 hover:bg-gray-600 text-white" : "bg-red-500 hover:bg-red-600 text-white"
+          audioEnabled
+            ? "bg-gray-700 hover:bg-gray-600 text-white"
+            : "bg-red-500 hover:bg-red-600 text-white"
         }`}
         aria-label={audioEnabled ? "Mute microphone" : "Unmute microphone"}
       >
@@ -95,7 +111,9 @@ export const VoiceView: React.FC = () => {
       <button
         // onClick={toggleVideo}
         className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-          videoEnabled ? "bg-gray-700 hover:bg-gray-600 text-white" : "bg-red-500 hover:bg-red-600 text-white"
+          videoEnabled
+            ? "bg-gray-700 hover:bg-gray-600 text-white"
+            : "bg-red-500 hover:bg-red-600 text-white"
         }`}
         aria-label={videoEnabled ? "Turn off camera" : "Turn on camera"}
       >
@@ -112,7 +130,10 @@ export const VoiceView: React.FC = () => {
 
   const renderGridView = () => {
     const tiles = Array.from(allStreams.entries()).map(([peerId, stream]) => (
-      <div key={peerId} className="w-full sm:w-64 md:w-72 lg:w-80 flex-shrink-0">
+      <div
+        key={peerId}
+        className="w-full sm:w-64 md:w-72 lg:w-80 flex-shrink-0"
+      >
         <VideoTile
           peerId={peerId}
           stream={stream}
@@ -123,9 +144,7 @@ export const VoiceView: React.FC = () => {
     ));
 
     return (
-      <div className="flex flex-wrap justify-center gap-4 w-full">
-        {tiles}
-      </div>
+      <div className="flex flex-wrap justify-center gap-4 w-full">{tiles}</div>
     );
   };
 
@@ -133,7 +152,9 @@ export const VoiceView: React.FC = () => {
     const mainStream = allStreams.get(selectedPeerId!);
     if (!mainStream) return null;
 
-    const otherTiles = Array.from(allStreams.entries()).filter(([id]) => id !== selectedPeerId);
+    const otherTiles = Array.from(allStreams.entries()).filter(
+      ([id]) => id !== selectedPeerId,
+    );
 
     return (
       <div className="flex flex-col w-full h-full gap-2">
@@ -148,21 +169,24 @@ export const VoiceView: React.FC = () => {
           />
         </div>
         {otherTiles.length > 0 && (
-        <div className="h-24 sm:h-28 md:h-32 flex-shrink-0 w-full overflow-x-auto">
+          <div className="h-24 sm:h-28 md:h-32 flex-shrink-0 w-full overflow-x-auto">
             <div className="flex gap-2 h-full w-max flex-nowrap">
-            {otherTiles.map(([peerId, stream]) => (
-                <div key={peerId} className="h-full w-32 sm:w-36 md:w-40 flex-shrink-0">
-                <VideoTile
+              {otherTiles.map(([peerId, stream]) => (
+                <div
+                  key={peerId}
+                  className="h-full w-32 sm:w-36 md:w-40 flex-shrink-0"
+                >
+                  <VideoTile
                     peerId={peerId}
                     stream={stream}
                     isLocal={peerId === "local"}
                     onClick={handleTileClick}
                     className="w-full h-full"
-                />
+                  />
                 </div>
-            ))}
+              ))}
             </div>
-        </div>
+          </div>
         )}
       </div>
     );
@@ -175,9 +199,7 @@ export const VoiceView: React.FC = () => {
           {selectedPeerId ? (
             renderFocusView()
           ) : (
-            <div className="mt-auto mb-auto w-full">
-              {renderGridView()}
-            </div>
+            <div className="mt-auto mb-auto w-full">{renderGridView()}</div>
           )}
         </div>
       </div>
