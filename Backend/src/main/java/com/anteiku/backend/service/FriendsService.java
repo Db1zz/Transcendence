@@ -9,12 +9,14 @@ import com.anteiku.backend.repository.FriendsRepository;
 import com.anteiku.backend.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -42,6 +44,7 @@ public class FriendsService {
                 .build();
 
         friendsRepository.save(friendsEntity);
+        log.info("Friend request sent: User {} -> User {}", requesterId, addresseeId);
     }
 
     public void acceptFriendRequest(UUID meId, UUID requesterId) {
@@ -52,6 +55,7 @@ public class FriendsService {
                 .orElseThrow(() -> new IllegalArgumentException("No pending friend request found"));
         request.setStatus(FriendStatus.FRIEND);
         friendsRepository.save(request);
+        log.info("Friend request accepted: User {} accepted User {}", meId, requesterId);
     }
 
     public void removeFriend(UUID meId, UUID requesterId) {
@@ -62,6 +66,7 @@ public class FriendsService {
                 .orElseGet(() -> friendsRepository.findByRequesterAndAddressee(requester, me)
                         .orElseThrow(() -> new IllegalArgumentException("No pending friend request found")));
         friendsRepository.delete(friend);
+        log.info("Friend was removed: User {} removed User {}", meId, requesterId);
     }
 
     public void blockUser(UUID requesterId, UUID addresseeId) {
@@ -85,6 +90,7 @@ public class FriendsService {
                     .build();
             friendsRepository.save(block);
         }
+        log.info("User blocked: User {} blocked User {}", requesterId, addresseeId);
     }
 
     public void unblockUser(UUID requesterId, UUID addresseeId) {
@@ -99,6 +105,7 @@ public class FriendsService {
         }
 
         friendsRepository.delete(block);
+        log.info("User unblocked: User {} unblocked User {}", requesterId, addresseeId);
     }
 
     public List<FriendDto> getMyFriends(UUID meId) {

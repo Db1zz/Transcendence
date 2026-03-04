@@ -6,10 +6,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 
+@Slf4j
 @RequiredArgsConstructor
 public class SessionLogoutHandler implements LogoutHandler {
     final private UserSessionsService sessionService;
@@ -29,10 +31,11 @@ public class SessionLogoutHandler implements LogoutHandler {
         }
 
         if (token == null) {
+            log.warn("Logout attempt failed: No access token found");
             throw new UserIsNotAuthorized("Failed to find user's access token");
         }
 
         sessionService.logout(token);
-        System.out.println("User has been successfully logged out");
+        log.info("Logout successful and session revoked");
     }
 }

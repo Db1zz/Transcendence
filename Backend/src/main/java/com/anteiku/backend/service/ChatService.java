@@ -8,6 +8,7 @@ import com.anteiku.backend.entity.UserEntity;
 import com.anteiku.backend.repository.ChatMessageRepository;
 import com.anteiku.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.ZoneId;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatService {
@@ -29,6 +31,7 @@ public class ChatService {
         entity.setContent(request.getContent());
 
         ChatMessageEntity saved = chatMessageRepository.save(entity);
+        log.debug("Chat message saved: Room {} | Sender {}", saved.getRoomId(), saved.getSenderId());
         ChatMessageResponse response = new ChatMessageResponse();
         response.setId(saved.getId());
         response.setRoomId(saved.getRoomId());
