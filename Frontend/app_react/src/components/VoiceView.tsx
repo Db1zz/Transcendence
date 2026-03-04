@@ -5,7 +5,14 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
-import { Mic, MicOff, Video, VideoOff, Headphones } from "lucide-react";
+import {
+  Mic,
+  MicOff,
+  Video,
+  VideoOff,
+  HeadphoneOff,
+  Phone,
+} from "lucide-react";
 import { useCallContext } from "../contexts/CallContext";
 import { useWebRtc } from "../hooks/useWebRtc";
 
@@ -13,7 +20,8 @@ const IconMicOn = () => <Mic size={20} />;
 const IconMicOff = () => <MicOff size={20} />;
 const IconCamOn = () => <Video size={20} />;
 const IconCamOff = () => <VideoOff size={20} />;
-const IconHeadphones = () => <Headphones size={20} />;
+const IconHeadphoneOff = () => <HeadphoneOff size={20} />;
+const IconPhoneOff = () => <Phone size={20} />;
 
 interface VideoTileProps {
   peerId: string;
@@ -67,6 +75,7 @@ const VideoTile: React.FC<VideoTileProps> = ({
 
 export const VoiceView: React.FC = () => {
   const callContext = useCallContext();
+  const { endCall } = callContext;
   const { remoteStreams, localStream } = useWebRtc(
     callContext.activeCall?.roomId!,
     callContext.activeCall?.signalingServerAddress!,
@@ -97,35 +106,46 @@ export const VoiceView: React.FC = () => {
   const resetSelection = useCallback(() => setSelectedPeerId(null), []);
 
   const renderControls = () => (
-    <div className="flex items-center gap-3 rounded-lg border border-brand-brick/70 bg-brand-beige/90 px-3 py-2 text-brand-green font-semibold shadow-sm transition-colors hover:bg-brand-peach hover:border-brand-green">
-      <button
-        // onClick={toggleAudio}
-        className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
-          audioEnabled
-            ? "hover:bg-brand-green text-white"
-            : "hover:bg-brand-brick text-white"
-        }`}
-        aria-label={audioEnabled ? "Mute microphone" : "Unmute microphone"}
-      >
-        {audioEnabled ? <IconMicOn /> : <IconMicOff />}
-      </button>
-      <button
-        // onClick={toggleVideo}
-        className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
-          videoEnabled
-            ? "hover:bg-brand-green text-white"
-            : "hover:bg-brand-brick text-white"
-        }`}
-        aria-label={videoEnabled ? "Turn off camera" : "Turn on camera"}
-      >
-        {videoEnabled ? <IconCamOn /> : <IconCamOff />}
-      </button>
-      <button
-        className="w-10 h-10 rounded-lg bg-brand-brick hover:bg-gray-600 text-white flex items-center justify-center"
-        aria-label="Headphones"
-      >
-        <IconHeadphones />
-      </button>
+    <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 rounded-lg border border-brand-brick/70 bg-brand-beige/90 px-3 py-2 text-brand-green font-semibold shadow-sm transition-colors hover:bg-brand-peach hover:border-brand-green">
+        <button
+          // onClick={toggleAudio}
+          className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
+            audioEnabled
+              ? "hover:bg-brand-green text-white"
+              : "hover:bg-brand-brick text-white"
+          }`}
+          aria-label={audioEnabled ? "Mute microphone" : "Unmute microphone"}
+        >
+          {audioEnabled ? <IconMicOn /> : <IconMicOff />}
+        </button>
+        <button
+          className="w-10 h-10 rounded-lg bg-brand-brick hover:bg-gray-600 text-white flex items-center justify-center"
+          aria-label="Headphones off"
+        >
+          <IconHeadphoneOff />
+        </button>
+        <button
+          // onClick={toggleVideo}
+          className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
+            videoEnabled
+              ? "hover:bg-brand-green text-white"
+              : "hover:bg-brand-brick text-white"
+          }`}
+          aria-label={videoEnabled ? "Turn off camera" : "Turn on camera"}
+        >
+          {videoEnabled ? <IconCamOn /> : <IconCamOff />}
+        </button>
+      </div>
+      <div className="flex items-center rounded-lg border border-brand-brick/70 bg-red-700 px-3 py-2 shadow-sm hover:bg-red-800">
+        <button
+          onClick={endCall}
+          className="w-10 h-10 text-white flex items-center justify-center"
+          aria-label="End call"
+        >
+          <IconPhoneOff />
+        </button>
+      </div>
     </div>
   );
 
