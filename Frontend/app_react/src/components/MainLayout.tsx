@@ -12,16 +12,6 @@ import { VoiceView } from "./VoiceView";
 import { useCallContext } from "../contexts/CallContext";
 import { useAuth } from "../contexts/AuthContext";
 
-const testUser = {
-  name: "kaneki",
-  email: "example@example.com",
-  picture: "https://media.tenor.com/I9qt03YKkjQAAAAe/monkey-thinking.png",
-  status: "online" as const,
-  role: "ADMIN" as const,
-  about: "privet",
-  createdAt: "2023-12-20T10:00:00Z",
-};
-
 interface MainLayoutProps {
   children: React.ReactNode;
 }

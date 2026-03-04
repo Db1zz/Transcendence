@@ -23,13 +23,6 @@ const SignupPage: React.FC = () => {
   >("");
   const emailTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const usernameTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [passwordChecks, setPasswordChecks] = useState({
-    length: false,
-    lower: false,
-    upper: false,
-    number: false,
-    symbol: false,
-  });
 
   const checkEmailAvailability = async (emailToCheck: string) => {
     if (!emailToCheck || !validator.isEmail(emailToCheck)) {
@@ -101,8 +94,6 @@ const SignupPage: React.FC = () => {
       number: validator.matches(value, /[0-9]/),
       symbol: validator.matches(value, /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/),
     };
-
-    setPasswordChecks(Passwordchecks);
 
     const missing: string[] = [];
     if (!Passwordchecks.length) missing.push("8+ characters");

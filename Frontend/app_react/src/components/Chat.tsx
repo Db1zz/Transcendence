@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "./Button";
-import { useChat, ChatMessage } from "../hooks/useChat";
+import { useChat} from "../hooks/useChat";
 
 interface ChatProps {
   personName: string;

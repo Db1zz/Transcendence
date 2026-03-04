@@ -1,6 +1,5 @@
 import React from "react";
 import bgSideBar from "../../img/bg_sidebar.png";
-import { Button } from "../Button";
 
 export const RightBar: React.FC = () => {
   return (

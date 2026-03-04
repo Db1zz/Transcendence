@@ -58,8 +58,6 @@ export const VoiceView: React.FC = () => {
     callContext.activeCall?.stunAddress!
   );
 
-  const toggleAudio = false;
-  const toggleVideo = false;
   const audioEnabled = false;
   const videoEnabled = false;
 
