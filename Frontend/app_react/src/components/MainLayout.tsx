@@ -93,11 +93,16 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         </div>
         <main className="flex-1 flex gap-0 pt-2 pl-2 pr-0 md:p-2 overflow-hidden relative min-h-0">
           <div className="absolute inset-0 bg-brand-green opacity-80 -z-10"></div>
-          <div className="w-full md:w-1/5 flex-shrink-0 overflow-hidden">
+          <div className="w-full md:w-1/5 flex-shrink-0 overflow-hidden relative">
             <LeftBar
               onFriendsClick={() => handleViewChange("friends")}
               onChatRoomClick={handleChatRoomClick}
             />
+            {user && (
+              <div className="absolute bottom-[10px] left-0 right-[10px] z-40">
+                <ProfileButton user={user} className="w-full" />
+              </div>
+            )}
           </div>
           <div className="hidden md:flex w-3/5 min-h-0 overflow-hidden">
             <div className="flex-1 min-h-0">
@@ -127,11 +132,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           </div>
         </main>
       </div>
-      {user && (
-        <div className="fixed bottom-[15px] left-1 right-1 z-40 md:left-1 md:right-auto md:w-auto">
-          <ProfileButton user={user} className="w-full md:w-[386px]" />
-        </div>
-      )}
     </div>
   );
 };
