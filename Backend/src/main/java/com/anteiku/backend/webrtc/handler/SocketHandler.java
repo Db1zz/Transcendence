@@ -2,6 +2,7 @@ package com.anteiku.backend.webrtc.handler;
 
 import com.anteiku.backend.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class SocketHandler extends TextWebSocketHandler {
@@ -43,6 +45,7 @@ public class SocketHandler extends TextWebSocketHandler {
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+        log.info("WebRTC connection established: Session ID {}",  session.getId());
         ObjectNode root = objectMapper.createObjectNode();
         root.put("type", "new-connection");
         root.put("from", session.getId());
@@ -65,6 +68,7 @@ public class SocketHandler extends TextWebSocketHandler {
             }
         }));
         System.out.println("Number of users in a room: " + sessions.size());
+        log.info("Active WebRTC sessions: {}", sessions.size());
     }
 
     @Override
@@ -90,5 +94,6 @@ public class SocketHandler extends TextWebSocketHandler {
                 System.out.println("Unable to send a message to a websocket: " + e.getMessage());
             }
         });
+        log.info("WebRTC connection closed: Session ID {} with status {}", session.getId(), closeStatus);
     }
 }

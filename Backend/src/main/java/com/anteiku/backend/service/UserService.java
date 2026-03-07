@@ -11,6 +11,7 @@ import com.anteiku.backend.repository.UserRepository;
 import com.anteiku.backend.util.SecurityUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -55,6 +57,7 @@ public class UserService {
 
         if (userEntity.isPresent()) {
             userRepository.deleteById(id);
+            log.info("User deleted: ID {}", id);
         }
     }
 
@@ -73,6 +76,7 @@ public class UserService {
         userEntity.setCredentials(userCredentialsEntity);
         userCredentialsEntity.setUser(userEntity);
         userRepository.save(userEntity);
+        log.info("New user registered: '{}' with email '{}' (ID: {})", userEntity.getUsername(), userEntity.getCredentials().getEmail(),  userEntity.getId());
         return userRegistrationDto;
     }
 

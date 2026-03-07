@@ -10,11 +10,13 @@ import com.anteiku.backend.repository.UserRepository;
 import com.anteiku.backend.security.session.UserSessionsService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -27,14 +29,18 @@ public class AuthService {
     public UserAuthResponseDto authenticateUser(UserAuthDto userAuthDto) {
         Optional<UserCredentialsEntity> userCredentials = userCredentialsRepository.findByEmail(userAuthDto.getEmail());
         if (userCredentials.isEmpty()) {
+            log.warn("Login failed - User not found");
             throw new ResourceNotFoundException("User not found");
         }
 
         if (!passwordEncoder.matches(userAuthDto.getPassword(), userCredentials.get().getPassword())) {
+            log.warn("Login failed - Invalid password");
             throw new InvalidCredentialsException("Invalid password");
         }
 
         UserEntity userEntity = userRepository.findUserById(userCredentials.get().getUserId()).get();
+
+        log.info("Login successful");
 
         UserInfoDto userInfoDto = new UserInfoDto();
         userInfoDto.setId(userEntity.getId());
