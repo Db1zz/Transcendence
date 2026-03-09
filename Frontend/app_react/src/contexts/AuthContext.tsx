@@ -82,7 +82,7 @@ export const AuthProvider = ({ children }: Props) => {
       try {
         const parsedUser = JSON.parse(savedUser);
         setUser(parsedUser);
-		//refresh user
+        //refresh user
         // if (!parsedUser?.createdAt) {
         //   checkAuthStatus();
         // }
