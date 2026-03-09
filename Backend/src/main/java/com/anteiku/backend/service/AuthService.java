@@ -41,7 +41,7 @@ public class AuthService {
         userInfoDto.setUsername(userEntity.getUsername());
         userInfoDto.setEmail(userAuthDto.getEmail());
         userInfoDto.setRole(userEntity.getRole().toString());
-
+        userInfoDto.setCreatedAt(userEntity.getCreatedAt().atOffset(java.time.ZoneOffset.UTC));
         UserSessionDto userSessionDto = userSessionsService.createNewSession(userAuthDto.getEmail());
 
         UserAuthResponseDto userAuthResponseDto = new UserAuthResponseDto();

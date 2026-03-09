@@ -639,6 +639,9 @@ components:
           type: string
         role:
           type: string
+        createdAt:
+          type: string
+          format: date-time
 
     UserCredentialsDto:
       type: object
@@ -682,6 +685,9 @@ components:
         friendStatus:
           type: string
           enum: [FRIEND, PENDING, BLOCKED]
+        createdAt:
+          type: string
+          format: date-time
 
     UserSessionDto:
       type: object

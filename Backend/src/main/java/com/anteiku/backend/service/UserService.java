@@ -102,6 +102,7 @@ public class UserService {
         userInfoDto.setUsername(userPublicDto.getUsername());
         userInfoDto.setRole(userPublicDto.getRole());
         userInfoDto.setId(userPublicDto.getId());
+        userInfoDto.setCreatedAt(userPublicDto.getCreatedAt());
         return userInfoDto;
     }
 

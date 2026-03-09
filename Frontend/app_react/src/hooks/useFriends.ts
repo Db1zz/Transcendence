@@ -46,7 +46,7 @@ export const useFriends = () => {
     picture: data.picture,
     status: "online",
     about: data.about || "",
-    createdAt: "",
+    createdAt: data.createdAt || "",
     isFriend: type,
     role: "USER",
   });

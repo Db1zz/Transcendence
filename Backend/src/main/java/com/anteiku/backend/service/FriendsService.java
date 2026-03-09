@@ -134,7 +134,7 @@ public class FriendsService {
         UserStatus userStatus = friend.getStatus() != null ? friend.getStatus() : UserStatus.OFFLINE;
         friendDto.setStatus(FriendDto.StatusEnum.fromValue(userStatus.name()));
         friendDto.setFriendStatus(FriendDto.FriendStatusEnum.fromValue(friendStatus.name()));
-
+        friendDto.setCreatedAt(friend.getCreatedAt().atOffset(java.time.ZoneOffset.UTC));
         return friendDto;
     }
 }

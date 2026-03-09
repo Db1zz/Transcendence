@@ -82,6 +82,10 @@ export const AuthProvider = ({ children }: Props) => {
       try {
         const parsedUser = JSON.parse(savedUser);
         setUser(parsedUser);
+		//refresh user
+        // if (!parsedUser?.createdAt) {
+        //   checkAuthStatus();
+        // }
       } catch (error) {
         localStorage.removeItem("user");
         setUser(null);
