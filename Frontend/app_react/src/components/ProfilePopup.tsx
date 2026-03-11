@@ -9,6 +9,7 @@ import api from "../utils/api";
 interface ProfilePopupProps {
   user: User;
   friendshipStatus?: "friend" | "pending" | "blocked";
+  canAcceptPending?: boolean;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -28,6 +29,7 @@ const formatDate = (dateString: string) => {
 export const ProfilePopup: React.FC<ProfilePopupProps> = ({
   user,
   friendshipStatus,
+  canAcceptPending,
   isOpen,
   onClose,
 }) => {
@@ -67,27 +69,39 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
     handleClose();
   };
 
-  const handleAddFriend = async () => {
-    if (friendState !== "not_friend") {
-      return;
-    }
-
+  const handleFriendAction = async () => {
     try {
-      await api.post(`/friends/${user.id}`);
-      setFriendState("pending");
+      if (friendState === "pending" && canAcceptPending) {
+        await api.put(`/friends/${user.id}`);
+        setFriendState("friend");
+        return;
+      }
+
+      if (friendState === "not_friend") {
+        await api.post(`/friends/${user.id}`);
+        setFriendState("pending");
+        return;
+      }
+
+      if (friendState === "friend") {
+        await api.delete(`/friends/${user.id}`);
+        setFriendState("not_friend");
+      }
     } catch (error) {
-      console.error("failed to send friend request", error);
+      console.error("failed to update friendship state", error);
     }
   };
 
-  const addFriendText =
+  const friendActionText =
     friendState === "friend"
-      ? "you are friends"
+      ? "delete from friends"
       : friendState === "pending"
-        ? "friend request sent"
+        ? canAcceptPending
+          ? "add friend"
+          : "friend request sent"
         : "add friend";
 
-  const isAddFriendDisabled = friendState !== "not_friend";
+  const isFriendActionDisabled = friendState === "pending" && !canAcceptPending;
   return ReactDOM.createPortal(
     <div className="fixed inset-0 z-[9999] flex items-center justify-center font-roboto">
       <div
@@ -231,9 +245,9 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
               {!isOwnProfile && (
                 <div className="grid grid-cols-2 gap-3 mt-6 w-full">
                   <Button
-                    text={addFriendText}
-                    onClick={handleAddFriend}
-                    disabled={isAddFriendDisabled}
+                    text={friendActionText}
+                    onClick={handleFriendAction}
+                    disabled={isFriendActionDisabled}
                     color="bg-transparent"
                     className="w-full min-w-0 !px-3 !py-2 text-gray-800 text-sm"
                   />
