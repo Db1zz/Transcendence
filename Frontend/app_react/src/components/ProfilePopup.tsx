@@ -1,12 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { X, Expand, Coffee, Shield, Minimize2 } from "lucide-react";
 import { User, useAuth } from "../contexts/AuthContext";
 import { StatusColors } from "./ProfileButton";
 import { Button } from "./Button";
+import api from "../utils/api";
 
 interface ProfilePopupProps {
   user: User;
+  friendshipStatus?: "friend" | "pending" | "blocked";
   isOpen: boolean;
   onClose: () => void;
 }
@@ -25,14 +27,30 @@ const formatDate = (dateString: string) => {
 
 export const ProfilePopup: React.FC<ProfilePopupProps> = ({
   user,
+  friendshipStatus,
   isOpen,
   onClose,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [friendState, setFriendState] = useState<
+    "friend" | "pending" | "not_friend"
+  >("not_friend");
   const { logout, user: authenticatedUser } = useAuth();
   const isOwnProfile = authenticatedUser?.id === user.id;
   const canExpand = isOwnProfile;
   const isExpandedView = canExpand ? isExpanded : true;
+
+  useEffect(() => {
+    if (friendshipStatus === "friend") {
+      setFriendState("friend");
+      return;
+    }
+    if (friendshipStatus === "pending") {
+      setFriendState("pending");
+      return;
+    }
+    setFriendState("not_friend");
+  }, [friendshipStatus, user.id]);
 
   if (!isOpen) return null;
 
@@ -48,6 +66,28 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
     logout();
     handleClose();
   };
+
+  const handleAddFriend = async () => {
+    if (friendState !== "not_friend") {
+      return;
+    }
+
+    try {
+      await api.post(`/friends/${user.id}`);
+      setFriendState("pending");
+    } catch (error) {
+      console.error("failed to send friend request", error);
+    }
+  };
+
+  const addFriendText =
+    friendState === "friend"
+      ? "you are friends"
+      : friendState === "pending"
+        ? "friend request sent"
+        : "add friend";
+
+  const isAddFriendDisabled = friendState !== "not_friend";
   return ReactDOM.createPortal(
     <div className="fixed inset-0 z-[9999] flex items-center justify-center font-roboto">
       <div
@@ -191,8 +231,9 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
               {!isOwnProfile && (
                 <div className="grid grid-cols-2 gap-3 mt-6 w-full">
                   <Button
-                    text="Add Friend"
-                    onClick={() => null}
+                    text={addFriendText}
+                    onClick={handleAddFriend}
+                    disabled={isAddFriendDisabled}
                     color="bg-transparent"
                     className="w-full min-w-0 !px-3 !py-2 text-gray-800 text-sm"
                   />

@@ -480,6 +480,20 @@ paths:
                 items:
                   $ref: '#/components/schemas/FriendDto'
 
+  /friends/requests/sent:
+    get:
+      summary: "Get my sent pending friend requests"
+      operationId: getMySentRequests
+      responses:
+        200:
+          description: "List of sent pending friend requests"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FriendDto'
+
   /chat/rooms:
     get:
       summary: "Get all chat rooms for the current user"

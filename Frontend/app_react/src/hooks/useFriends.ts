@@ -16,15 +16,20 @@ export const useFriends = () => {
     try {
       setLoading(true);
 
-      const [friendsRes, pendingRes, blockedRes] = await Promise.all([
-        api.get("/friends"),
-        api.get("/friends/requests"),
-        api.get("/friends/blocked"),
-      ]);
+      const [friendsRes, pendingRes, sentPendingRes, blockedRes] =
+        await Promise.all([
+          api.get("/friends"),
+          api.get("/friends/requests"),
+          api.get("/friends/requests/sent"),
+          api.get("/friends/blocked"),
+        ]);
 
       const allFriends = [
         ...friendsRes.data.map((f: any) => mapToFrontend(f, "friend")),
-        ...pendingRes.data.map((f: any) => mapToFrontend(f, "pending")),
+        ...pendingRes.data.map((f: any) => mapToFrontend(f, "pending", true)),
+        ...sentPendingRes.data.map((f: any) =>
+          mapToFrontend(f, "pending", false),
+        ),
         ...blockedRes.data.map((f: any) => mapToFrontend(f, "blocked")),
       ];
 
@@ -39,6 +44,7 @@ export const useFriends = () => {
   const mapToFrontend = (
     data: any,
     type: "friend" | "pending" | "blocked",
+    canAcceptPending?: boolean,
   ): Friend => ({
     id: data.id,
     name: data.displayName,
@@ -48,6 +54,7 @@ export const useFriends = () => {
     about: data.about || "",
     createdAt: data.createdAt || "",
     isFriend: type,
+    canAcceptPending,
     role: "USER",
   });
 

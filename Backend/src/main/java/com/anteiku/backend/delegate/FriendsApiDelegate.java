@@ -64,4 +64,9 @@ public class FriendsApiDelegate implements FriendsApi {
     public ResponseEntity<List<FriendDto>> getMyRequests() {
         return ResponseEntity.ok(friendsService.getMyPendingRequests(SecurityUtils.getCurrentUserId()));
     }
+
+    @Override
+    public ResponseEntity<List<FriendDto>> getMySentRequests() {
+        return ResponseEntity.ok(friendsService.getMySentPendingRequests(SecurityUtils.getCurrentUserId()));
+    }
 }
