@@ -4,6 +4,7 @@ import { X, Coffee, Shield } from "lucide-react";
 import { User, useAuth } from "../contexts/AuthContext";
 import { StatusColors } from "./ProfileButton";
 import { Button } from "./Button";
+import { ProfileEditForm } from "./ProfileEditForm";
 import api from "../utils/api";
 
 interface ProfilePopupProps {
@@ -34,14 +35,21 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
 	onClose,
 }) => {
 	const [isExpanded, setIsExpanded] = useState(false);
+	const [activeSettingsSection, setActiveSettingsSection] = useState<
+		"profile" | null
+	>(null);
+	const [isSavingProfile, setIsSavingProfile] = useState(false);
+	const [saveError, setSaveError] = useState("");
 	const [friendState, setFriendState] = useState<
 		"friend" | "pending" | "not_friend"
 	>("not_friend");
-	const { logout, user: authenticatedUser } = useAuth();
+	const { logout, setUser, user: authenticatedUser } = useAuth();
 	const isOwnProfile = authenticatedUser?.id === user.id;
 	const canExpand = isOwnProfile;
 	const isExpandedView = true;
 	const showSettingsPanel = canExpand && isExpanded;
+	const isEditingProfile =
+		isOwnProfile && showSettingsPanel && activeSettingsSection === "profile";
 
 	useEffect(() => {
 		if (friendshipStatus === "friend") {
@@ -59,11 +67,15 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
 
 	const handleClose = () => {
 		setIsExpanded(false);
+		setActiveSettingsSection(null);
+		setSaveError("");
 		onClose();
 	};
 
 	const toggleSettings = () => {
 		setIsExpanded(!isExpanded);
+		setActiveSettingsSection(!isExpanded ? "profile" : null);
+		setSaveError("");
 	};
 	const handleLogout = () => {
 		logout();
@@ -103,6 +115,49 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
 				: "add friend";
 
 	const isFriendActionDisabled = friendState === "pending" && !canAcceptPending;
+
+	const handleSaveProfile = async (values: {
+		username: string;
+		displayName: string;
+		about: string;
+		picture: string;
+	}) => {
+		setIsSavingProfile(true);
+		setSaveError("");
+
+		try {
+			const response = await api.put("/users/me", values);
+			const updatedProfile = response.data;
+			const updatedUser: User = {
+				id: updatedProfile.id || user.id,
+				name:
+					updatedProfile.displayName ||
+					updatedProfile.username ||
+					user.name,
+				username: updatedProfile.username || user.username,
+				email: updatedProfile.email || authenticatedUser?.email || "",
+				picture: updatedProfile.picture || user.picture,
+				status: authenticatedUser?.status || "online",
+				about: updatedProfile.about || "",
+				createdAt: updatedProfile.createdAt || user.createdAt,
+				role: (updatedProfile.role || authenticatedUser?.role || "USER") as
+					| "USER"
+					| "ADMIN",
+			};
+
+			localStorage.setItem("user", JSON.stringify(updatedUser));
+			setUser(updatedUser);
+			setIsExpanded(false);
+			setActiveSettingsSection(null);
+		} catch (error: any) {
+			setSaveError(
+				error?.response?.data?.error || "Failed to save profile changes",
+			);
+		} finally {
+			setIsSavingProfile(false);
+		}
+	};
+
 	return ReactDOM.createPortal(
 		<div className="fixed inset-0 z-[9999] flex items-center justify-center font-roboto">
 			<div
@@ -115,14 +170,23 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
           bg-brand-beige border-2 border-gray-800 rounded-xl overflow-hidden
           duration-300 ease-out flex
           animate-slide-up
-          ${showSettingsPanel ? "w-[640px] h-[550px] shadow-sharp" : "w-[500px] h-[550px] shadow-sharp"}
+					${showSettingsPanel ? "w-[900px] h-[700px] shadow-sharp" : "w-[500px] h-[550px] shadow-sharp"}
         `}
 			>
 				{showSettingsPanel && (
-					<div className="w-[140px] border-r-2 border-gray-800 bg-brand-green/60 p-4 shrink-0 flex flex-col">
+					<div className="w-[240px] border-r-2 border-gray-800 bg-brand-green/60 p-5 shrink-0 flex flex-col">
 						<h4 className="font-ananias text-sm font-bold text-gray-800 uppercase">
 							settings
 						</h4>
+						<button
+							onClick={() => setActiveSettingsSection("profile")}
+							className={`mt-4 w-full rounded-lg border-2 border-gray-800 px-3 py-2 text-left font-ananias text-sm uppercase transition-colors ${activeSettingsSection === "profile"
+								? "bg-brand-brick text-brand-beige"
+								: "bg-brand-beige text-gray-800 hover:bg-brand-beige/70"
+								}`}
+						>
+							my profile
+						</button>
 						<Button
 							onClick={handleLogout}
 							className="mt-auto w-full !px-3 !py-2 text-sm"
@@ -132,98 +196,132 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
 					</div>
 				)}
 
-				<div className="flex flex-col h-full flex-1 min-w-0">
-					<div className="w-full bg-brand-brick relative transition-all duration-300 shrink-0 h-[140px]">
-						<div className="absolute top-2 right-2 flex gap-2">
-							<button
-								onClick={handleClose}
-								className="p-1.5 rounded bg-black/20 hover:bg-black/40 transition-colors text-brand-beige"
-							>
-								<X className="w-4 h-4" />
-							</button>
-						</div>
-					</div>
-					<div className="relative px-6 shrink-0">
-						<div className="absolute border-4 border-brand-beige bg-gray-300 rounded-full transition-all duration-300 shadow-sm group -top-16 w-[120px] h-[120px]">
-							<img
-								src={user.picture}
-								alt={user.name}
-								className="w-full h-full object-cover rounded-full"
-							/>
-							<div
-								className={`
+				<div className="flex flex-col h-full min-h-0 flex-1 min-w-0">
+					{!isEditingProfile && (
+						<>
+							<div className="w-full bg-brand-brick relative transition-all duration-300 shrink-0 h-[140px]">
+								<div className="absolute top-2 right-2 flex gap-2">
+									<button
+										onClick={handleClose}
+										className="p-1.5 rounded bg-black/20 hover:bg-black/40 transition-colors text-brand-beige"
+									>
+										<X className="w-4 h-4" />
+									</button>
+								</div>
+							</div>
+							<div className="relative px-6 shrink-0">
+								<div className="absolute border-4 border-brand-beige bg-gray-300 rounded-full transition-all duration-300 shadow-sm group -top-16 w-[120px] h-[120px]">
+									<img
+										src={user.picture}
+										alt={user.name}
+										className="w-full h-full object-cover rounded-full"
+									/>
+									<div
+										className={`
                   absolute -bottom-0.5 -right-0.5 rounded-full border-[3px] border-brand-beige
                   ${StatusColors[user.status as keyof typeof StatusColors] || "bg-gray-400"}
                   w-8 h-8 -bottom-0.5 -right-0.5
                 `}
-							/>
-						</div>
-						{user.role === "ADMIN" && (
-							<div className="absolute flex items-center gap-1 px-2 py-0.5 bg-brand-green text-white rounded-md text-xs font-ananias border border-gray-800 shadow-[2px_2px_0px_rgba(0,0,0,1)] top-4 right-6">
-								<Shield className="w-3 h-3" />
-								ADMIN
+									/>
+								</div>
+								{user.role === "ADMIN" && (
+									<div className="absolute flex items-center gap-1 px-2 py-0.5 bg-brand-green text-white rounded-md text-xs font-ananias border border-gray-800 shadow-[2px_2px_0px_rgba(0,0,0,1)] top-4 right-6">
+										<Shield className="w-3 h-3" />
+										ADMIN
+									</div>
+								)}
+							</div>
+						</>
+					)}
+					<div className={`px-6 pb-6 flex flex-col h-full min-h-0 text-left ${isEditingProfile ? "pt-6" : "pt-20"}`}>
+						{isEditingProfile && (
+							<div className="absolute top-4 right-4 z-10 flex gap-2">
+								<button
+									onClick={handleClose}
+									className="p-1.5 rounded bg-black/10 hover:bg-black/20 transition-colors text-gray-800"
+								>
+									<X className="w-4 h-4" />
+								</button>
 							</div>
 						)}
-					</div>
-					<div className="px-6 pb-6 flex flex-col h-full text-left pt-20">
-						<div className="mb-4 shrink-0">
-							<h3
-								className={`
+						{!isEditingProfile && (
+							<>
+								<div className="mb-4 shrink-0">
+									<h3
+										className={`
               font-ananias font-bold text-gray-800 leading-none
               text-3xl
             `}
-							>
-								{user.name}
-							</h3>
-							<p className="text-sm font-roboto text-gray-500 mt-1">
-								{user.name.toLowerCase().replace(/\s/g, "")}
-							</p>
-						</div>
-
-						<div className="h-px bg-gray-800/20 mb-4 shrink-0" />
-						<div className="mb-4 shrink-0">
-							<h4 className="font-ananias text-sm font-bold text-gray-500 mb-2 flex items-center gap-1 uppercase">
-								<Coffee className="w-4 h-4" />
-								about me
-							</h4>
-							<p className="text-sm text-gray-800 font-roboto">
-								{user.about || "This user is too lazy to write a bio."}
-							</p>
-						</div>
-						<div className="animate-fade-in flex flex-col h-full">
-							<div className="mb-auto">
-								<h4 className="font-ananias text-sm font-bold text-gray-500 mb-2 uppercase">
-									member since
-								</h4>
-								<p className="text-sm font-mono text-gray-800">
-									{formatDate(user.createdAt)}
-								</p>
-							</div>
-							{isOwnProfile && (
-								<Button
-									onClick={toggleSettings}
-									className="mt-5 w-full !px-4 !py-2 text-sm"
-								>
-									edit profile
-								</Button>
-							)}
-							{!isOwnProfile && (
-								<div className="grid grid-cols-2 gap-3 mt-6 w-full">
-									<Button
-										text={friendActionText}
-										onClick={handleFriendAction}
-										disabled={isFriendActionDisabled}
-										color="bg-transparent"
-										className="w-full min-w-0 !px-3 !py-2 text-gray-800 text-sm"
-									/>
-									<Button
-										text="Message"
-										onClick={() => console.log("Message clicked")}
-										className="w-full min-w-0 !px-3 !py-2 text-sm"
-									/>
+									>
+										{user.name}
+									</h3>
+									<p className="text-sm font-roboto text-gray-500 mt-1">
+										{user.name.toLowerCase().replace(/\s/g, "")}
+									</p>
 								</div>
-							)}
-						</div>
+
+								<div className="h-px bg-gray-800/20 mb-4 shrink-0" />
+							</>
+						)}
+						{isOwnProfile && showSettingsPanel && activeSettingsSection === "profile" ? (
+							<ProfileEditForm
+								initialValues={{
+									username: user.username || "",
+									displayName: user.name || user.username || "",
+									about: user.about || "",
+									picture: user.picture || "",
+								}}
+								isSaving={isSavingProfile}
+								errorMessage={saveError}
+								onSave={handleSaveProfile}
+							/>
+						) : (
+							<>
+								<div className="mb-4 shrink-0">
+									<h4 className="font-ananias text-sm font-bold text-gray-500 mb-2 flex items-center gap-1 uppercase">
+										<Coffee className="w-4 h-4" />
+										about me
+									</h4>
+									<p className="text-sm text-gray-800 font-roboto">
+										{user.about || "This user is too lazy to write a bio."}
+									</p>
+								</div>
+								<div className="animate-fade-in flex flex-col h-full">
+									<div className="mb-auto">
+										<h4 className="font-ananias text-sm font-bold text-gray-500 mb-2 uppercase">
+											member since
+										</h4>
+										<p className="text-sm font-mono text-gray-800">
+											{formatDate(user.createdAt)}
+										</p>
+									</div>
+									{isOwnProfile && (
+										<Button
+											onClick={toggleSettings}
+											className="mt-5 w-full !px-4 !py-2 text-sm"
+										>
+											edit profile
+										</Button>
+									)}
+									{!isOwnProfile && (
+										<div className="grid grid-cols-2 gap-3 mt-6 w-full">
+											<Button
+												text={friendActionText}
+												onClick={handleFriendAction}
+												disabled={isFriendActionDisabled}
+												color="bg-transparent"
+												className="w-full min-w-0 !px-3 !py-2 text-gray-800 text-sm"
+											/>
+											<Button
+												text="Message"
+												onClick={() => console.log("Message clicked")}
+												className="w-full min-w-0 !px-3 !py-2 text-sm"
+											/>
+										</div>
+									)}
+								</div>
+							</>
+						)}
 					</div>
 				</div>
 			</div>

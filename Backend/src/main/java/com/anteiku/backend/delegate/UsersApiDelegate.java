@@ -1,6 +1,7 @@
 package com.anteiku.backend.delegate;
 
 import com.anteiku.backend.api.UsersApi;
+import com.anteiku.backend.model.UpdateMyProfileDto;
 import com.anteiku.backend.model.UserInfoDto;
 import com.anteiku.backend.model.UserPublicDto;
 import com.anteiku.backend.model.UserRegistrationDto;
@@ -46,6 +47,16 @@ public class UsersApiDelegate implements UsersApi {
     public ResponseEntity<UserInfoDto> getMe() {
         try {
             UserInfoDto userInfoDto = userService.getMe();
+            return ResponseEntity.ok(userInfoDto);
+        } catch (AuthenticationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
+    @Override
+    public ResponseEntity<UserInfoDto> updateMe(UpdateMyProfileDto updateMyProfileDto) {
+        try {
+            UserInfoDto userInfoDto = userService.updateMe(updateMyProfileDto);
             return ResponseEntity.ok(userInfoDto);
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

@@ -81,6 +81,26 @@ paths:
                 $ref: '#/components/schemas/UserInfoDto'
         401:
           $ref: '#/components/responses/UnauthorizedError'
+    put:
+      summary: "Update my profile"
+      operationId: updateMe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMyProfileDto'
+      responses:
+        200:
+          description: "Returns updated user info"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfoDto'
+        400:
+          description: "Invalid profile data"
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
 
   /users/check-email:
     get:
@@ -651,11 +671,30 @@ components:
           $ref: '#/components/schemas/UserEmail'
         username:
           type: string
+        displayName:
+          type: string
+        picture:
+          type: string
+        about:
+          type: string
         role:
           type: string
         createdAt:
           type: string
           format: date-time
+
+    UpdateMyProfileDto:
+      type: object
+      description: "Editable profile data for current user"
+      properties:
+        username:
+          type: string
+        displayName:
+          type: string
+        picture:
+          type: string
+        about:
+          type: string
 
     UserCredentialsDto:
       type: object

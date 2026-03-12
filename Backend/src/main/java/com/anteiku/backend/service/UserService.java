@@ -91,15 +91,58 @@ public class UserService {
                 throw new AuthenticationCredentialsNotFoundException("User is not authenticated");
         }
 
-        UserInfoDto userInfoDto = new UserInfoDto();
-
-
         UserPublicDto userPublicDto = getUserById(userId);
         UserCredentialsEntity userCredentialsEntity = userCredentialsRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User credentials not found"));
 
-        userInfoDto.setEmail(userCredentialsEntity.getEmail());
+        return buildUserInfoDto(userPublicDto, userCredentialsEntity.getEmail());
+    }
+
+    public UserInfoDto updateMe(UpdateMyProfileDto profileDto) throws AuthenticationException {
+        UUID userId = SecurityUtils.getCurrentUserId();
+        if (userId == null) {
+            throw new AuthenticationCredentialsNotFoundException("User is not authenticated");
+        }
+
+        UserEntity userEntity = userRepository.findUserById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        UserCredentialsEntity userCredentialsEntity = userCredentialsRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User credentials not found"));
+
+        String username = profileDto.getUsername() == null ? "" : profileDto.getUsername().trim();
+        String displayName = profileDto.getDisplayName() == null ? "" : profileDto.getDisplayName().trim();
+        String picture = profileDto.getPicture() == null ? "" : profileDto.getPicture().trim();
+
+        if (username.isBlank()) {
+            throw new IllegalArgumentException("Username cannot be empty");
+        }
+
+        boolean usernameTakenByAnotherUser = userRepository.findUserByUsername(username).stream()
+                .anyMatch(existingUser -> !existingUser.getId().equals(userId));
+        if (usernameTakenByAnotherUser) {
+            throw new IllegalArgumentException("Username " + username + " is already taken");
+        }
+
+        userEntity.setUsername(username);
+        userEntity.setDisplayName(displayName.isBlank() ? username : displayName);
+        userEntity.setAbout(profileDto.getAbout() == null ? "" : profileDto.getAbout().trim());
+        if (!picture.isBlank()) {
+            userEntity.setPicture(picture);
+        }
+
+        userRepository.save(userEntity);
+
+        return buildUserInfoDto(userMapper.toDto(userEntity), userCredentialsEntity.getEmail());
+    }
+
+    private UserInfoDto buildUserInfoDto(UserPublicDto userPublicDto, String email) {
+        UserInfoDto userInfoDto = new UserInfoDto();
+
+        userInfoDto.setEmail(email);
         userInfoDto.setUsername(userPublicDto.getUsername());
+        userInfoDto.setDisplayName(userPublicDto.getDisplayName());
+        userInfoDto.setPicture(userPublicDto.getPicture());
+        userInfoDto.setAbout(userPublicDto.getAbout());
         userInfoDto.setRole(userPublicDto.getRole());
         userInfoDto.setId(userPublicDto.getId());
         userInfoDto.setCreatedAt(userPublicDto.getCreatedAt());
