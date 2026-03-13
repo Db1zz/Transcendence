@@ -13,6 +13,7 @@ interface ProfileEditFormProps {
 	initialValues: ProfileEditValues;
 	isSaving: boolean;
 	errorMessage?: string;
+	onUploadPicture: (file: File) => Promise<string>;
 	onSave: (values: ProfileEditValues) => Promise<void> | void;
 }
 
@@ -23,9 +24,12 @@ export const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
 	initialValues,
 	isSaving,
 	errorMessage,
+	onUploadPicture,
 	onSave,
 }) => {
 	const [values, setValues] = useState<ProfileEditValues>(initialValues);
+	const [isUploadingPicture, setIsUploadingPicture] = useState(false);
+	const [uploadError, setUploadError] = useState("");
 
 	useEffect(() => {
 		setValues(initialValues);
@@ -36,27 +40,28 @@ export const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
 		await onSave(values);
 	};
 
-	const handlePictureChange = (
+	const handlePictureChange = async (
 		event: React.ChangeEvent<HTMLInputElement>,
 	) => {
 		const file = event.target.files?.[0];
+		event.target.value = "";
 		if (!file) {
 			return;
 		}
 
-		const reader = new FileReader();
-		reader.onload = () => {
-			const pictureValue = reader.result;
-			if (typeof pictureValue !== "string") {
-				return;
-			}
-
+		setUploadError("");
+		setIsUploadingPicture(true);
+		try {
+			const pictureUrl = await onUploadPicture(file);
 			setValues((current) => ({
 				...current,
-				picture: pictureValue,
+				picture: pictureUrl,
 			}));
-		};
-		reader.readAsDataURL(file);
+		} catch (error: any) {
+			setUploadError(error?.response?.data?.error || "Failed to upload picture");
+		} finally {
+			setIsUploadingPicture(false);
+		}
 	};
 
 	return (
@@ -82,14 +87,23 @@ export const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
 						/>
 						<label
 							htmlFor="profile-picture-upload"
-							className="inline-flex cursor-pointer items-center gap-2 rounded-lg border-2 border-gray-800 bg-brand-green px-3 py-2 font-ananias text-sm uppercase text-gray-800 transition-colors hover:bg-brand-green/80"
+							className="mb-2 inline-flex cursor-pointer items-center gap-2 rounded-lg border-2 border-gray-800 bg-brand-green px-3 py-2 font-ananias text-sm uppercase text-gray-800 transition-colors hover:bg-brand-green/80"
 						>
 							<Pencil className="h-4 w-4" />
-							change profile picture
+							{isUploadingPicture ? "uploading..." : "upload from computer"}
 						</label>
+						<p className="font-roboto text-xs text-gray-500">
+							picture is set automatically after upload.
+						</p>
 					</div>
 				</div>
 			</div>
+
+			{uploadError && (
+				<p className="rounded-lg border-2 border-red-500 bg-red-100 px-3 py-2 font-roboto text-sm text-red-700">
+					{uploadError}
+				</p>
+			)}
 
 			<div className="grid gap-4 md:grid-cols-2">
 				<div>
@@ -151,7 +165,7 @@ export const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
 
 			<Button
 				type="submit"
-				disabled={isSaving}
+				disabled={isSaving || isUploadingPicture}
 				className="mt-auto mb-4 w-full !px-4 !py-2 text-sm"
 			>
 				{isSaving ? "saving..." : "save"}

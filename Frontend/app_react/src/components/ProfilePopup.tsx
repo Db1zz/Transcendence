@@ -158,6 +158,24 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
 		}
 	};
 
+	const handleUploadPicture = async (file: File): Promise<string> => {
+		const formData = new FormData();
+		formData.append("file", file);
+
+		const response = await api.post("/users/me/picture", formData, {
+			headers: {
+				"Content-Type": "multipart/form-data",
+			},
+		});
+
+		const pictureUrl = response?.data?.url;
+		if (!pictureUrl || typeof pictureUrl !== "string") {
+			throw new Error("Failed to upload picture");
+		}
+
+		return pictureUrl;
+	};
+
 	return ReactDOM.createPortal(
 		<div className="fixed inset-0 z-[9999] flex items-center justify-center font-roboto">
 			<div
@@ -273,6 +291,7 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
 								}}
 								isSaving={isSavingProfile}
 								errorMessage={saveError}
+								onUploadPicture={handleUploadPicture}
 								onSave={handleSaveProfile}
 							/>
 						) : (
