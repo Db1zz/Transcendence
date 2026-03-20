@@ -11,6 +11,7 @@ import com.anteiku.backend.repository.OrganizationRepository;
 import com.anteiku.backend.repository.UserRepository;
 import com.anteiku.backend.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +20,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -44,6 +46,7 @@ public class OrganizationService {
 
         System.out.println("org id: " + organization.getId());
         organizationRepository.save(organization);
+        log.info("Organization created: '{}' (ID: {}) by Owner ID {}", organization.getName(), organization.getId(), currentUserId);
 
         CreateOrganizationResponseDto createOrganizationResponseDto = new CreateOrganizationResponseDto();
         createOrganizationResponseDto.setId(organization.getId());
@@ -64,5 +67,6 @@ public class OrganizationService {
         }
 
         organizationRepository.delete(organization);
+        log.info("Organization deleted: ID {} by Owner ID {}",  organization.getId(), currentUserId);
     }
 }

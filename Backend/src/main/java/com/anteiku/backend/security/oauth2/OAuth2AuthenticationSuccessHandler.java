@@ -29,6 +29,8 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)  throws IOException, ServletException {
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
 
+        log.info("Login successful");
+
         UserSessionDto userSessionDto = userSessionsService.createNewSession(oAuth2User.getAttribute("email"));
 
         Cookie accessCookie = new Cookie(TokenNames.ACCESS_TOKEN, userSessionDto.getAccessToken());

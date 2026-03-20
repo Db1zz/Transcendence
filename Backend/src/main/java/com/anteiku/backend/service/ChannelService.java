@@ -8,6 +8,7 @@ import com.anteiku.backend.model.CreateChannelResponseDto;
 import com.anteiku.backend.repository.ChannelRepository;
 import com.anteiku.backend.repository.OrganizationRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +20,7 @@ import java.util.UUID;
 @Service
 @Transactional
 @RequiredArgsConstructor
+@Slf4j
 public class ChannelService {
 
     private final ChannelRepository channelRepository;
@@ -47,6 +49,7 @@ public class ChannelService {
                 .build();
 
         channelRepository.save(channel);
+        log.info("Channel created: '{}' of type {} (ID: {})", channel.getName(), channel.getType(), channel.getId());
         
         CreateChannelResponseDto response = new CreateChannelResponseDto();
         response.setId(channel.getId());
@@ -64,5 +67,6 @@ public class ChannelService {
                 .orElseThrow(() -> new ResourceNotFoundException("Channel not found"));
 
         channelRepository.delete(channel);
+        log.info("Channel deleted: '{}' of type {}", channel.getName(), channel.getType());
     }
 }
