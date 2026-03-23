@@ -1,12 +1,16 @@
 include .env
 export
 
-.PHONY: all up setup-elk down clean fclean re
+.PHONY: all up setup-elk down clean fclean re down-elk up-elk
 
-all: up setup-elk
+all: up
 
 up:
 	docker compose up -d
+
+up-elk:
+	docker compose -f docker-compose.yaml -f docker-compose.elk.yaml up -d
+	@$(MAKE) setup-elk
 
 setup-elk:
 	@echo "waiting for elk to wek up"
@@ -57,9 +61,12 @@ setup-elk:
 down clean:
 	docker compose down
 
+down-elk:
+	docker compose -f docker-compose.yaml -f docker-compose.elk.yaml down
+
 fclean:
-	docker compose down
+	docker compose -f docker-compose.elk.yaml -f docker-compose.yaml down
 	docker system prune -a -f
-	docker compose down -v
+	docker compose -f docker-compose.elk.yaml -f docker-compose.yaml down -v
 
 re: fclean all
