@@ -78,13 +78,15 @@ export const FriendsList: React.FC<FriendsListProps> = ({
               <ProfileButton user={friend} className="w-full">
                 {activeTab === "pending" ? (
                   <>
-                    <Button
-                      color="bg-green-600"
-                      onClick={() => onAccept(friend.id)}
-                      className="!p-2 !rounded-full !shadow-[2px_2px_0px_#000]"
-                    >
-                      <Check className="w-4 h-4" />
-                    </Button>
+                    {friend.canAcceptPending && (
+                      <Button
+                        color="bg-green-600"
+                        onClick={() => onAccept(friend.id)}
+                        className="!p-2 !rounded-full !shadow-[2px_2px_0px_#000]"
+                      >
+                        <Check className="w-4 h-4" />
+                      </Button>
+                    )}
                     <Button
                       color="bg-red-500"
                       onClick={() => onRemove(friend.id)}

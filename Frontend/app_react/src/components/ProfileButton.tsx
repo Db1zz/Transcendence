@@ -83,6 +83,8 @@ export const ProfileButton: React.FC<ProfileButtonProps> = ({
 
       <ProfilePopup
         user={user}
+        friendshipStatus={user?.isFriend}
+        canAcceptPending={user?.canAcceptPending}
         isOpen={isPopupOpen}
         onClose={() => setIsPopupOpen(false)}
       />

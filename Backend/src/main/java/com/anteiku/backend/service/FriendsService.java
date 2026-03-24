@@ -125,6 +125,12 @@ public class FriendsService {
                 .collect(Collectors.toList());
     }
 
+    public List<FriendDto> getMySentPendingRequests(UUID meId) {
+        return friendsRepository.findPendingRequestsSentByMe(meId).stream()
+                .map(f -> mapToFriendDto(f.getAddressee(), FriendStatus.PENDING))
+                .collect(Collectors.toList());
+    }
+
     public List<FriendDto> getMyBlockedUsers(UUID meId) {
         return friendsRepository.findBlockedByMe(meId).stream()
                 .map(f -> mapToFriendDto(f.getAddressee(), FriendStatus.BLOCKED))
@@ -141,7 +147,7 @@ public class FriendsService {
         UserStatus userStatus = friend.getStatus() != null ? friend.getStatus() : UserStatus.OFFLINE;
         friendDto.setStatus(FriendDto.StatusEnum.fromValue(userStatus.name()));
         friendDto.setFriendStatus(FriendDto.FriendStatusEnum.fromValue(friendStatus.name()));
-
+        friendDto.setCreatedAt(friend.getCreatedAt().atOffset(java.time.ZoneOffset.UTC));
         return friendDto;
     }
 }

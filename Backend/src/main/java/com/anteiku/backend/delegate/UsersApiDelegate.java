@@ -1,6 +1,7 @@
 package com.anteiku.backend.delegate;
 
 import com.anteiku.backend.api.UsersApi;
+import com.anteiku.backend.model.UpdateMyProfileDto;
 import com.anteiku.backend.model.UserInfoDto;
 import com.anteiku.backend.model.UserPublicDto;
 import com.anteiku.backend.model.UserRegistrationDto;
@@ -11,9 +12,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.naming.AuthenticationException;
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -49,6 +53,28 @@ public class UsersApiDelegate implements UsersApi {
             return ResponseEntity.ok(userInfoDto);
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
+    @Override
+    public ResponseEntity<UserInfoDto> updateMe(UpdateMyProfileDto updateMyProfileDto) {
+        try {
+            UserInfoDto userInfoDto = userService.updateMe(updateMyProfileDto);
+            return ResponseEntity.ok(userInfoDto);
+        } catch (AuthenticationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
+    @Override
+    public ResponseEntity<Map<String, String>> uploadMyPicture(MultipartFile file) {
+        try {
+            String pictureUrl = userService.uploadProfilePicture(file);
+            return ResponseEntity.ok(Map.of("url", pictureUrl));
+        } catch (AuthenticationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 

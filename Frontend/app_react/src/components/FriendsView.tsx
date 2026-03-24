@@ -15,6 +15,7 @@ export interface Friend {
   about: string;
   createdAt: string;
   isFriend: "friend" | "pending" | "blocked";
+  canAcceptPending?: boolean;
   role: "USER" | "ADMIN";
 }
 

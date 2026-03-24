@@ -81,6 +81,56 @@ paths:
                 $ref: '#/components/schemas/UserInfoDto'
         401:
           $ref: '#/components/responses/UnauthorizedError'
+    put:
+      summary: "Update my profile"
+      operationId: updateMe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMyProfileDto'
+      responses:
+        200:
+          description: "Returns updated user info"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfoDto'
+        400:
+          description: "Invalid profile data"
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /users/me/picture:
+    post:
+      summary: "Upload my profile picture"
+      operationId: uploadMyPicture
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        200:
+          description: "Returns uploaded picture URL"
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+        400:
+          description: "Invalid picture upload data"
+        401:
+          $ref: '#/components/responses/UnauthorizedError'
 
   /users/check-email:
     get:
@@ -480,6 +530,20 @@ paths:
                 items:
                   $ref: '#/components/schemas/FriendDto'
 
+  /friends/requests/sent:
+    get:
+      summary: "Get my sent pending friend requests"
+      operationId: getMySentRequests
+      responses:
+        200:
+          description: "List of sent pending friend requests"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FriendDto'
+
   /chat/rooms:
     get:
       summary: "Get all chat rooms for the current user"
@@ -637,7 +701,29 @@ components:
           $ref: '#/components/schemas/UserEmail'
         username:
           type: string
+        displayName:
+          type: string
+        picture:
+          type: string
+        about:
+          type: string
         role:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    UpdateMyProfileDto:
+      type: object
+      description: "Editable profile data for current user"
+      properties:
+        username:
+          type: string
+        displayName:
+          type: string
+        picture:
+          type: string
+        about:
           type: string
 
     UserCredentialsDto:
@@ -682,6 +768,9 @@ components:
         friendStatus:
           type: string
           enum: [FRIEND, PENDING, BLOCKED]
+        createdAt:
+          type: string
+          format: date-time
 
     UserSessionDto:
       type: object

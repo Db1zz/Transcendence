@@ -9,15 +9,20 @@ import com.anteiku.backend.model.*;
 import com.anteiku.backend.repository.UserCredentialsRepository;
 import com.anteiku.backend.repository.UserRepository;
 import com.anteiku.backend.util.SecurityUtils;
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.naming.AuthenticationException;
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -30,6 +35,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final UserCredentialsRepository userCredentialsRepository;
     private final UserMapper userMapper;
+    private final Cloudinary cloudinary;
 
     public List<UserPublicDto> getUsersByUsername(String username) {
         List<UserEntity> users = userRepository.findUserByUsername(username);
@@ -95,17 +101,94 @@ public class UserService {
                 throw new AuthenticationCredentialsNotFoundException("User is not authenticated");
         }
 
-        UserInfoDto userInfoDto = new UserInfoDto();
-
-
         UserPublicDto userPublicDto = getUserById(userId);
         UserCredentialsEntity userCredentialsEntity = userCredentialsRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User credentials not found"));
 
-        userInfoDto.setEmail(userCredentialsEntity.getEmail());
+        return buildUserInfoDto(userPublicDto, userCredentialsEntity.getEmail());
+    }
+
+    public UserInfoDto updateMe(UpdateMyProfileDto profileDto) throws AuthenticationException {
+        UUID userId = SecurityUtils.getCurrentUserId();
+        if (userId == null) {
+            throw new AuthenticationCredentialsNotFoundException("User is not authenticated");
+        }
+
+        UserEntity userEntity = userRepository.findUserById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        UserCredentialsEntity userCredentialsEntity = userCredentialsRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User credentials not found"));
+
+        String username = profileDto.getUsername() == null ? "" : profileDto.getUsername().trim();
+        String displayName = profileDto.getDisplayName() == null ? "" : profileDto.getDisplayName().trim();
+        String picture = profileDto.getPicture() == null ? "" : profileDto.getPicture().trim();
+
+        if (username.isBlank()) {
+            throw new IllegalArgumentException("Username cannot be empty");
+        }
+
+        boolean usernameTakenByAnotherUser = userRepository.findUserByUsername(username).stream()
+                .anyMatch(existingUser -> !existingUser.getId().equals(userId));
+        if (usernameTakenByAnotherUser) {
+            throw new IllegalArgumentException("Username " + username + " is already taken");
+        }
+
+        userEntity.setUsername(username);
+        userEntity.setDisplayName(displayName.isBlank() ? username : displayName);
+        userEntity.setAbout(profileDto.getAbout() == null ? "" : profileDto.getAbout().trim());
+        if (!picture.isBlank()) {
+            userEntity.setPicture(picture);
+        }
+
+        userRepository.save(userEntity);
+
+        return buildUserInfoDto(userMapper.toDto(userEntity), userCredentialsEntity.getEmail());
+    }
+
+    @SuppressWarnings("unchecked")
+    public String uploadProfilePicture(MultipartFile file) throws AuthenticationException, IOException {
+        UUID userId = SecurityUtils.getCurrentUserId();
+        if (userId == null) {
+            throw new AuthenticationCredentialsNotFoundException("User is not authenticated");
+        }
+
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("Picture file cannot be empty");
+        }
+
+        String contentType = file.getContentType() == null ? "" : file.getContentType();
+        if (!contentType.startsWith("image/")) {
+            throw new IllegalArgumentException("Only image files are allowed");
+        }
+
+        if (file.getSize() > 15L * 1024 * 1024) {
+            throw new IllegalArgumentException("Image is too large. Maximum allowed size is 15 MB");
+        }
+
+        Map<String, Object> uploadResult = cloudinary.uploader().upload(
+                file.getBytes(),
+                ObjectUtils.asMap(
+                        "folder", "anteiku/profile-pictures",
+                        "public_id", userId + "-" + UUID.randomUUID(),
+                        "overwrite", true,
+                        "resource_type", "image"
+                )
+        );
+
+        return (String) uploadResult.get("secure_url");
+    }
+
+    private UserInfoDto buildUserInfoDto(UserPublicDto userPublicDto, String email) {
+        UserInfoDto userInfoDto = new UserInfoDto();
+
+        userInfoDto.setEmail(email);
         userInfoDto.setUsername(userPublicDto.getUsername());
+        userInfoDto.setDisplayName(userPublicDto.getDisplayName());
+        userInfoDto.setPicture(userPublicDto.getPicture());
+        userInfoDto.setAbout(userPublicDto.getAbout());
         userInfoDto.setRole(userPublicDto.getRole());
         userInfoDto.setId(userPublicDto.getId());
+        userInfoDto.setCreatedAt(userPublicDto.getCreatedAt());
         return userInfoDto;
     }
 

@@ -7,6 +7,7 @@ import axios from "axios";
 export type User = {
   id: string;
   name: string;
+  username: string;
   email: string;
   picture?: string;
   status: "online" | "idle" | "dnd" | "offline";
@@ -51,12 +52,17 @@ export const AuthProvider = ({ children }: Props) => {
 
     const userData: User = {
       id: userPayload.id || "",
-      name: userPayload.username || userPayload.name || "",
+      name:
+        userPayload.displayName ||
+        userPayload.name ||
+        userPayload.username ||
+        "",
+      username: userPayload.username || "",
       email: userPayload.email || "",
       picture: userPayload.picture || defaultAvatar,
       role: userPayload.role || "USER",
       status: "online",
-      about: "default text",
+      about: userPayload.about || "",
       createdAt: userPayload.createdAt || "",
     };
 
@@ -82,6 +88,10 @@ export const AuthProvider = ({ children }: Props) => {
       try {
         const parsedUser = JSON.parse(savedUser);
         setUser(parsedUser);
+        //refresh user
+        // if (!parsedUser?.createdAt) {
+        //   checkAuthStatus();
+        // }
       } catch (error) {
         localStorage.removeItem("user");
         setUser(null);

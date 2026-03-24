@@ -45,9 +45,12 @@ public class AuthService {
         UserInfoDto userInfoDto = new UserInfoDto();
         userInfoDto.setId(userEntity.getId());
         userInfoDto.setUsername(userEntity.getUsername());
+        userInfoDto.setDisplayName(userEntity.getDisplayName());
         userInfoDto.setEmail(userAuthDto.getEmail());
+        userInfoDto.setPicture(userEntity.getPicture());
+        userInfoDto.setAbout(userEntity.getAbout());
         userInfoDto.setRole(userEntity.getRole().toString());
-
+        userInfoDto.setCreatedAt(userEntity.getCreatedAt().atOffset(java.time.ZoneOffset.UTC));
         UserSessionDto userSessionDto = userSessionsService.createNewSession(userAuthDto.getEmail());
 
         UserAuthResponseDto userAuthResponseDto = new UserAuthResponseDto();
