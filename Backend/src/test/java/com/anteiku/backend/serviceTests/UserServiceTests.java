@@ -3,8 +3,8 @@ package com.anteiku.backend.serviceTests;
 
 import com.anteiku.backend.entity.UserCredentialsEntity;
 import com.anteiku.backend.entity.UserEntity;
+import com.anteiku.backend.exception.EmailIsAlreadyUsedException;
 import com.anteiku.backend.mapper.UserMapper;
-import com.anteiku.backend.model.Role;
 import com.anteiku.backend.model.UserRegistrationDto;
 import com.anteiku.backend.repository.UserCredentialsRepository;
 import com.anteiku.backend.repository.UserRepository;
@@ -19,7 +19,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.ArrayList;
 
 import static org.mockito.Mockito.*;
-//import static org.mockito.ArgumentMatchers.any;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -60,5 +59,17 @@ public class UserServiceTests {
         assertEquals(testInputRegistrationDto.getPassword(), result.getPassword());
 
         verify(userRepository, times(1)).save(userEntity);
+    }
+
+    @Test
+    void registerUserEmailExistsTest() {
+        UserRegistrationDto testInputRegistrationDto = new UserRegistrationDto();
+        testInputRegistrationDto.setEmail("test@example.com");
+
+        when(userCredentialsRepository.existsByEmail("test@example.com")).thenReturn(true);
+
+        assertThrows(EmailIsAlreadyUsedException.class, () -> userService.registerUser(testInputRegistrationDto));
+
+        verify(userRepository, never()).save(any());
     }
 }
