@@ -26,7 +26,7 @@ import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class AuthServiceTest {
+public class AuthServiceTests {
     @Mock
     private PasswordEncoder passwordEncoder;
     @Mock

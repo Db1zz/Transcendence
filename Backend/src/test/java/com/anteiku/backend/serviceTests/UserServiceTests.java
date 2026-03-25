@@ -4,7 +4,9 @@ package com.anteiku.backend.serviceTests;
 import com.anteiku.backend.entity.UserCredentialsEntity;
 import com.anteiku.backend.entity.UserEntity;
 import com.anteiku.backend.exception.EmailIsAlreadyUsedException;
+import com.anteiku.backend.exception.ResourceNotFoundException;
 import com.anteiku.backend.mapper.UserMapper;
+import com.anteiku.backend.model.UserPublicDto;
 import com.anteiku.backend.model.UserRegistrationDto;
 import com.anteiku.backend.repository.UserCredentialsRepository;
 import com.anteiku.backend.repository.UserRepository;
@@ -17,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -71,5 +74,38 @@ public class UserServiceTests {
         assertThrows(EmailIsAlreadyUsedException.class, () -> userService.registerUser(testInputRegistrationDto));
 
         verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void getUsersByUsernameSuccessTest() {
+        String testUsername = "test";
+        List<UserEntity> mockDbRes = List.of(new UserEntity(), new UserEntity());
+        List<UserPublicDto> mockMappedRes = List.of(new UserPublicDto(), new UserPublicDto());
+
+        when(userRepository.findUserByUsername(testUsername)).thenReturn(mockDbRes);
+        when(userMapper.toDtoList(mockDbRes)).thenReturn(mockMappedRes);
+
+        List<UserPublicDto> result = userService.getUsersByUsername(testUsername);
+
+        assertEquals(2, result.size());
+        verify(userRepository, times(1)).findUserByUsername(testUsername);
+    }
+
+    @Test
+    void getuserByUsernameNotFoundExceptionTest() {
+        String testUsername = "test";
+
+        when(userRepository.findUserByUsername(testUsername)).thenReturn(new ArrayList<>());
+
+        assertThrows(ResourceNotFoundException.class, () -> userService.getUsersByUsername(testUsername));
+    }
+
+    @Test
+    void isEmailAvailableSuccessTest() {
+        when(userCredentialsRepository.existsByEmail("test@example.com")).thenReturn(false);
+
+        boolean res = userService.isEmailAvailable("test@example.com");
+
+        assertTrue(res);
     }
 }
