@@ -7,9 +7,10 @@ import org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfigur
 import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
 import org.springframework.boot.jdbc.autoconfigure.DataSourceTransactionManagerAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
-@Disabled
+@ActiveProfiles("test")
 class BackendApplicationTests {
 
     @Test
