@@ -20,13 +20,13 @@ interface ProfileEditFormProps {
 const inputClassName =
   "w-full rounded-lg border-2 border-gray-800 bg-brand-green px-3 py-2 font-roboto text-sm text-gray-800 outline-none focus:ring-2 focus:ring-brand-brick";
 
-export const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
+export const ProfileEditForm = ({
   initialValues,
   isSaving,
   errorMessage,
   onUploadPicture,
   onSave,
-}) => {
+}: ProfileEditFormProps) => {
   const [values, setValues] = useState<ProfileEditValues>(initialValues);
   const [isUploadingPicture, setIsUploadingPicture] = useState(false);
   const [uploadError, setUploadError] = useState("");
@@ -53,7 +53,7 @@ export const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
     setIsUploadingPicture(true);
     try {
       const pictureUrl = await onUploadPicture(file);
-      setValues((current) => ({
+      setValues((current: ProfileEditValues) => ({
         ...current,
         picture: pictureUrl,
       }));
@@ -116,7 +116,7 @@ export const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
             className={inputClassName}
             value={values.username}
             onChange={(event) =>
-              setValues((current) => ({
+              setValues((current: ProfileEditValues) => ({
                 ...current,
                 username: event.target.value,
               }))
@@ -132,7 +132,7 @@ export const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
             className={inputClassName}
             value={values.displayName}
             onChange={(event) =>
-              setValues((current) => ({
+              setValues((current: ProfileEditValues) => ({
                 ...current,
                 displayName: event.target.value,
               }))
@@ -150,7 +150,7 @@ export const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
           className={`${inputClassName} min-h-[120px] resize-none`}
           value={values.about}
           onChange={(event) =>
-            setValues((current) => ({
+            setValues((current: ProfileEditValues) => ({
               ...current,
               about: event.target.value,
             }))

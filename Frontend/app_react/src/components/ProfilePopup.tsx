@@ -5,6 +5,8 @@ import { User, useAuth } from "../contexts/AuthContext";
 import { StatusColors } from "./ProfileButton";
 import { Button } from "./Button";
 import { ProfileEditForm } from "./ProfileEditForm";
+import { LanguageEditForm, LanguageOption } from "./LanguageEditForm";
+import SettingsButton from "./SettingsButton";
 import api from "../utils/api";
 
 interface ProfilePopupProps {
@@ -36,10 +38,13 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeSettingsSection, setActiveSettingsSection] = useState<
-    "profile" | null
+    "profile" | "language" | null
   >(null);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [selectedLanguage, setSelectedLanguage] = useState<LanguageOption>(
+    (localStorage.getItem("preferredLanguage") as LanguageOption) || "english",
+  );
   const [friendState, setFriendState] = useState<
     "friend" | "pending" | "not_friend"
   >("not_friend");
@@ -50,6 +55,9 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
   const showSettingsPanel = canExpand && isExpanded;
   const isEditingProfile =
     isOwnProfile && showSettingsPanel && activeSettingsSection === "profile";
+  const isEditingLanguage =
+    isOwnProfile && showSettingsPanel && activeSettingsSection === "language";
+  const isEditingSettings = isEditingProfile || isEditingLanguage;
 
   useEffect(() => {
     if (friendshipStatus === "friend") {
@@ -194,16 +202,20 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
             <h4 className="font-ananias text-sm font-bold text-gray-800 uppercase">
               settings
             </h4>
-            <button
+            <SettingsButton
               onClick={() => setActiveSettingsSection("profile")}
-              className={`mt-4 w-full rounded-lg border-2 border-gray-800 px-3 py-2 text-left font-ananias text-sm uppercase transition-colors ${
-                activeSettingsSection === "profile"
-                  ? "bg-brand-brick text-brand-beige"
-                  : "bg-brand-beige text-gray-800 hover:bg-brand-beige/70"
-              }`}
-            >
-              my profile
-            </button>
+              text="my profile"
+            />
+            {/* TODO: create voice and video editform for the settings. later */}
+            <SettingsButton
+              onClick={() => setActiveSettingsSection("profile")}
+              text="voice and video"
+            />
+            <SettingsButton
+              onClick={() => setActiveSettingsSection("language")}
+              text="language"
+            />
+
             <Button
               onClick={handleLogout}
               className="mt-auto mb-3 w-full !px-3 !py-2 text-sm"
@@ -214,7 +226,7 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
         )}
 
         <div className="flex flex-col h-full min-h-0 flex-1 min-w-0">
-          {!isEditingProfile && (
+          {!isEditingSettings && (
             <>
               <div className="w-full bg-brand-brick relative transition-all duration-300 shrink-0 h-[140px]">
                 <div className="absolute top-2 right-3 flex gap-2">
@@ -252,9 +264,9 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
             </>
           )}
           <div
-            className={`relative px-6 pb-6 flex flex-col h-full min-h-0 text-left ${isEditingProfile ? "pt-16" : "pt-20"}`}
+            className={`relative px-6 pb-6 flex flex-col h-full min-h-0 text-left ${isEditingSettings ? "pt-16" : "pt-20"}`}
           >
-            {isEditingProfile && (
+            {isEditingSettings && (
               <div className="absolute top-4 right-4 z-10 flex gap-2">
                 <Button
                   onClick={handleClose}
@@ -265,7 +277,7 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
                 </Button>
               </div>
             )}
-            {!isEditingProfile && (
+            {!isEditingSettings && (
               <>
                 <div className="mb-4 shrink-0">
                   <h3
@@ -298,6 +310,17 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
                 errorMessage={saveError}
                 onUploadPicture={handleUploadPicture}
                 onSave={handleSaveProfile}
+              />
+            ) : isOwnProfile &&
+              showSettingsPanel &&
+              activeSettingsSection === "language" ? (
+              <LanguageEditForm
+                initialLanguage={selectedLanguage}
+                onSaved={(language) => {
+                  setSelectedLanguage(language);
+                  setIsExpanded(false);
+                  setActiveSettingsSection(null);
+                }}
               />
             ) : (
               <>
