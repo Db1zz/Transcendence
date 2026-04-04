@@ -1,0 +1,52 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driverClassName: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: "dummy"
+            client-secret: "dummy"
+          github:
+            client-id: "dummy"
+            client-secret: "dummy"
+          intra:
+            client-id: "dummy"
+            client-secret: "dummy"
+            provider: intra
+            authorization-grant-type: authorization_code
+            redirect-uri: "http://localhost:8080/login/oauth2/code/intra"
+        provider:
+          intra:
+            authorization-uri: https://dummy.com/oauth/authorize
+            token-uri: https://dummy.com/oauth/token
+            user-info-uri: https://dummy.com/userinfo
+            user-name-attribute: id
+
+cloudinary:
+  cloud-name: "dummy-cloud"
+  api-key: "dummy-key"
+  api-secret: "dummy-secret"
+
+app:
+  jwt:
+    issuer: "anteiku-test"
+    signing:
+      private-key: "ZHVtbXlLZXlGb3JUZXN0aW5nVGhhdElzQXRMZWFzdDMyQnl0ZXNMb25nU29JdERvZXNudENyYXNo"
+    verification:
+      public-key: "dummy-public-key"
+  static-name:
+    acces-token: "accessToken"
+    refresh-token: "refreshToken"
+  security:
+    refresh-token-expiration-period: 31
+    access-token-expiration-period: 2
