@@ -15,7 +15,7 @@ api.interceptors.response.use(
   async (error) => {
     const originalReq = error.config;
 
-    if (originalReq === "/auth/refresh") {
+    if (originalReq.url === "/auth/refresh") {
       return Promise.reject(error);
     }
 
