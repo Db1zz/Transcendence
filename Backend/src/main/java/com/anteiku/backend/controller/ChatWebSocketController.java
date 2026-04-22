@@ -20,3 +20,4 @@ public class ChatWebSocketController {
         messagingTemplate.convertAndSend("/topic/chat/" + saved.getRoomId(), saved);
     }
 }
+//here is some comment for ci cd
