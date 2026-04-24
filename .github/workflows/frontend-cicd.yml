@@ -1,0 +1,44 @@
+name: Frontend CICD
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'Frontend/**'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'Frontend/**'
+
+jobs:
+  build-and-test:
+    name: React Build & Test
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: ./Frontend/app_react
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: './Frontend/package-lock.json'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Run Tests
+        run: npm test -- --watchAll=false 
+        env:
+            CRET: ${{ secrets.CRET }}
+            GITHUB_CLIENT_ID: ${{ secrets.GH_CLIENT_ID }}
+            GITHUB_CLIENT_SECRET: ${{ secrets.GH_CLIENT_SECRET }}
+
+      - name: Build Application
+        run: npm run build
