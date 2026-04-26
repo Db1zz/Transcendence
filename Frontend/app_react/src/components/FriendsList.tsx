@@ -78,7 +78,7 @@ export const FriendsList: React.FC<FriendsListProps> = ({
               className="animate-enter"
               style={{ animationDelay: `${index * 50}ms` }}
             >
-              <ProfileButton user={friend} className="w-full">
+              <ProfileButton user={friend} className="w-full" variant="v2">
                 {activeTab === "pending" ? (
                   <>
                     {friend.canAcceptPending && (
