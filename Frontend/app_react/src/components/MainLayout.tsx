@@ -54,7 +54,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     id: string;
     name: string;
   } | null>(null);
-  const [activeServerId, setActiveServerId] = useState<string | null>(null);
+  const [_activeServerId, setActiveServerId] = useState<string | null>(null);
   const [activeChannelId, setActiveChannelId] = useState<string>("general");
 
   const { user, loading } = useAuth();

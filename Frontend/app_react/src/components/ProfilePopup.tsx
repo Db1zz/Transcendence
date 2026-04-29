@@ -61,7 +61,7 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
   const { logout, setUser, user: authenticatedUser } = useAuth();
   const isOwnProfile = authenticatedUser?.id === user.id;
   const canExpand = isOwnProfile;
-  const isExpandedView = true;
+  //const isExpandedView = true;
   const showSettingsPanel = canExpand && isExpanded;
   const isEditingProfile =
     isOwnProfile && showSettingsPanel && activeSettingsSection === "profile";
