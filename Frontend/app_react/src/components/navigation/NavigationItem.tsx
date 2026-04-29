@@ -7,6 +7,7 @@ interface NavigationItemProps {
   imageUrl: string;
   name: string;
   isActive?: boolean;
+  onClick: () => void;
 }
 
 export const NavigationItem = ({
@@ -14,12 +15,14 @@ export const NavigationItem = ({
   imageUrl,
   name,
   isActive = false,
+  onClick,
 }: NavigationItemProps) => {
   const [active, setActive] = useState(isActive);
 
   const handleClick = () => {
     setActive(true);
     console.log(`Navigated to server: ${name}`);
+    onClick?.();
   };
 
   return (

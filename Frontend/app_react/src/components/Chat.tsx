@@ -8,6 +8,7 @@ interface ChatProps {
   userId: string;
   roomId: string;
   onSendMessage?: (message: string) => void;
+  hideHeader?: boolean;
 }
 
 const Chat: React.FC<ChatProps> = ({
@@ -15,6 +16,7 @@ const Chat: React.FC<ChatProps> = ({
   userId,
   roomId,
   onSendMessage,
+  hideHeader = false,
 }) => {
   const { t } = useTranslation();
   const { messages: wsMessages, sendMessage, connected } = useChat(roomId);
@@ -56,15 +58,16 @@ const Chat: React.FC<ChatProps> = ({
 
   return (
     <div className="flex flex-col h-full min-h-0  bg-brand-green">
-      <div className="bg-brand-peach border-y border-brand-green text-white p-4 shadow-md">
-        <h2 className="text-xl font-bold">{personName}</h2>
-        <p
-          className={`text-sm ${connected ? "text-green-100" : "text-red-100"}`}
-        >
-          {connected ? t("chat.online") : t("chat.connecting")}
-        </p>
-      </div>
-
+      {!hideHeader && (
+        <div className="bg-brand-peach border-y border-brand-green text-white p-4 shadow-md">
+          <h2 className="text-xl font-bold">{personName}</h2>
+          <p
+            className={`text-sm ${connected ? "text-green-100" : "text-red-100"}`}
+          >
+            {connected ? t("chat.online") : t("chat.connecting")}
+          </p>
+        </div>
+      )}
       <div
         ref={messagesContainerRef}
         className="flex-1 min-h-0 overflow-y-auto scrollbar-hide p-4 space-y-4"
