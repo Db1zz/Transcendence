@@ -123,3 +123,15 @@ CREATE TABLE IF NOT EXISTS chat_messages (
     content VARCHAR(2000) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+CREATE TABLE IF NOT EXISTS channel_members (
+    channel_id UUID NOT NULL,
+    user_id UUID NOT NULL,
+    joined_at TIMESTAMP NOT NULL DEFAULT now(),
+
+    PRIMARY KEY (channel_id, user_id),
+    FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- I think I will have to change chat messages columns as well to the channel and rooms ids
