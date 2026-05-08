@@ -95,6 +95,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     handleViewChange("server");
   };
 
+  //this is creation of chat will have to be changed
   const createDmRoomId = (userId: string, friendId: string) => {
     const [first, second] = [userId, friendId].sort();
     return `dm-${first}-${second}`;

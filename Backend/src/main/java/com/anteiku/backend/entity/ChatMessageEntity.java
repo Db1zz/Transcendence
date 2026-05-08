@@ -1,14 +1,8 @@
 package com.anteiku.backend.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
+
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
@@ -16,19 +10,24 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "chat_messages")
+@IdClass(ChannelMemberId.class)
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ChatMessageEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "room_id", nullable = false)
-    private String roomId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "channel_id", nullable = false)
+    private ChannelEntity channel;
 
-    @Column(name = "sender_id")
-    private UUID senderId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sender_id")
+    private UserEntity sender;
 
     @Column(name = "content", nullable = false, length = 2000)
     private String content;

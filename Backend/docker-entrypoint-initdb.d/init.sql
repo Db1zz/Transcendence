@@ -92,8 +92,8 @@ CREATE TABLE IF NOT EXISTS member_roles (
 
 CREATE TABLE IF NOT EXISTS channels (
     id UUID PRIMARY KEY,
---     organization_id UUID NOT NULL,
-    name VARCHAR NOT NULL,
+    organization_id UUID,
+    name VARCHAR,
     type VARCHAR NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -118,10 +118,12 @@ CREATE TABLE IF NOT EXISTS organization_channels (
 
 CREATE TABLE IF NOT EXISTS chat_messages (
     id UUID PRIMARY KEY,
-    room_id VARCHAR NOT NULL,
+    channel_id UUID NOT NULL,
     sender_id UUID,
     content VARCHAR(2000) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+
+    FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE,
 );
 
 CREATE TABLE IF NOT EXISTS channel_members (
@@ -133,5 +135,3 @@ CREATE TABLE IF NOT EXISTS channel_members (
     FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
-
--- I think I will have to change chat messages columns as well to the channel and rooms ids
