@@ -1,0 +1,10 @@
+pub mod cassandra_notification_preferences;
+pub mod casssandra_notification_to_send_repository;
+pub mod notification_preferences_repository;
+pub mod notification_to_send_repository;
+
+pub use cassandra_notification_preferences::CassandraNotificationPreferencesRepository;
+pub use notification_preferences_repository::NotificationPreferencesRepository;
+
+pub use casssandra_notification_to_send_repository::CassandraUserNotificationsRepository;
+pub use notification_to_send_repository::UserNotificationsRepository;

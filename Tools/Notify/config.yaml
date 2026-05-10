@@ -1,0 +1,17 @@
+consumer:
+  topic: "user-notifs"
+  brokers: "kafka:29092" # kafka
+  user_notifications_database_addr: "cassandra:9042"
+  notification_preferences_database_addr: "cassandra:9042"
+  clients_node_addr: "0.0.0.0:6767" # public addr
+  metrics_receiver_addr: "0.0.0.0:6979"
+  api_router_addr: 0.0.0.0:9921
+
+load_balancer:
+  load_balancer_addr: "0.0.0.0:8989"
+  load_balancer_metrics_addr: "0.0.0.0:6979"
+
+producer:
+  producer_addr: "0.0.0.0:8992"
+  topic: "user-notifs"
+  brokers: "localhost:9092"
