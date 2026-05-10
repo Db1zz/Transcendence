@@ -4,7 +4,7 @@ import api from "../utils/api";
 
 export interface ChatMessage {
   id: string;
-  roomId: string;
+  channelId: string;
   senderId: string;
   content: string;
   createdAt: string;
@@ -20,7 +20,7 @@ export const useChat = (roomId: string) => {
 
     const loadHistory = async () => {
       try {
-        const response = await api.get(`/chat/rooms/${roomId}/messages`);
+        const response = await api.get(`/chat/rooms/${channelId}/messages?page`);
         if (isActive) {
           setMessages(response.data);
         }
