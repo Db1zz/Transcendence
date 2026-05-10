@@ -32,7 +32,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
     command: ./mvnw clean spring-boot:run -Dspring-boot.run.jvmArguments="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
     networks:
-      - anteiku-network
+      - anteiku-ne  twork
   frontend:
     build: 
       context: ./Frontend/app_react

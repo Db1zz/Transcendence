@@ -6,7 +6,7 @@ export
 all: up
 
 up:
-	docker compose up -d
+	docker compose -f docker-compose.yaml -f ./Tools/Notify/docker-compose.yaml up -d
 
 up-elk:
 	docker compose -f docker-compose.yaml -f docker-compose.elk.yaml up -d
