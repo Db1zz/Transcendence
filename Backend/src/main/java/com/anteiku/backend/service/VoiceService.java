@@ -23,7 +23,7 @@ public class VoiceService {
         rooms.put(newRoomId, tempVoiceRoomDto);
 
         CreateVoiceRoomResponseDto createVoiceRoomResponseDto = new CreateVoiceRoomResponseDto();
-        createVoiceRoomResponseDto.setRoomId(newRoomId);
+        createVoiceRoomResponseDto.setChannelId(newRoomId);
 
         return createVoiceRoomResponseDto;
     }

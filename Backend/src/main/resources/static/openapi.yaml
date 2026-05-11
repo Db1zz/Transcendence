@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Anteiku API
-  description: TODO
+  description: API for Anteiku Chat Application
   version: 1.0.0
 
 servers:
@@ -169,6 +169,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+
   /auth/login:
     post:
       summary: "Send authentication request to a server"
@@ -212,7 +213,7 @@ paths:
               content:
                 text/plain:
                   schema:
-                    const: "http://0.0.0.0:3000/login" # https://github.com/OAI/OpenAPI-Specification/issues/2512
+                    const: "http://0.0.0.0:3000/login"
         401:
           description: "Invalid access token"
 
@@ -238,8 +239,7 @@ paths:
         '403':
           description: "Forbidden – insufficient permissions"
         '409':
-          description: "Organization with the same name already exist" # Not sure
-
+          description: "Organization with the same name already exist"
 
   /organizations/{id}:
     delete:
@@ -261,7 +261,7 @@ paths:
 
   /channels:
     post:
-      summary: "Creates channel"
+      summary: "Creates a channel (Server Channel or DM)"
       operationId: createChannel
       requestBody:
         content:
@@ -270,11 +270,11 @@ paths:
               $ref: '#/components/schemas/CreateChannelDto'
       responses:
         201:
-            description: "Channel successfully created"
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/CreateChannelResponseDto'
+          description: "Channel successfully created"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateChannelResponseDto'
         403:
           description: "Forbidden – not the owner or insufficient permissions"
         404:
@@ -310,7 +310,7 @@ paths:
               $ref: '#/components/schemas/CreateVoiceRoomDto'
       responses:
         201:
-          description: "aboba"
+          description: "Voice room created"
           content:
             application/json:
               schema:
@@ -423,50 +423,50 @@ paths:
                   $ref: '#/components/schemas/FriendDto'
 
   /friends/{userId}:
-      post:
-        summary: "Send a friend request"
-        operationId: addFriend
-        parameters:
-          - name: userId
-            in: path
-            required: true
-            schema:
-              type: string
-              format: uuid
-        responses:
-          200:
-            description: "Request sent"
-          400:
-            description: "User not found or already friends"
+    post:
+      summary: "Send a friend request"
+      operationId: addFriend
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: "Request sent"
+        400:
+          description: "User not found or already friends"
 
-      put:
-        summary: "Accept a friend request"
-        operationId: acceptFriend
-        parameters:
-          - name: userId
-            in: path
-            required: true
-            description: "The ID of the person who sent the request"
-            schema:
-              type: string
-              format: uuid
-        responses:
-          200:
-            description: "Friendship accepted"
+    put:
+      summary: "Accept a friend request"
+      operationId: acceptFriend
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: "The ID of the person who sent the request"
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: "Friendship accepted"
 
-      delete:
-        summary: "Remove friend or cancel request"
-        operationId: removeFriend
-        parameters:
-          - name: userId
-            in: path
-            required: true
-            schema:
-              type: string
-              format: uuid
-        responses:
-          200:
-            description: "Removed"
+    delete:
+      summary: "Remove friend or cancel request"
+      operationId: removeFriend
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: "Removed"
 
   /friends/blocked:
     get:
@@ -483,38 +483,38 @@ paths:
                   $ref: '#/components/schemas/FriendDto'
 
   /friends/{userId}/block:
-      post:
-        summary: "Block a user"
-        description: "Blocks the user. If a friendship or request exists, it is overridden."
-        operationId: blockUser
-        parameters:
-          - name: userId
-            in: path
-            required: true
-            description: "ID of the user to block"
-            schema:
-              type: string
-              format: uuid
-        responses:
-          200:
-            description: "User blocked successfully"
-          400:
-            description: "Cannot block self or user not found"
+    post:
+      summary: "Block a user"
+      description: "Blocks the user. If a friendship or request exists, it is overridden."
+      operationId: blockUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: "ID of the user to block"
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: "User blocked successfully"
+        400:
+          description: "Cannot block self or user not found"
 
-      delete:
-        summary: "Unblock a user"
-        operationId: unblockUser
-        parameters:
-          - name: userId
-            in: path
-            required: true
-            description: "ID of the user to unblock"
-            schema:
-              type: string
-              format: uuid
-        responses:
-          200:
-            description: "User unblocked successfully"
+    delete:
+      summary: "Unblock a user"
+      operationId: unblockUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: "ID of the user to unblock"
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: "User unblocked successfully"
 
   /friends/requests:
     get:
@@ -544,42 +544,57 @@ paths:
                 items:
                   $ref: '#/components/schemas/FriendDto'
 
-  /chat/rooms:
+  /chat/channels:
     get:
-      summary: "Get all chat rooms for the current user"
-      operationId: getUserChatRooms
-      description: "Retrieves a list of all chat rooms (conversations) the current user is part of"
+      summary: "Get all chat channels for the current user"
+      operationId: getUserChannels
+      description: "Retrieves a list of all chat channels (DMs) the current user is part of"
       security:
         - bearerAuth: []
       responses:
         200:
-          description: "List of chat rooms"
+          description: "List of chat channels"
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/ChatRoomDto'
+                  $ref: '#/components/schemas/ChatChannelDto'
         400:
           description: "Missing or invalid user ID in header"
         401:
           description: "Unauthorized"
 
-  /chat/rooms/{roomId}/messages:
+  /chat/channels/{channelId}/messages:
     get:
-      summary: "Get messages from a chat room"
-      operationId: getRoomMessages
-      description: "Retrieves the last 50 messages from a specific chat room, ordered by creation time"
+      summary: "Get messages from a chat channel with pagination"
+      operationId: getChannelMessages
+      description: "Retrieves messages from a specific chat channel (server channel or DM), ordered by newest first."
       parameters:
-        - name: roomId
+        - name: channelId
           in: path
-          description: "The room ID (format: dm-userId1-userId2)"
+          description: "The channel ID"
           required: true
           schema:
             type: string
+            format: uuid
+        - name: page
+          in: query
+          description: "The page number (0-indexed)"
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          description: "Number of messages per page"
+          required: false
+          schema:
+            type: integer
+            default: 50
       responses:
         200:
-          description: "List of messages in the room"
+          description: "List of messages in the channel"
           content:
             application/json:
               schema:
@@ -587,7 +602,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/ChatMessageResponse'
         404:
-          description: "Room not found"
+          description: "Channel not found"
 
 components:
   responses:
@@ -792,8 +807,6 @@ components:
         accessTokenExpiresAt:
           type: string
           format: date-time
-#        deviceId:
-#          $ref: '#/components/schemas/Id'
         createdAt:
           type: string
           format: date-time
@@ -830,11 +843,23 @@ components:
       properties:
         name:
           type: string
+          nullable: true
+          description: "Name of the channel (can be null for DMs)"
         channelType:
           type: string
           enum:
             - TEXT
             - VOICE
+        organizationId:
+          type: string
+          format: uuid
+          nullable: true
+          description: "ID of the organization. Null if it is a Direct Message."
+        memberIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserId'
+          description: "Optional list of User IDs to add to the channel immediately upon creation"
 
     CreateChannelResponseDto:
       type: object
@@ -865,7 +890,7 @@ components:
     CreateVoiceRoomResponseDto:
       type: object
       properties:
-        roomId:
+        channelId:
           type: string
           format: uuid
 
@@ -889,8 +914,8 @@ components:
         organizationId:
           $ref: '#/components/schemas/OrganizationId'
         createdAt:
-            type: string
-            format: date-time
+          type: string
+          format: date-time
 
     AddMemberDto:
       type: object
@@ -914,13 +939,14 @@ components:
           type: string
           format: date-time
 
-    ChatRoomDto:
+    ChatChannelDto:
       type: object
-      description: "Chat room information"
+      description: "Chat channel information (for DMs)"
       properties:
-        roomId:
+        channelId:
           type: string
-          description: "The unique room identifier (format: dm-userId1-userId2)"
+          format: uuid
+          description: "The unique channel identifier"
         otherUserId:
           $ref: '#/components/schemas/UserId'
         otherUserName:
@@ -937,9 +963,10 @@ components:
       properties:
         id:
           $ref: '#/components/schemas/Id'
-        roomId:
+        channelId:
           type: string
-          description: "The room ID where this message was sent"
+          format: uuid
+          description: "The channel ID where this message was sent"
         senderId:
           $ref: '#/components/schemas/UserId'
         content:
@@ -955,13 +982,14 @@ components:
       type: object
       description: "Request to send a chat message"
       required:
-        - roomId
+        - channelId
         - senderId
         - content
       properties:
-        roomId:
+        channelId:
           type: string
-          description: "The room ID where the message will be sent (format: dm-userId1-userId2)"
+          format: uuid
+          description: "The channel ID where the message will be sent"
         senderId:
           $ref: '#/components/schemas/UserId'
         content:

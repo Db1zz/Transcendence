@@ -1,37 +1,35 @@
 package com.anteiku.backend.entity;
 
 import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.IdClass;
+import jakarta.persistence.Table;
 import lombok.*;
-
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
-import java.util.UUID;
 
 @Entity
-@Table(name = "chat_messages")
+@Table(name = "channel_members")
+@IdClass(ChannelMemberId.class)
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ChatMessageEntity {
+public class ChannelMemberEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "channel_id", nullable = false)
     private ChannelEntity channel;
 
+    @Id
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sender_id")
-    private UserEntity sender;
-
-    @Column(name = "content", nullable = false, length = 2000)
-    private String content;
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity user;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
+    @Column(name = "created_at", updatable = false)
+    private Instant joinedAt;
 }

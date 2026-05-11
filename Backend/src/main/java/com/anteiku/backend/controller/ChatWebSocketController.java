@@ -17,7 +17,6 @@ public class ChatWebSocketController {
     @MessageMapping("/chat.send")
     public void send(ChatMessageRequest request) {
         ChatMessageResponse saved = chatService.save(request);
-        messagingTemplate.convertAndSend("/topic/chat/" + saved.getRoomId(), saved);
+        messagingTemplate.convertAndSend("/topic/chat/" + saved.getChannelId(), saved);
     }
 }
-//here is some comment for ci cd

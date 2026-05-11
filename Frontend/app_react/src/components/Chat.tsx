@@ -6,7 +6,7 @@ import { useChat } from "../hooks/useChat";
 interface ChatProps {
   personName: string;
   userId: string;
-  roomId: string;
+  channelId: string;
   onSendMessage?: (message: string) => void;
   hideHeader?: boolean;
 }
@@ -14,27 +14,42 @@ interface ChatProps {
 const Chat: React.FC<ChatProps> = ({
   personName,
   userId,
-  roomId,
+  channelId,
   onSendMessage,
   hideHeader = false,
 }) => {
   const { t } = useTranslation();
-  const { messages: wsMessages, sendMessage, connected } = useChat(roomId);
+  
+  const { 
+    messages: wsMessages, 
+    sendMessage, 
+    connected,
+    loadOlderMessages, 
+    hasMore 
+  } = useChat(channelId);
+  
   const [inputValue, setInputValue] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-
-  const scrollToBottom = () => {
+  const prevScrollHeightRef = useRef<number>(0); 
+  const handleScroll = () => {
     const container = messagesContainerRef.current;
-    if (!container) {
-      return;
+    if (!container) return;
+    if (container.scrollTop === 0 && hasMore) {
+      prevScrollHeightRef.current = container.scrollHeight;
+      loadOlderMessages();
     }
-
-    container.scrollTop = container.scrollHeight;
   };
 
   useEffect(() => {
-    scrollToBottom();
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    if (prevScrollHeightRef.current > 0) {
+      container.scrollTop = container.scrollHeight - prevScrollHeightRef.current;
+      prevScrollHeightRef.current = 0; 
+    } else {
+      container.scrollTop = container.scrollHeight;
+    }
   }, [wsMessages]);
 
   const handleSendMessage = () => {
@@ -57,21 +72,28 @@ const Chat: React.FC<ChatProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full min-h-0  bg-brand-green">
+    <div className="flex flex-col h-full min-h-0 bg-brand-green">
       {!hideHeader && (
         <div className="bg-brand-peach border-y border-brand-green text-white p-4 shadow-md">
           <h2 className="text-xl font-bold">{personName}</h2>
-          <p
-            className={`text-sm ${connected ? "text-green-100" : "text-red-100"}`}
-          >
+          <p className={`text-sm ${connected ? "text-green-100" : "text-red-100"}`}>
             {connected ? t("chat.online") : t("chat.connecting")}
           </p>
         </div>
       )}
+      
       <div
         ref={messagesContainerRef}
+        onScroll={handleScroll} // <--- ADDED THE SCROLL LISTENER HERE
         className="flex-1 min-h-0 overflow-y-auto scrollbar-hide p-4 space-y-4"
       >
+        {/* We can leave a tiny loading indicator here that only shows when scrolling up */}
+        {hasMore && wsMessages.length > 0 && (
+          <div className="text-center text-xs text-brand-beige opacity-50 my-2">
+            Loading...
+          </div>
+        )}
+
         {wsMessages.map((message) => (
           <div
             key={message.id}
@@ -109,7 +131,7 @@ const Chat: React.FC<ChatProps> = ({
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder={t("chat.inputPlaceholder")}
-            className=" bg-brand-beige flex-1 p-3 border border-brand-peach rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick resize-none max-h-24"
+            className="bg-brand-beige flex-1 p-3 border border-brand-peach rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick resize-none max-h-24"
             rows={1}
           />
           <Button

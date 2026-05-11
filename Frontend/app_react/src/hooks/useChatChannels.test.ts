@@ -1,5 +1,5 @@
 import { renderHook, waitFor, act } from "@testing-library/react";
-import { useChatRooms } from "./useChatRooms";
+import { useChatChannels } from "./useChatChannels";
 import api from "../utils/api";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -9,10 +9,10 @@ const mockedApi = api as jest.Mocked<typeof api>;
 jest.mock("../contexts/AuthContext");
 const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 
-describe("useChatRooms Hook", () => {
-  const mockChatRooms = [
+describe("useChatChannels Hook", () => {
+  const mockChatChannels = [
     {
-      roomId: "room-1",
+      channelId: "channel-1", 
       otherUserId: "user-2",
       otherUserName: "Touka",
       otherUserPicture: "touka.png",
@@ -26,19 +26,19 @@ describe("useChatRooms Hook", () => {
   it("does not fetch and returns loading as false if user is not authenticated", async () => {
     mockedUseAuth.mockReturnValue({ user: null } as any);
 
-    const { result } = renderHook(() => useChatRooms());
+    const { result } = renderHook(() => useChatChannels());
 
     expect(result.current.loading).toBe(false);
-    expect(result.current.chatRooms).toEqual([]);
+    expect(result.current.chatChannels).toEqual([]);
     expect(mockedApi.get).not.toHaveBeenCalled();
   });
 
-  it("fetches chat rooms successfully on mount for an authenticated user", async () => {
+  it("fetches chat channels successfully on mount for an authenticated user", async () => {
     mockedUseAuth.mockReturnValue({ user: { id: "user-1" } } as any);
 
-    mockedApi.get.mockResolvedValueOnce({ data: mockChatRooms });
+    mockedApi.get.mockResolvedValueOnce({ data: mockChatChannels });
 
-    const { result } = renderHook(() => useChatRooms());
+    const { result } = renderHook(() => useChatChannels());
 
     expect(result.current.loading).toBe(true);
 
@@ -46,8 +46,8 @@ describe("useChatRooms Hook", () => {
       expect(result.current.loading).toBe(false);
     });
 
-    expect(mockedApi.get).toHaveBeenCalledWith("/chat/rooms");
-    expect(result.current.chatRooms).toEqual(mockChatRooms);
+    expect(mockedApi.get).toHaveBeenCalledWith("/chat/channels");
+    expect(result.current.chatChannels).toEqual(mockChatChannels);
     expect(result.current.error).toBeNull();
   });
 
@@ -55,17 +55,17 @@ describe("useChatRooms Hook", () => {
     mockedUseAuth.mockReturnValue({ user: { id: "user-1" } } as any);
 
     mockedApi.get.mockRejectedValueOnce(
-      new Error("Failed to fetch chat rooms"),
+      new Error("Failed to fetch chat channels"),
     );
 
-    const { result } = renderHook(() => useChatRooms());
+    const { result } = renderHook(() => useChatChannels());
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
     });
 
-    expect(result.current.error).toBe("Failed to fetch chat rooms");
-    expect(result.current.chatRooms).toEqual([]);
+    expect(result.current.error).toBe("Failed to fetch chat channels");
+    expect(result.current.chatChannels).toEqual([]);
   });
 
   it("allows manual refetching using the refetch function", async () => {
@@ -73,12 +73,12 @@ describe("useChatRooms Hook", () => {
 
     mockedApi.get
       .mockResolvedValueOnce({ data: [] })
-      .mockResolvedValueOnce({ data: mockChatRooms });
+      .mockResolvedValueOnce({ data: mockChatChannels });
 
-    const { result } = renderHook(() => useChatRooms());
+    const { result } = renderHook(() => useChatChannels());
 
     await waitFor(() => {
-      expect(result.current.chatRooms).toEqual([]);
+      expect(result.current.chatChannels).toEqual([]);
     });
 
     await act(async () => {
@@ -86,6 +86,6 @@ describe("useChatRooms Hook", () => {
     });
 
     expect(mockedApi.get).toHaveBeenCalledTimes(2);
-    expect(result.current.chatRooms).toEqual(mockChatRooms);
+    expect(result.current.chatChannels).toEqual(mockChatChannels);
   });
 });

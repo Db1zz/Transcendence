@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next";
 import { ServerLeftBar, ChannelCategory } from "./ServerLeftBar";
 import { ServerHeader } from "./ServerHeader";
 import { MemberList, Member } from "./MemberList";
+import api from "../utils/api";
 
 const mockCategories: ChannelCategory[] = [
   {
@@ -46,26 +47,15 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     "friends" | "chat" | "voice" | "server"
   >("friends");
   const { activeCall } = useCallContext();
-
-  const [selectedChatFriend, setSelectedChatFriend] = useState<Friend | null>(
-    null,
-  );
-  const [selectedChatUser, setSelectedChatUser] = useState<{
-    id: string;
-    name: string;
-  } | null>(null);
+  const [activeDmChannelId, setActiveDmChannelId] = useState<string | null>(null);
+  const [activeDmName, setActiveDmName] = useState<string>("");
   const [, setActiveServerId] = useState<string | null>(null);
-  const [activeChannelId, setActiveChannelId] = useState<string>("general");
+  const [activeServerChannelId, setActiveServerChannelId] = useState<string>("general");
 
   const { user, loading } = useAuth();
 
   useEffect(() => {
-    const savedView = localStorage.getItem("activeView") as
-      | "friends"
-      | "chat"
-      | "voice"
-      | "server"
-      | null;
+    const savedView = localStorage.getItem("activeView") as any;
     if (savedView) setActiveView(savedView);
   }, []);
 
@@ -78,15 +68,28 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     localStorage.setItem("activeView", view);
   };
 
-  const handleOpenChat = (friend: Friend) => {
-    setSelectedChatFriend(friend);
-    setSelectedChatUser(null);
-    handleViewChange("chat");
+  const handleOpenChatFromFriendList = async (friend: Friend) => {
+    if (!user) return;
+    
+    try {
+      const response = await api.post("/channels", {
+        name: null,
+        channelType: "TEXT",
+        organizationId: null,
+        memberIds: [user.id, friend.id]
+      });
+      
+      setActiveDmChannelId(response.data.id);
+      setActiveDmName(friend.name);
+      handleViewChange("chat");
+    } catch (error) {
+      console.error("Failed to open DM channel:", error);
+    }
   };
 
-  const handleChatRoomClick = (userId: string, userName: string) => {
-    setSelectedChatUser({ id: userId, name: userName });
-    setSelectedChatFriend(null);
+  const handleChatChannelClick = (channelId: string, userName: string) => {
+    setActiveDmChannelId(channelId);
+    setActiveDmName(userName);
     handleViewChange("chat");
   };
 
@@ -95,24 +98,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     handleViewChange("server");
   };
 
-  const createDmRoomId = (userId: string, friendId: string) => {
-    const [first, second] = [userId, friendId].sort();
-    return `dm-${first}-${second}`;
-  };
-
   if (loading) return null;
-
-  const chatUserId = user?.id ?? "";
-  const chatFriendId = selectedChatFriend?.id ?? selectedChatUser?.id;
-  const chatRoomId =
-    user && chatFriendId ? createDmRoomId(user.id, chatFriendId) : null;
-  const chatPersonName =
-    selectedChatFriend?.name ?? selectedChatUser?.name ?? "";
 
   return (
     <div className="h-screen flex flex-col overflow-hidden relative">
       {activeView === "server" ? (
-        <ServerHeader channelName={activeChannelId} />
+        <ServerHeader channelName={activeServerChannelId} />
       ) : (
         <HeaderBar type={activeView === "chat" ? "messages" : "friends"} />
       )}
@@ -122,7 +113,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           <NavigationSidebar
             onChatClick={() => handleViewChange("chat")}
             onFriendsClick={() => handleViewChange("friends")}
-            onServerClick={(id) => handleServerClick(id)}
+            onServerClick={handleServerClick}
           />
         </div>
         <main className="flex-1 flex gap-0 pt-2 pl-2 pr-0 md:p-2 overflow-hidden relative min-h-0">
@@ -132,13 +123,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               <ServerLeftBar
                 serverName="monki"
                 categories={mockCategories}
-                activeChannelId={activeChannelId}
-                onSelectChannel={(c) => setActiveChannelId(c.id)}
+                activeChannelId={activeServerChannelId}
+                onSelectChannel={(c) => setActiveServerChannelId(c.id)}
               />
             ) : (
               <LeftBar
                 onFriendsClick={() => handleViewChange("friends")}
-                onChatRoomClick={handleChatRoomClick}
+                onChatChannelClick={handleChatChannelClick}
               />
             )}
             {user && (
@@ -151,28 +142,28 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             <div className="flex-1 min-h-0">
               {activeView === "server" ? (
                 <Chat
-                  personName={`# ${activeChannelId}`}
+                  personName={`# ${activeServerChannelId}`}
                   userId={user?.id || ""}
-                  roomId={`channel-${activeChannelId}`}
+                  channelId={activeServerChannelId}
                   hideHeader={true}
                 />
               ) : activeView === "friends" ? (
-                <FriendsView onOpenChat={handleOpenChat} />
+                <FriendsView onOpenChat={handleOpenChatFromFriendList} />
               ) : activeView === "voice" ? (
                 <VoiceView />
               ) : !user ? (
                 <div className="flex h-full items-center justify-center text-brand-beige">
                   {t("home.loginToChat")}
                 </div>
-              ) : !chatRoomId ? (
+              ) : !activeDmChannelId ? (
                 <div className="flex h-full items-center justify-center text-brand-beige">
                   {t("home.selectFriendToChat")}
                 </div>
               ) : (
                 <Chat
-                  personName={chatPersonName}
-                  userId={chatUserId}
-                  roomId={chatRoomId}
+                  personName={activeDmName}
+                  userId={user.id}
+                  channelId={activeDmChannelId}
                 />
               )}
             </div>
