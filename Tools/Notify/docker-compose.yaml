@@ -45,6 +45,8 @@ services:
       - ./docker/cassandra:/cassandra
     networks:
       - anteiku-network
+
+  # If you want you can also run Notify in a docker container.
   notify:
     image: rust:latest
     ports:
@@ -65,7 +67,6 @@ services:
         condition: service_completed_successfully
     networks:
       - anteiku-network
-
 volumes:
   cassandra-data:
 

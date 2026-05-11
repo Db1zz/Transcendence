@@ -103,7 +103,7 @@ pub async fn test_consumer_notification_delivery_to_a_single_client() {
         user_notifications_database_addr: "127.0.0.1:9042".to_owned(),
         notification_preferences_database_addr: "127.0.0.1:9042".to_owned(),
         clients_node_addr: "0.0.0.0:7979".to_owned(),
-        metrics_receiver_addr: "0.0.0.0:6979".to_owned(),
+        metrics_receiver_addr: Some("0.0.0.0:6979".to_owned()),
     };
 
     tokio::spawn(async move {
@@ -138,7 +138,7 @@ pub async fn test_consumer_notification_preferences_push() {
         user_notifications_database_addr: cassandra_addr.clone(),
         notification_preferences_database_addr: cassandra_addr.clone(),
         clients_node_addr: "0.0.0.0:7980".to_owned(),
-        metrics_receiver_addr: "0.0.0.0:6980".to_owned(),
+        metrics_receiver_addr: Some("0.0.0.0:6979".to_owned()),
     };
 
     tokio::spawn(async move {

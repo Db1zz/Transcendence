@@ -22,7 +22,7 @@ where
     clients_manager: Arc<ClientsManager>,
     task_manager: TaskManager<NotificationServiceTask>,
     metrics: Arc<LoadMetrics>,
-    receiver_addr: String,
+    receiver_addr: Option<String>,
 }
 
 impl<Consumer> NotificationService<Consumer>
@@ -35,7 +35,7 @@ where
         consumer: Arc<Consumer>,
         clients_manager: Arc<ClientsManager>,
         task_manager: TaskManager<NotificationServiceTask>,
-        receiver_addr: String,
+        receiver_addr: Option<String>,
     ) -> Self {
         Self {
             user_notifications,
@@ -78,13 +78,11 @@ where
 
     #[instrument(
 		skip(self),
-		fields(receiver = %self.receiver_addr)
+		fields(receiver = %receiver_addr)
 	)]
-    async fn spawn_metrics_reporter(&self) {
+    async fn spawn_metrics_reporter(&self, receiver_addr: String) {
         let metrics = self.metrics.clone();
         let public_addr = self.clients_manager.get_addr().clone();
-        let receiver_addr = self.receiver_addr.clone();
-
         let worker_span = tracing::info_span!(
             "metrics_reporter",
             receiver = %receiver_addr,
@@ -153,7 +151,10 @@ where
             clients_manager_clone.listen().await;
         });
 
-        self.spawn_metrics_reporter().await;
+        if let Some(addr) = &self.receiver_addr {
+            self.spawn_metrics_reporter(addr.clone()).await;
+        }
+
         self.run_notification_consumer().await;
     }
 }

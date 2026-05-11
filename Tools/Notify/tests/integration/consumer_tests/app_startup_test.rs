@@ -33,7 +33,7 @@ async fn test_broker_addr() {
         user_notifications_database_addr: "127.0.0.1:9042".to_owned(),
         notification_preferences_database_addr: "127.0.0.1:9042".to_owned(),
         clients_node_addr: "127.0.0.1:6969".to_owned(),
-        metrics_receiver_addr: "0.0.0.0:6979".to_owned(),
+        metrics_receiver_addr: Some("0.0.0.0:6979".to_owned()),
     };
 
     let handle = tokio::spawn(consumer::start(config, get_jwt_secret()));
@@ -51,7 +51,7 @@ pub async fn test_invalid_user_notifications_database_addr() {
         user_notifications_database_addr: "zxc:zxc".to_owned(),
         notification_preferences_database_addr: "127.0.0.1:9042".to_owned(),
         clients_node_addr: "127.0.0.1:6969".to_owned(),
-        metrics_receiver_addr: "0.0.0.0:6979".to_owned(),
+        metrics_receiver_addr: Some("0.0.0.0:6979".to_owned()),
     };
 
     let handle = tokio::spawn(consumer::start(config, get_jwt_secret()));
@@ -69,7 +69,7 @@ pub async fn test_invalid_notification_preferences_database_addr() {
         user_notifications_database_addr: "127.0.0.1:9042".to_owned(),
         notification_preferences_database_addr: "zxc:zxc".to_owned(),
         clients_node_addr: "127.0.0.1:6969".to_owned(),
-        metrics_receiver_addr: "0.0.0.0:6979".to_owned(),
+        metrics_receiver_addr: Some("0.0.0.0:6979".to_owned()),
     };
 
     let handle = tokio::spawn(consumer::start(config, get_jwt_secret()));
@@ -87,7 +87,7 @@ pub async fn test_invalid_client_node_addr() {
         user_notifications_database_addr: "127.0.0.1:9042".to_owned(),
         notification_preferences_database_addr: "127.0.0.1:9042".to_owned(),
         clients_node_addr: "zxc:zxc".to_owned(),
-        metrics_receiver_addr: "0.0.0.0:6979".to_owned(),
+        metrics_receiver_addr: Some("0.0.0.0:6979".to_owned()),
     };
 
     let handle = tokio::spawn(consumer::start(config, get_jwt_secret()));
@@ -104,7 +104,7 @@ pub async fn test_invalid_metrics_receiver_addr() {
         user_notifications_database_addr: "127.0.0.1:9042".to_owned(),
         notification_preferences_database_addr: "127.0.0.1:9042".to_owned(),
         clients_node_addr: "127.0.0.1:6969".to_owned(),
-        metrics_receiver_addr: "zxc:zxc".to_owned(),
+        metrics_receiver_addr: Some("zxc:zxc".to_owned()),
     };
 
     let handle = tokio::spawn(consumer::start(config, get_jwt_secret()));
@@ -125,7 +125,7 @@ pub async fn test_valid_addresses() {
         user_notifications_database_addr: "127.0.0.1:9042".to_owned(),
         notification_preferences_database_addr: "127.0.0.1:9042".to_owned(),
         clients_node_addr: "127.0.0.1:6969".to_owned(),
-        metrics_receiver_addr: "0.0.0.0:6979".to_owned(),
+        metrics_receiver_addr: Some("0.0.0.0:6979".to_owned()),
     };
 
     let handle = tokio::spawn(consumer::start(config, get_jwt_secret()));
