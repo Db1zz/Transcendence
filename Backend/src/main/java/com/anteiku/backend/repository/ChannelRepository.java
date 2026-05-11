@@ -13,8 +13,14 @@ import java.util.UUID;
 @Repository
 public interface ChannelRepository extends JpaRepository<ChannelEntity, UUID> {
 
-    @Query("SELECT new com.anteiku.backend.model.ChatChannelDto(" +
-            "c.id, u.id, u.username, u.picture) " +
+    interface ChatChannelProjection {
+        UUID getChannelId();
+        UUID getOtherUserId();
+        String getOtherUserName();
+        String getOtherUserPicture();
+    }
+
+    @Query("SELECT c.id AS channelId, u.id AS otherUserId, u.username AS otherUserName, u.picture AS otherUserPicture " +
             "FROM ChannelEntity c " +
             "JOIN ChannelMemberEntity cm1 ON c.id = cm1.channel.id " +
             "JOIN ChannelMemberEntity cm2 ON c.id = cm2.channel.id " +
@@ -22,7 +28,7 @@ public interface ChannelRepository extends JpaRepository<ChannelEntity, UUID> {
             "WHERE c.type = 'TEXT' AND c.organization IS NULL " +
             "AND cm1.user.id = :userId " +
             "AND cm2.user.id != :userId")
-    List<ChatChannelDto> findUserTextChannels(@Param("userId") UUID userId);
+    List<ChatChannelProjection> findUserTextChannels(@Param("userId") UUID userId);
 
     @Query("SELECT c.id FROM ChannelEntity c " +
             "JOIN ChannelMemberEntity cm1 ON c.id = cm1.channel.id " +

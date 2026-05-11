@@ -2,19 +2,19 @@ import React from "react";
 import bgLSideBar from "../../img/bg_l_sidebar.png";
 import { Contact, MessageSquare } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useChatRooms } from "../../hooks/useChatRooms";
+import { useChatChannels } from "../../hooks/useChatChannels";
 
 interface LeftBarProps {
   onFriendsClick?: () => void;
-  onChatRoomClick?: (userId: string, userName: string) => void;
+  onChatChannelClick?: (channelId: string, userName: string) => void; 
 }
 
 export const LeftBar: React.FC<LeftBarProps> = ({
   onFriendsClick,
-  onChatRoomClick,
+  onChatChannelClick,
 }) => {
   const { t } = useTranslation();
-  const { chatRooms, loading, error } = useChatRooms();
+  const { chatChannels, loading, error } = useChatChannels(); 
 
   return (
     <div className="h-full rounded-l-lg p-4 border border-brand-green relative overflow-hidden flex flex-col">
@@ -45,35 +45,27 @@ export const LeftBar: React.FC<LeftBarProps> = ({
 
           <div className="flex-1 overflow-y-auto space-y-2 scrollbar-thin scrollbar-thumb-brand-green/30 scrollbar-track-transparent">
             {loading ? (
-              <div className="text-brand-green/70 text-sm text-center py-4">
-                {t("friends.loadingChats")}
-              </div>
+              <div className="text-brand-green/70 text-sm text-center py-4">{t("friends.loadingChats")}</div>
             ) : error ? (
-              <div className="text-brand-green/70 text-sm text-center py-4">
-                {error}
-              </div>
-            ) : chatRooms.length === 0 ? (
-              <div className="text-brand-green/70 text-sm text-center py-4">
-                {t("friends.noChats")}
-              </div>
+              <div className="text-brand-green/70 text-sm text-center py-4">{error}</div>
+            ) : chatChannels.length === 0 ? (
+              <div className="text-brand-green/70 text-sm text-center py-4">{t("friends.noChats")}</div>
             ) : (
-              chatRooms.map((room) => (
+              chatChannels.map((channel) => (
                 <button
-                  key={room.roomId}
+                  key={channel.channelId}
                   type="button"
-                  onClick={() =>
-                    onChatRoomClick?.(room.otherUserId, room.otherUserName)
-                  }
+                  onClick={() => onChatChannelClick?.(channel.channelId, channel.otherUserName)}
                   className="w-full flex items-center gap-3 rounded-lg border border-brand-green/50 bg-brand-beige/80 px-3 py-2 text-left transition-colors hover:bg-brand-beige hover:border-brand-green"
                 >
                   <img
-                    src={room.otherUserPicture}
-                    alt={room.otherUserName}
+                    src={channel.otherUserPicture}
+                    alt={channel.otherUserName}
                     className="h-8 w-8 rounded-full object-cover border border-brand-green/30"
                   />
                   <div className="flex-1 min-w-0">
                     <p className="text-brand-green font-medium text-sm truncate">
-                      {room.otherUserName}
+                      {channel.otherUserName}
                     </p>
                   </div>
                 </button>
@@ -85,5 +77,3 @@ export const LeftBar: React.FC<LeftBarProps> = ({
     </div>
   );
 };
-
-export default LeftBar;

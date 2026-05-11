@@ -10,7 +10,6 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "chat_messages")
-@IdClass(ChannelMemberId.class)
 @Getter
 @Setter
 @NoArgsConstructor

@@ -77,16 +77,25 @@ public class ChatService {
     }
 
     public List<ChatChannelDto> getUserChatRooms(UUID userId) {
-        List<ChatChannelDto> channels = channelRepository.findUserTextChannels(userId);
-        log.info("Found {} text channels for userId: {}", channels.size(), userId);
-        return channels;
+        log.info("Fetching text channels/DMs for userId: {}", userId);
+        return channelRepository.findUserTextChannels(userId).stream()
+                .map(projection -> {
+                    ChatChannelDto dto = new ChatChannelDto();
+                    dto.setChannelId(projection.getChannelId());
+                    dto.setOtherUserId(projection.getOtherUserId());
+                    dto.setOtherUserName(projection.getOtherUserName());
+                    dto.setOtherUserPicture(projection.getOtherUserPicture());
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 
-    public UUID createTextChannel(String name, UUID organizationId, List<UUID> memberIds) {
-        if (organizationId == null && memberIds != null && memberIds.size() == 2) {
+    public UUID createChannel(String name, ChannelType type, UUID organizationId, List<UUID> memberIds) {
+
+        if (type == ChannelType.TEXT && organizationId == null && memberIds != null && memberIds.size() == 2) {
             UUID existingChannelId  = channelRepository.findPrivateChannel(memberIds.get(0), memberIds.get(1));
             if (existingChannelId != null) {
-                log.info("Found existing private channel with id [{}] returning existing channel.", existingChannelId);
+                log.info("Found existing private TEXT channel with id [{}] returning existing channel.", existingChannelId);
                 return existingChannelId;
             }
         }
@@ -98,12 +107,12 @@ public class ChatService {
 
         ChannelEntity channel = ChannelEntity.builder()
                 .name(name)
-                .type(ChannelType.TEXT)
+                .type(type)
                 .organization(organizationProxy)
                 .build();
 
         ChannelEntity savedChannel = channelRepository.save(channel);
-        log.info("Successfully created new TEXT channel with ID: [{}]", savedChannel.getId());
+        log.info("Successfully created new {} channel with ID: [{}]", type.name(), savedChannel.getId());
 
         if (memberIds != null && !memberIds.isEmpty()) {
             for (UUID userId : memberIds) {

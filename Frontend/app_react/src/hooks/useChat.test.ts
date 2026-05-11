@@ -1,4 +1,4 @@
-import { renderHook, waitFor, act } from "@testing-library/react";
+import { renderHook, act } from "@testing-library/react";
 import { useChat } from "./useChat";
 import api from "../utils/api";
 import { Client } from "@stomp/stompjs";
@@ -30,13 +30,18 @@ describe("useChat Hook", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockClientInstance = null;
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   it("fetches chat history on mount and updates messages state", async () => {
     const mockHistory = [
       {
         id: "1",
-        roomId: "room-1",
+        channelId: "channel-1", // CHANGED from roomId
         senderId: "user-A",
         content: "Hello",
         createdAt: "2024-01-01",
@@ -51,16 +56,16 @@ describe("useChat Hook", () => {
         }),
     );
 
-    const { result } = renderHook(() => useChat("room-1"));
+    const { result } = renderHook(() => useChat("channel-1"));
 
     expect(result.current.messages).toEqual([]);
 
     await act(async () => {
-      resolveApi({ data: mockHistory });
+      resolveApi({ data: [...mockHistory] }); 
     });
 
-    expect(mockedApi.get).toHaveBeenCalledWith("/chat/rooms/room-1/messages");
-    expect(result.current.messages).toEqual(mockHistory);
+    expect(mockedApi.get).toHaveBeenCalledWith("/chat/channels/channel-1/messages?page=0&size=50");
+    expect(result.current.messages).toEqual(mockHistory.reverse());
   });
 
   it("handles history load failure gracefully", async () => {
@@ -72,7 +77,7 @@ describe("useChat Hook", () => {
         }),
     );
 
-    const { result } = renderHook(() => useChat("room-1"));
+    const { result } = renderHook(() => useChat("channel-1"));
 
     await act(async () => {
       rejectApi(new Error("Network Error"));
@@ -86,9 +91,9 @@ describe("useChat Hook", () => {
     mockedApi.get.mockImplementationOnce(() => new Promise(() => {})); // Never resolves!
   };
 
-  it("connects to STOMP and subscribes to the room topic", async () => {
+  it("connects to STOMP and subscribes to the channel topic", async () => {
     freezeApi();
-    const { result } = renderHook(() => useChat("room-1"));
+    const { result } = renderHook(() => useChat("channel-1"));
 
     expect(mockClientInstance).toBeTruthy();
     expect(mockClientInstance.activate).toHaveBeenCalled();
@@ -101,14 +106,14 @@ describe("useChat Hook", () => {
 
     expect(result.current.connected).toBe(true);
     expect(mockClientInstance.subscribe).toHaveBeenCalledWith(
-      "/topic/chat/room-1",
+      "/topic/chat/channel-1",
       expect.any(Function),
     );
   });
 
   it("appends new incoming WebSocket messages to the message list", async () => {
     freezeApi();
-    const { result } = renderHook(() => useChat("room-1"));
+    const { result } = renderHook(() => useChat("channel-1"));
 
     act(() => {
       mockClientInstance._config.onConnect();
@@ -117,7 +122,7 @@ describe("useChat Hook", () => {
     const messageCallback = mockClientInstance.subscribe.mock.calls[0][1];
     const newWsMessage = {
       id: "2",
-      roomId: "room-1",
+      channelId: "channel-1", // CHANGED from roomId
       senderId: "user-B",
       content: "Second",
       createdAt: "2024-01-02",
@@ -133,7 +138,7 @@ describe("useChat Hook", () => {
 
   it("allows sending a message if connected", async () => {
     freezeApi();
-    const { result } = renderHook(() => useChat("room-1"));
+    const { result } = renderHook(() => useChat("channel-1"));
 
     act(() => {
       mockClientInstance.connected = true;
@@ -147,7 +152,7 @@ describe("useChat Hook", () => {
     expect(mockClientInstance.publish).toHaveBeenCalledWith({
       destination: "/app/chat.send",
       body: JSON.stringify({
-        roomId: "room-1",
+        channelId: "channel-1", 
         senderId: "user-1",
         content: "Hello World",
       }),
@@ -156,7 +161,7 @@ describe("useChat Hook", () => {
 
   it("prevents sending empty messages or sending while disconnected", async () => {
     freezeApi();
-    const { result } = renderHook(() => useChat("room-1"));
+    const { result } = renderHook(() => useChat("channel-1"));
 
     act(() => {
       result.current.sendMessage("Hello", "user-1");
@@ -177,7 +182,7 @@ describe("useChat Hook", () => {
 
   it("deactivates the STOMP client when the hook unmounts", () => {
     freezeApi();
-    const { unmount } = renderHook(() => useChat("room-1"));
+    const { unmount } = renderHook(() => useChat("channel-1"));
 
     unmount();
 

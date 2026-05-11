@@ -121,9 +121,9 @@ CREATE TABLE IF NOT EXISTS chat_messages (
     channel_id UUID NOT NULL,
     sender_id UUID,
     content VARCHAR(2000) NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 
-    FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE,
+    FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS channel_members (
