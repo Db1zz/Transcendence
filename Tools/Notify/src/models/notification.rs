@@ -18,13 +18,13 @@ pub enum EventScope {
     #[serde(rename = "DM")]
     DM,
 
-    #[strum(serialize = "GroupChat")]
-    #[serde(rename = "GROUP_CHAT")]
-    GroupChat,
+    #[strum(serialize = "GROUP_CHANNEL")]
+    #[serde(rename = "GROUP_CHANNEL")]
+    GroupChannel,
 
-    #[strum(serialize = "ServerChat")]
-    #[serde(rename = "SERVER_CHAT")]
-    ServerChat,
+    #[strum(serialize = "ServerChannel")]
+    #[serde(rename = "SERVER_CHANNEL")]
+    ServerChannel,
 }
 
 #[typeshare]

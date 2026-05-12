@@ -78,7 +78,7 @@ public class ChannelService {
     }
 
     public ChannelEntity getChannel(UUID channelId) {
-        return channelRepository.findByChannelId(channelId).orElseThrow(
+        return channelRepository.findById(channelId).orElseThrow(
                 () -> new ResourceNotFoundException("Channel with id " + channelId + " not found")
         );
     }

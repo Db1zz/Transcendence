@@ -18,7 +18,7 @@ services:
   init-kafka:
     image: confluentinc/cp-kafka:latest
     volumes:
-      - ./docker/kafka:/scripts
+      - ./Tools/Notify/docker/kafka:/scripts
     depends_on:
       - kafka
     entrypoint: ["bash", /scripts/init.sh]
@@ -42,7 +42,7 @@ services:
     restart: "no"
     entrypoint: ["/bin/bash", "/scripts/init.sh"]
     volumes:
-      - ./docker/cassandra:/scripts
+      - ./Tools/Notify/docker/cassandra:/scripts
     networks:
       - anteiku-network
 
@@ -53,7 +53,7 @@ services:
       - "9921:9921"
       - "6969:6969"
     volumes:
-      - ./:/app
+      - ./Tools/Notify:/app
     working_dir: /app
     command: >
       sh -c "

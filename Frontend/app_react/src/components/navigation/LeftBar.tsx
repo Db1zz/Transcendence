@@ -36,7 +36,7 @@ export const LeftBar: React.FC<LeftBarProps> = ({
       <div className="relative z-10 flex flex-col gap-4 h-full">
         <button
           type="button"
-          onClick={onFriendsClick}
+          onClick={handleFriendsClick}
           className="w-full flex items-center gap-3 rounded-lg border border-brand-green/70 bg-brand-beige/90 px-3 py-2 text-brand-green font-semibold shadow-sm transition-colors hover:bg-brand-peach hover:border-brand-green"
         >
           <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-brand-peach/60">
@@ -64,15 +64,19 @@ export const LeftBar: React.FC<LeftBarProps> = ({
                 <button
                   key={channel.channelId}
                   type="button"
-                  onClick={() => onChatChannelClick?.(channel.channelId, channel.otherUserName)}
+                  onClick={() => {
+                    onChatChannelClick?.(channel.channelId, channel.otherUserName)
+                    setActiveTarget(channel.channelId)
+                  }}
                   className="w-full flex items-center gap-3 rounded-lg border border-brand-green/50 bg-brand-beige/80 px-3 py-2 text-left transition-colors hover:bg-brand-beige hover:border-brand-green"
                 >
+                <NotificationBadge count={getUnreadCount(channel.channelId) || 0}> 
                   <img
                     src={channel.otherUserPicture}
                     alt={channel.otherUserName}
                     className="h-8 w-8 rounded-full object-cover border border-brand-green/30"
                   />
-                    <NotificationBadge count={getUnreadCount(channel.channelId) || 0}> </NotificationBadge>
+                </NotificationBadge>
                   <div className="flex-1 min-w-0">
                     <p className="text-brand-green font-medium text-sm truncate">
                       {channel.otherUserName}

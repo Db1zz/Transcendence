@@ -8,6 +8,6 @@ until cqlsh cassandra 9042 -e "describe keyspaces"; do
 done
 
 echo "Running schema script..."
-cqlsh cassandra 9042 -f /cassandra/schema.cql
+cqlsh cassandra 9042 -f /scripts/schema.cql
 
-echo "Schema initialized"
+echo "Schema initialized" 

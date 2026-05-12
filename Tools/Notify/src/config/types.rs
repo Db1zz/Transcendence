@@ -14,6 +14,7 @@ pub struct ConsumerConfig {
     pub notification_preferences_database_addr: String,
     pub clients_node_addr: String,
     pub metrics_receiver_addr: Option<String>,
+    pub api_router_addr: String
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

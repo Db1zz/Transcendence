@@ -4,7 +4,7 @@ import { X, MessageCircle } from "lucide-react";
 export interface NotificationPayload {
   user_id: string;
   sender_id: string;
-  chat_id: string;
+  channel_id: string;
   content: string;
   timestamp: number;
 }

@@ -43,10 +43,10 @@ public class NotificationService {
 
         if (channel.getOrganization() != null) {
             sendToOrganizationChannel(channel, channelMembers);
-        } else if (channel.getName() != null) {
-            sendToGroupChannel(channel, channelMembers);
-        } else {
+        } else if (channel.getName().equals("DM")) {
             sendToDm(chatMessageResponse, channel, channelMembers);
+        } else {
+            sendToGroupChannel(channel, channelMembers);
         }
     }
 
@@ -66,6 +66,7 @@ public class NotificationService {
                 Instant.now().getEpochSecond()
         );
 
+        // System.out.println("senderId " + senderId + " receiverId " + receiver.getUser().getId());
 
         NotificationEvent notificationEvent = new NotificationEvent(
                 EventType.MESSAGE_CREATED,

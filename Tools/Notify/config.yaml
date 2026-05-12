@@ -4,3 +4,4 @@ consumer:
   user_notifications_database_addr: "cassandra:9042"
   notification_preferences_database_addr: "cassandra:9042"
   clients_node_addr: "0.0.0.0:6969"
+  api_router_addr: "0.0.0.0:9921"

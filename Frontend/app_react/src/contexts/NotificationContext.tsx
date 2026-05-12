@@ -29,9 +29,9 @@ export function NotificationProvider({ children, notifyServerAddr }: { children:
     const getTargetId = (item: any) => {
         try {
             const inner = typeof item.payload === 'string' ? JSON.parse(item.payload) : item.payload;
-            if (item.scope === "DM") return inner.chat_id || inner.chatId;
-            if (item.scope === "SERVER") return inner.server_id || inner.serverId;
-            if (item.scope === "GROUP_CHAT") return inner.group_id || inner.groupId;
+            if (item.scope === "DM" || item.scope === "SERVER_CHANNEL" || item.scope === "GROUP_CHANNEL") {
+                return inner.channel_id;
+            }
         } catch (e) {
             console.error("Payload parse error", e);
         }
@@ -113,7 +113,9 @@ export function NotificationProvider({ children, notifyServerAddr }: { children:
 
     const setActiveTarget = (id: string | null) => {
         activeTargetRef.current = id;
-        if (id) markAsRead(id);
+        if (id) {
+            markAsRead(id);
+        }
     };
 
     return (

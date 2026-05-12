@@ -12,7 +12,7 @@ import java.util.UUID;
 
 @Repository
 public interface ChannelRepository extends JpaRepository<ChannelEntity, UUID> {
-    Optional<ChannelEntity> findByChannelId(UUID channelId);
+    Optional<ChannelEntity> findById(UUID channelId);
 
     interface ChatChannelProjection {
         UUID getChannelId();

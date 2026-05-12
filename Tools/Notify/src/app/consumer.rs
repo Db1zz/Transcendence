@@ -63,7 +63,7 @@ pub async fn start(config: ConsumerConfig, jwt_secret: String) {
     let kafka_stream_consumer = Arc::new(KafkaNotificationStreamConsumer::new(consumer));
 
     let api_runner = ApiRunner::new(
-        "127.0.0.1:9921".to_owned(),
+        config.api_router_addr,
         NotificationRouter::new(user_notifications.clone()),
     );
 

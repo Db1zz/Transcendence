@@ -54,8 +54,8 @@ impl NotificationPreferencesService {
                 let user_id = extract_uuid(&notification.payload, "user_id")?;
                 self.get_target_mute_state(user_id, "DM", target_id).await
             }
-            EventScope::GroupChat => Err(UnimplementedFeature::new("GroupChat logic").into()),
-            EventScope::ServerChat => Err(UnimplementedFeature::new("ServerChat logic").into()),
+            EventScope::GroupChannel => Err(UnimplementedFeature::new("GroupChannel logic").into()),
+            EventScope::ServerChannel => Err(UnimplementedFeature::new("ServerChannel logic").into()),
         }
     }
 
