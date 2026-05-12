@@ -7,6 +7,8 @@ import {
   X,
   Phone,
 } from "lucide-react";
+import { TFunction } from "i18next";
+import { useTranslation } from "react-i18next";
 
 import { Friend, FriendsTab } from "./FriendsView";
 import { ProfileButton } from "./ProfileButton";
@@ -25,16 +27,16 @@ interface FriendsListProps {
   onCall: (id: string) => void;
 }
 
-const getTabTitle = (tab: FriendsTab, count: number): string => {
+const getTabTitle = (tab: FriendsTab, count: number, t: TFunction): string => {
   switch (tab) {
     case "online":
-      return `Online - ${count}`;
+      return t("friends.tabTitle.online", { count }) as string;
     case "all":
-      return `All friends - ${count}`;
+      return t("friends.tabTitle.all", { count }) as string;
     case "pending":
-      return `Pending - ${count}`;
+      return t("friends.tabTitle.pending", { count }) as string;
     case "blocked":
-      return `Blocked - ${count}`;
+      return t("friends.tabTitle.blocked", { count }) as string;
     default:
       return "";
   }
@@ -52,6 +54,7 @@ export const FriendsList: React.FC<FriendsListProps> = ({
   onUnblock,
   onCall,
 }) => {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col h-full p-6">
       <div className="relative mb-6">
@@ -59,13 +62,13 @@ export const FriendsList: React.FC<FriendsListProps> = ({
           type="text"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="search friends."
+          placeholder={t("friends.searchPlaceholder")}
           className="w-full px-4 py-3 pl-11 bg-brand-green border-2 border-gray-800 rounded-lg font-roboto text-gray-800 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-brick shadow-sharp-xs transition-all duration-150"
         />
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
       </div>
       <h3 className="font-ananias text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 px-1">
-        {getTabTitle(activeTab, friends.length)}
+        {getTabTitle(activeTab, friends.length, t)}
       </h3>
       <div className="flex-1 overflow-y-auto space-y-3 pr-1">
         {friends.length > 0 ? (
@@ -139,7 +142,7 @@ export const FriendsList: React.FC<FriendsListProps> = ({
               <Users className="w-10 h-10 text-brand-brick" />
             </div>
             <h4 className="font-ananias font-bold text-lg text-gray-800 mb-1">
-              noone here
+              {t("friends.empty")}
             </h4>
           </div>
         )}

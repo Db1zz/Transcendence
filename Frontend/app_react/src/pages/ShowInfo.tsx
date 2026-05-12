@@ -1,8 +1,10 @@
 import React, { useEffect } from "react";
 import axios from "axios";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../contexts/AuthContext";
 
 function ShowInfo() {
+  const { t } = useTranslation();
   const { user, loading, isAuthenticated } = useAuth();
 
   useEffect(() => {
@@ -23,10 +25,10 @@ function ShowInfo() {
   };
 
   if (user?.role === "ADMIN") {
-    return <div>secured admin page</div>;
+    return <div>{t("info.securedAdminPage")}</div>;
   }
 
-  return <div>default PAGE</div>;
+  return <div>{t("info.defaultPage")}</div>;
 }
 
 export default ShowInfo;

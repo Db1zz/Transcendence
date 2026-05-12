@@ -2,23 +2,23 @@ import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import api from "../utils/api";
 
-export interface ChatRoom {
-  roomId: string;
+export interface ChatChannel {
+  channelId: string;
   otherUserId: string;
   otherUserName: string;
   otherUserPicture: string;
 }
 
-export const useChatRooms = () => {
+export const useChatChannels = () => {
   const { user } = useAuth();
-  const [chatRooms, setChatRooms] = useState<ChatRoom[]>([]);
+  const [chatChannels, setChatChannels] = useState<ChatChannel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchChatRooms = useCallback(async () => {
+  const fetchChatChannels = useCallback(async () => {
     if (!user?.id) {
       setLoading(false);
-      setChatRooms([]);
+      setChatChannels([]);
       return;
     }
 
@@ -26,19 +26,19 @@ export const useChatRooms = () => {
       setLoading(true);
       setError(null);
 
-      const response = await api.get("/chat/rooms");
-      setChatRooms(response.data);
+      const response = await api.get("/chat/channels");
+      setChatChannels(response.data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
-      setChatRooms([]);
+      setChatChannels([]);
     } finally {
       setLoading(false);
     }
   }, [user?.id]);
 
   useEffect(() => {
-    fetchChatRooms();
-  }, [fetchChatRooms]);
+    fetchChatChannels();
+  }, [fetchChatChannels]);
 
-  return { chatRooms, loading, error, refetch: fetchChatRooms };
+  return { chatChannels, loading, error, refetch: fetchChatChannels };
 };

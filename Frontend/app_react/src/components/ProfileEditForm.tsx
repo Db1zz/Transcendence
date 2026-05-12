@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Pencil } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "./Button";
 
 export interface ProfileEditValues {
@@ -20,13 +21,14 @@ interface ProfileEditFormProps {
 const inputClassName =
   "w-full rounded-lg border-2 border-gray-800 bg-brand-green px-3 py-2 font-roboto text-sm text-gray-800 outline-none focus:ring-2 focus:ring-brand-brick";
 
-export const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
+export const ProfileEditForm = ({
   initialValues,
   isSaving,
   errorMessage,
   onUploadPicture,
   onSave,
-}) => {
+}: ProfileEditFormProps) => {
+  const { t } = useTranslation();
   const [values, setValues] = useState<ProfileEditValues>(initialValues);
   const [isUploadingPicture, setIsUploadingPicture] = useState(false);
   const [uploadError, setUploadError] = useState("");
@@ -53,13 +55,13 @@ export const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
     setIsUploadingPicture(true);
     try {
       const pictureUrl = await onUploadPicture(file);
-      setValues((current) => ({
+      setValues((current: ProfileEditValues) => ({
         ...current,
         picture: pictureUrl,
       }));
     } catch (error: any) {
       setUploadError(
-        error?.response?.data?.error || "Failed to upload picture",
+        error?.response?.data?.error || t("profileEdit.uploadError"),
       );
     } finally {
       setIsUploadingPicture(false);
@@ -92,10 +94,12 @@ export const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
               className="mb-2 inline-flex cursor-pointer items-center gap-2 rounded-lg border-2 border-gray-800 bg-brand-green px-3 py-2 font-ananias text-sm uppercase text-gray-800 transition-colors hover:bg-brand-green/80"
             >
               <Pencil className="h-4 w-4" />
-              {isUploadingPicture ? "uploading..." : "upload from computer"}
+              {isUploadingPicture
+                ? t("profileEdit.uploading")
+                : t("profileEdit.uploadFromComputer")}
             </label>
             <p className="font-roboto text-xs text-gray-500">
-              picture is set automatically after upload.
+              {t("profileEdit.pictureHint")}
             </p>
           </div>
         </div>
@@ -110,52 +114,52 @@ export const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
       <div className="grid gap-4 md:grid-cols-2">
         <div>
           <label className="mb-1 block font-ananias text-xs font-bold uppercase text-gray-500">
-            username
+            {t("profileEdit.username")}
           </label>
           <input
             className={inputClassName}
             value={values.username}
             onChange={(event) =>
-              setValues((current) => ({
+              setValues((current: ProfileEditValues) => ({
                 ...current,
                 username: event.target.value,
               }))
             }
-            placeholder="your username"
+            placeholder={t("profileEdit.usernamePlaceholder")}
           />
         </div>
         <div>
           <label className="mb-1 block font-ananias text-xs font-bold uppercase text-gray-500">
-            displayable name
+            {t("profileEdit.displayableName")}
           </label>
           <input
             className={inputClassName}
             value={values.displayName}
             onChange={(event) =>
-              setValues((current) => ({
+              setValues((current: ProfileEditValues) => ({
                 ...current,
                 displayName: event.target.value,
               }))
             }
-            placeholder="name shown in profile"
+            placeholder={t("profileEdit.displayableNamePlaceholder")}
           />
         </div>
       </div>
 
       <div>
         <label className="mb-1 block font-ananias text-xs font-bold uppercase text-gray-500">
-          about me
+          {t("profileEdit.aboutMe")}
         </label>
         <textarea
           className={`${inputClassName} min-h-[120px] resize-none`}
           value={values.about}
           onChange={(event) =>
-            setValues((current) => ({
+            setValues((current: ProfileEditValues) => ({
               ...current,
               about: event.target.value,
             }))
           }
-          placeholder="tell people something about yourself"
+          placeholder={t("profileEdit.aboutPlaceholder")}
         />
       </div>
 
@@ -170,7 +174,7 @@ export const ProfileEditForm: React.FC<ProfileEditFormProps> = ({
         disabled={isSaving || isUploadingPicture}
         className="mt-auto mb-2 w-full !px-3 !py-2 text-sm"
       >
-        {isSaving ? "saving..." : "save"}
+        {isSaving ? t("common.saving") : t("common.save")}
       </Button>
     </form>
   );

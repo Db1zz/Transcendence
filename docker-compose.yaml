@@ -49,6 +49,7 @@ services:
       - CHOKIDAR_USEPOLLING=true
       - REACT_APP_STUN_SERVER=${REACT_APP_STUN_SERVER}
       - REACT_APP_SIGNALING_SERVER=${REACT_APP_SIGNALING_SERVER}
+    command: sh -c "npm install && npm start"
     stdin_open: true
     networks:
       - anteiku-network

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { UserPlus, Sparkles } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "./Button";
 
 interface AddFriendViewProps {
@@ -9,6 +10,7 @@ interface AddFriendViewProps {
 export const AddFriendView: React.FC<AddFriendViewProps> = ({
   onAddFriend,
 }) => {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
 
@@ -33,10 +35,10 @@ export const AddFriendView: React.FC<AddFriendViewProps> = ({
     <div className="p-6">
       <div className="mb-6">
         <h2 className="font-ananias font-bold text-xl text-gray-800 uppercase mb-2">
-          Add Friend
+          {t("friends.addView.title")}
         </h2>
         <p className="font-roboto text-sm text-muted-foreground">
-          you can add friends with their 'names'.
+          {t("friends.addView.subtitle")}
         </p>
       </div>
       <div className="mb-8">
@@ -50,7 +52,7 @@ export const AddFriendView: React.FC<AddFriendViewProps> = ({
             value={name}
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSubmit}
-            placeholder="enter a name"
+            placeholder={t("friends.addView.placeholder")}
             className="flex-1 px-4 py-3 bg-transparent font-roboto text-gray-800 placeholder:text-gray-600 focus:outline-none"
           />
           <Button
@@ -63,17 +65,17 @@ export const AddFriendView: React.FC<AddFriendViewProps> = ({
             className={`m-2 mb-3 !px-6 !py-3 !text-sm whitespace-nowrap flex items-center gap-2`}
           >
             <UserPlus className="w-4 h-4" />
-            <span>send request</span>
+            <span>{t("friends.addView.sendRequest")}</span>
           </Button>
         </div>
         {status === "success" && (
           <p className="mt-3 font-roboto text-sm text-green-600 animate-fade-in">
-            Friend request successfuly sent to <strong>{name}</strong>.
+            {t("friends.addView.success", { name })}
           </p>
         )}
         {status === "error" && (
           <p className="mt-3 font-roboto text-sm text-red-500 animate-fade-in">
-            There are no users with such name.
+            {t("friends.addView.error")}
           </p>
         )}
       </div>
@@ -82,7 +84,7 @@ export const AddFriendView: React.FC<AddFriendViewProps> = ({
           <Sparkles className="w-12 h-12 text-brand-brick" />
         </div>
         <h3 className="font-ananias font-bold text-lg text-gray-800 mb-2">
-          wau
+          {t("friends.addView.wow")}
         </h3>
       </div>
     </div>

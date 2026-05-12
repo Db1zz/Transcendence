@@ -13,6 +13,7 @@ import {
   HeadphoneOff,
   Phone,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { useCallContext } from "../contexts/CallContext";
 import { useWebRtc } from "../hooks/useWebRtc";
 
@@ -26,6 +27,7 @@ const IconPhoneOff = () => <Phone size={20} />;
 interface VideoTileProps {
   peerId: string;
   stream: MediaStream;
+  displayName: string;
   isLocal?: boolean;
   isSelected?: boolean;
   onClick?: (peerId: string) => void;
@@ -35,6 +37,7 @@ interface VideoTileProps {
 const VideoTile: React.FC<VideoTileProps> = ({
   peerId,
   stream,
+  displayName,
   isLocal,
   isSelected,
   onClick,
@@ -47,8 +50,6 @@ const VideoTile: React.FC<VideoTileProps> = ({
       videoRef.current.srcObject = stream;
     }
   }, [stream]);
-
-  const displayName = isLocal ? "You" : `User ${peerId.slice(0, 4)}`;
 
   return (
     <div
@@ -74,6 +75,7 @@ const VideoTile: React.FC<VideoTileProps> = ({
 };
 
 export const VoiceView: React.FC = () => {
+  const { t } = useTranslation();
   const callContext = useCallContext();
   const { endCall } = callContext;
   const { remoteStreams, localStream } = useWebRtc(
@@ -115,13 +117,13 @@ export const VoiceView: React.FC = () => {
               ? "hover:bg-brand-green text-white"
               : "hover:bg-brand-brick text-white"
           }`}
-          aria-label={audioEnabled ? "Mute microphone" : "Unmute microphone"}
+          aria-label={audioEnabled ? t("voice.mute") : t("voice.unmute")}
         >
           {audioEnabled ? <IconMicOn /> : <IconMicOff />}
         </button>
         <button
           className="w-10 h-10 rounded-lg bg-brand-brick hover:bg-gray-600 text-white flex items-center justify-center"
-          aria-label="Headphones off"
+          aria-label={t("voice.headphonesOff")}
         >
           <IconHeadphoneOff />
         </button>
@@ -132,7 +134,7 @@ export const VoiceView: React.FC = () => {
               ? "hover:bg-brand-green text-white"
               : "hover:bg-brand-brick text-white"
           }`}
-          aria-label={videoEnabled ? "Turn off camera" : "Turn on camera"}
+          aria-label={videoEnabled ? t("voice.cameraOff") : t("voice.cameraOn")}
         >
           {videoEnabled ? <IconCamOn /> : <IconCamOff />}
         </button>
@@ -141,7 +143,7 @@ export const VoiceView: React.FC = () => {
         <button
           onClick={endCall}
           className="w-10 h-10 text-white flex items-center justify-center"
-          aria-label="End call"
+          aria-label={t("voice.endCall")}
         >
           <IconPhoneOff />
         </button>
@@ -158,6 +160,11 @@ export const VoiceView: React.FC = () => {
         <VideoTile
           peerId={peerId}
           stream={stream}
+          displayName={
+            peerId === "local"
+              ? t("voice.you")
+              : t("voice.user", { id: peerId.slice(0, 4) })
+          }
           isLocal={peerId === "local"}
           onClick={handleTileClick}
         />
@@ -183,6 +190,11 @@ export const VoiceView: React.FC = () => {
           <VideoTile
             peerId={selectedPeerId!}
             stream={mainStream}
+            displayName={
+              selectedPeerId === "local"
+                ? t("voice.you")
+                : t("voice.user", { id: selectedPeerId!.slice(0, 4) })
+            }
             isLocal={selectedPeerId === "local"}
             isSelected
             onClick={resetSelection}
@@ -200,6 +212,11 @@ export const VoiceView: React.FC = () => {
                   <VideoTile
                     peerId={peerId}
                     stream={stream}
+                    displayName={
+                      peerId === "local"
+                        ? t("voice.you")
+                        : t("voice.user", { id: peerId.slice(0, 4) })
+                    }
                     isLocal={peerId === "local"}
                     onClick={handleTileClick}
                     className="w-full h-full"

@@ -10,6 +10,7 @@ interface NavigationItemProps {
   name: string;
   isActive?: boolean;
   notificationCount?: number;
+  onClick: () => void;
 }
 
 export const NavigationItem = ({
@@ -17,6 +18,7 @@ export const NavigationItem = ({
   imageUrl,
   name,
   isActive = false,
+  onClick,
 }: NavigationItemProps) => {
   const [active, setActive] = useState(isActive);
   const { getUnreadCount, setActiveTarget } = useNotifications();
@@ -26,6 +28,8 @@ export const NavigationItem = ({
     setActive(true);
     setActiveTarget(id);
     console.log(`Mapsd to server: ${name}`);
+    console.log(`Navigated to server: ${name}`);
+    onClick?.();
   };
 
   return (

@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import bgLogin from "../img/bg_login.png";
 import { Button } from "../components/Button";
 import { OAuthLogin } from "../components/OAuthLogin";
 
 const LoginPage: React.FC = () => {
+  const { t } = useTranslation();
   const { isAuthenticated, login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -33,7 +35,7 @@ const LoginPage: React.FC = () => {
     if (success) {
       navigate("/home");
     } else {
-      setError("incorrect credentials, try again");
+      setError(t("auth.login.errorInvalidCredentials"));
     }
   };
 
@@ -46,15 +48,15 @@ const LoginPage: React.FC = () => {
       <div className="absolute inset-0 bg-brand-green opacity-80" />
 
       <div className="font-ananias border-2 border-gray-800 bg-white h-20 w-full max-w-md flex items-center justify-center p-4 relative z-10 mb-16">
-        <h1 className="text-l text-gray-800">welcome to anteiku cafe</h1>
+        <h1 className="text-l text-gray-800">{t("auth.welcome")}</h1>
       </div>
 
       <div className="border-2 border-gray-800 bg-brand-beige rounded-2xl p-8 w-full max-w-lg shadow-sharp relative z-10">
         <h2 className="text-3xl font-ananias font-bold text-brand-brick text-center mb-3">
-          login
+          {t("auth.login.title")}
         </h2>
         <h3 className="text-l font-ananias text-brand-brick text-center mb-4">
-          sign in to continue
+          {t("auth.login.subtitle")}
         </h3>
 
         <form
@@ -62,7 +64,9 @@ const LoginPage: React.FC = () => {
           className="block px-8 space-y-4 font-roboto"
         >
           <div>
-            <label className="block text-sm text-brand-brick mb-2">email</label>
+            <label className="block text-sm text-brand-brick mb-2">
+              {t("auth.login.email")}
+            </label>
             <input
               type="email"
               value={email}
@@ -70,13 +74,13 @@ const LoginPage: React.FC = () => {
               className={`w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick ${
                 error ? "border-2 border-red-600" : ""
               }`}
-              placeholder="enter your email"
+              placeholder={t("auth.login.placeholderEmail")}
             />
           </div>
 
           <div>
             <label className="block text-sm text-brand-brick mb-2">
-              password
+              {t("auth.login.password")}
             </label>
             <input
               type="password"
@@ -85,13 +89,13 @@ const LoginPage: React.FC = () => {
               className={`w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick ${
                 error ? "border-2 border-red-600" : ""
               }`}
-              placeholder="enter your password"
+              placeholder={t("auth.login.placeholderPassword")}
             />
           </div>
 
           <div className="text-sm">
             <a href="#!" className="text-brand-brick hover:text-brand-green">
-              forgot password?
+              {t("auth.login.forgotPassword")}
             </a>
           </div>
 
@@ -102,7 +106,7 @@ const LoginPage: React.FC = () => {
           <div className="flex justify-center">
             <Button
               type="submit"
-              text="login"
+              text={t("auth.login.button")}
               disabled={loading}
               className="px-8 py-3 hover:bg-opacity-90"
             />
@@ -114,9 +118,9 @@ const LoginPage: React.FC = () => {
         </div>
         <div className="text-center font-roboto text-brand-brick">
           <p>
-            don't have an account?{" "}
+            {t("auth.login.noAccount")}{" "}
             <a href="/signup" className="font-bold hover:underline">
-              sign up
+              {t("auth.login.signUp")}
             </a>
           </p>
         </div>

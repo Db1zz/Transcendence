@@ -1,18 +1,19 @@
 package com.anteiku.backend.service;
 
+import com.anteiku.backend.entity.*;
+import com.anteiku.backend.model.ChatChannelDto;
 import com.anteiku.backend.model.ChatMessageRequest;
 import com.anteiku.backend.model.ChatMessageResponse;
-import com.anteiku.backend.model.ChatRoomDto;
-import com.anteiku.backend.entity.ChatMessageEntity;
-import com.anteiku.backend.entity.UserEntity;
-import com.anteiku.backend.repository.ChatMessageRepository;
-import com.anteiku.backend.repository.UserRepository;
+import com.anteiku.backend.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -22,77 +23,107 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
+    private final ChannelRepository channelRepository;
+    private final ChannelMemberRepository channelMemberRepository;
     private final UserRepository userRepository;
+    private final OrganizationRepository organizationRepository;
 
+    @Transactional
     public ChatMessageResponse save(ChatMessageRequest request) {
-        ChatMessageEntity entity = new ChatMessageEntity();
-        entity.setRoomId(request.getRoomId());
-        entity.setSenderId(request.getSenderId());
-        entity.setContent(request.getContent());
+        ChannelEntity channelProxy = channelRepository.getReferenceById(request.getChannelId());
+        UserEntity senderProxy = userRepository.getReferenceById(request.getSenderId());
+
+        ChatMessageEntity entity = ChatMessageEntity.builder()
+                .channel(channelProxy)
+                .sender(senderProxy)
+                .content(request.getContent())
+                .build();
 
         ChatMessageEntity saved = chatMessageRepository.save(entity);
-        log.debug("Chat message saved: Room {} | Sender {}", saved.getRoomId(), saved.getSenderId());
+        log.info("Successfully saved message [{}] in channelId: {}", saved.getId(), saved.getChannel().getId());
+
+        return mapToResponse(saved);
+    }
+
+    private ChatMessageResponse mapToResponse(ChatMessageEntity entity) {
         ChatMessageResponse response = new ChatMessageResponse();
-        response.setId(saved.getId());
-        response.setRoomId(saved.getRoomId());
-        response.setSenderId(saved.getSenderId());
-        response.setContent(saved.getContent());
-        response.setCreatedAt(saved.getCreatedAt().atZone(ZoneId.systemDefault()).toOffsetDateTime());
+        response.setId(entity.getId());
+
+        if (entity.getChannel() != null) {
+            response.setChannelId(entity.getChannel().getId());
+        }
+        if (entity.getSender() != null) {
+            response.setSenderId(entity.getSender().getId());
+        }
+
+        response.setContent(entity.getContent());
+
+        if (entity.getCreatedAt() != null) {
+            response.setCreatedAt(entity.getCreatedAt().atZone(ZoneId.systemDefault()).toOffsetDateTime());
+        }
+
         return response;
     }
 
-    public List<ChatMessageResponse> lastMessages(String roomId) {
-        return chatMessageRepository.findTop50ByRoomIdOrderByCreatedAtAsc(roomId).stream()
-                .map(entity -> {
-                    ChatMessageResponse response = new ChatMessageResponse();
-                    response.setId(entity.getId());
-                    response.setRoomId(entity.getRoomId());
-                    response.setSenderId(entity.getSenderId());
-                    response.setContent(entity.getContent());
-                    response.setCreatedAt(entity.getCreatedAt().atZone(ZoneId.systemDefault()).toOffsetDateTime());
-                    return response;
+    public List<ChatMessageResponse> getMessagesPaginated(UUID channelId, int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size,  Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<ChatMessageEntity> entitiesPage = chatMessageRepository.findByChannel_IdOrderByCreatedAtDesc(channelId, pageRequest);
+
+        log.info("Retrieved {} messages from channelId: {}", entitiesPage.getNumberOfElements(), channelId.toString());
+
+        return entitiesPage.stream().map(this::mapToResponse).collect(Collectors.toList());
+    }
+
+    public List<ChatChannelDto> getUserChatRooms(UUID userId) {
+        log.info("Fetching text channels/DMs for userId: {}", userId);
+        return channelRepository.findUserTextChannels(userId).stream()
+                .map(projection -> {
+                    ChatChannelDto dto = new ChatChannelDto();
+                    dto.setChannelId(projection.getChannelId());
+                    dto.setOtherUserId(projection.getOtherUserId());
+                    dto.setOtherUserName(projection.getOtherUserName());
+                    dto.setOtherUserPicture(projection.getOtherUserPicture());
+                    return dto;
                 })
                 .collect(Collectors.toList());
     }
-    
-    public List<ChatRoomDto> getUserChatRooms(UUID userId) {
-        List<String> roomIds = chatMessageRepository.findDistinctRoomIdsByUserId(userId.toString());
-        List<ChatRoomDto> chatRooms = new ArrayList<>();
-        
-        for (String roomId : roomIds) {
-            UUID otherUserId = extractOtherUserId(roomId, userId);
-            if (otherUserId == null) continue;
-            
-            UserEntity otherUser = userRepository.findById(otherUserId).orElse(null);
-            if (otherUser == null) continue;
-            
-            ChatRoomDto room = new ChatRoomDto();
-            room.setRoomId(roomId);
-            room.setOtherUserId(otherUserId);
-            room.setOtherUserName(otherUser.getUsername());
-            room.setOtherUserPicture(otherUser.getPicture());
-            chatRooms.add(room);
+
+    public UUID createChannel(String name, ChannelType type, UUID organizationId, List<UUID> memberIds) {
+
+        if (type == ChannelType.TEXT && organizationId == null && memberIds != null && memberIds.size() == 2) {
+            UUID existingChannelId  = channelRepository.findPrivateChannel(memberIds.get(0), memberIds.get(1));
+            if (existingChannelId != null) {
+                log.info("Found existing private TEXT channel with id [{}] returning existing channel.", existingChannelId);
+                return existingChannelId;
+            }
         }
-        
-        return chatRooms;
-    }
-    
-    public UUID extractOtherUserId(String roomId, UUID currentUserId) {
-        if (!roomId.startsWith("dm-")) return null;
-        
-        String withoutPrefix = roomId.substring(3);
-        if (withoutPrefix.length() < 73) return null;
-        
-        try {
-            String uuid1Str = withoutPrefix.substring(0, 36);
-            String uuid2Str = withoutPrefix.substring(37, 73);
-            
-            UUID userId1 = UUID.fromString(uuid1Str);
-            UUID userId2 = UUID.fromString(uuid2Str);
-            
-            return currentUserId.equals(userId1) ? userId2 : userId1;
-        } catch (IllegalArgumentException | StringIndexOutOfBoundsException e) {
-            return null;
+
+        OrganizationEntity organizationProxy = null;
+        if (organizationId != null) {
+            organizationProxy = organizationRepository.getReferenceById(organizationId);
         }
+
+        ChannelEntity channel = ChannelEntity.builder()
+                .name(name)
+                .type(type)
+                .organization(organizationProxy)
+                .build();
+
+        ChannelEntity savedChannel = channelRepository.save(channel);
+        log.info("Successfully created new {} channel with ID: [{}]", type.name(), savedChannel.getId());
+
+        if (memberIds != null && !memberIds.isEmpty()) {
+            for (UUID userId : memberIds) {
+                UserEntity userProxy = userRepository.getReferenceById(userId);
+                ChannelMemberEntity member = ChannelMemberEntity.builder()
+                        .channel(savedChannel)
+                        .user(userProxy)
+                        .build();
+                channelMemberRepository.save(member);
+            }
+            log.info("Successfully added all members to channel [{}]", savedChannel.getId());
+        }
+
+        return savedChannel.getId();
     }
 }

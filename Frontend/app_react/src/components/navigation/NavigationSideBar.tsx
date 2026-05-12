@@ -7,6 +7,7 @@ import { MessageSquare } from "lucide-react";
 interface NavigationSidebarProps {
   onChatClick?: () => void;
   onFriendsClick?: () => void;
+  onServerClick?: (serverId: string) => void;
 }
 
 const MOCK_SERVERS = [
@@ -32,6 +33,7 @@ const MOCK_SERVERS = [
 export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
   onChatClick,
   onFriendsClick,
+  onServerClick,
 }) => {
   return (
     <div className="space-y-4 flex flex-col items-center text-primary w-full bg-brand-green py-3 h-full border-r border-brand-peach overflow-hidden">
@@ -55,6 +57,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
               imageUrl={chat.imageUrl}
               name={chat.name}
               isActive={index === 0}
+              onClick={() => onServerClick?.(chat.id)}
             />
           </div>
         ))}

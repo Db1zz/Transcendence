@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../contexts/AuthContext";
 import { Navigate } from "react-router-dom";
 // import ProfileButton from "../components/ProfileButton";
@@ -6,10 +7,11 @@ import MainLayout from "../components/MainLayout";
 import { CallProvider } from "../contexts/CallContext";
 
 const HomePage = () => {
+  const { t } = useTranslation();
   const { isAuthenticated, loading, user } = useAuth();
 
   if (loading) {
-    return <div>loading...</div>;
+    return <div>{t("common.loading")}</div>;
   }
   if (!isAuthenticated || !user) return <Navigate to="/login" replace />;
 

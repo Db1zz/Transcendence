@@ -1,13 +1,10 @@
 package com.anteiku.backend.serviceTests;
 
-
-import com.anteiku.backend.entity.ChatMessageEntity;
-import com.anteiku.backend.entity.UserEntity;
+import com.anteiku.backend.entity.*;
+import com.anteiku.backend.model.ChatChannelDto;
 import com.anteiku.backend.model.ChatMessageRequest;
 import com.anteiku.backend.model.ChatMessageResponse;
-import com.anteiku.backend.model.ChatRoomDto;
-import com.anteiku.backend.repository.ChatMessageRepository;
-import com.anteiku.backend.repository.UserRepository;
+import com.anteiku.backend.repository.*;
 import com.anteiku.backend.service.ChatService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,11 +12,12 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.Mockito.*;
@@ -27,10 +25,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 public class ChatServiceTests {
-    @Mock
-    private ChatMessageRepository chatMessageRepository;
-    @Mock
-    private UserRepository userRepository;
+
+    @Mock private ChatMessageRepository chatMessageRepository;
+    @Mock private ChannelRepository channelRepository;
+    @Mock private ChannelMemberRepository channelMemberRepository;
+    @Mock private UserRepository userRepository;
+    @Mock private OrganizationRepository organizationRepository;
 
     @InjectMocks
     private ChatService chatService;
@@ -38,39 +38,46 @@ public class ChatServiceTests {
     @Test
     void saveChatSuccessTest() {
         UUID senderId = UUID.randomUUID();
-        String roomId = "dm-room-1";
+        UUID channelId = UUID.randomUUID();
 
-        ChatMessageRequest chatMessageRequest = new ChatMessageRequest();
-        chatMessageRequest.setRoomId(roomId);
-        chatMessageRequest.setSenderId(senderId);
-        chatMessageRequest.setContent("hello world");
+        ChatMessageRequest request = new ChatMessageRequest();
+        request.setChannelId(channelId);
+        request.setSenderId(senderId);
+        request.setContent("hello world");
 
-        ChatMessageEntity chatMessageEntity = new ChatMessageEntity();
-        chatMessageEntity.setId(UUID.randomUUID());
-        chatMessageEntity.setRoomId(roomId);
-        chatMessageEntity.setSenderId(senderId);
-        chatMessageEntity.setContent("hello world");
-        chatMessageEntity.setCreatedAt(Instant.now());
+        ChannelEntity mockChannel = new ChannelEntity();
+        mockChannel.setId(channelId);
 
-        when(chatMessageRepository.save(any(ChatMessageEntity.class))).thenReturn(chatMessageEntity);
+        UserEntity mockSender = new UserEntity();
+        mockSender.setId(senderId);
 
-        ChatMessageResponse res = chatService.save(chatMessageRequest);
+        ChatMessageEntity savedEntity = new ChatMessageEntity();
+        savedEntity.setId(UUID.randomUUID());
+        savedEntity.setChannel(mockChannel);
+        savedEntity.setSender(mockSender);
+        savedEntity.setContent("hello world");
+        savedEntity.setCreatedAt(Instant.now());
+
+        when(channelRepository.getReferenceById(channelId)).thenReturn(mockChannel);
+        when(userRepository.getReferenceById(senderId)).thenReturn(mockSender);
+        when(chatMessageRepository.save(any(ChatMessageEntity.class))).thenReturn(savedEntity);
+
+        ChatMessageResponse res = chatService.save(request);
 
         ArgumentCaptor<ChatMessageEntity> captor = ArgumentCaptor.forClass(ChatMessageEntity.class);
         verify(chatMessageRepository, times(1)).save(captor.capture());
 
         assertEquals("hello world", captor.getValue().getContent());
-        assertEquals(roomId, captor.getValue().getRoomId());
-        assertEquals(senderId, captor.getValue().getSenderId());
+        assertEquals(channelId, captor.getValue().getChannel().getId());
 
         assertNotNull(res);
-        assertEquals(chatMessageEntity.getId(), res.getId());
+        assertEquals(savedEntity.getId(), res.getId());
         assertNotNull(res.getCreatedAt());
     }
 
     @Test
-    void lastMessagesSuccessTest() {
-        String roomId = "dm-room-1";
+    void getMessagesPaginatedSuccessTest() {
+        UUID channelId = UUID.randomUUID();
 
         ChatMessageEntity msg1 = new ChatMessageEntity();
         msg1.setId(UUID.randomUUID());
@@ -82,9 +89,12 @@ public class ChatServiceTests {
         msg2.setContent("hello world2");
         msg2.setCreatedAt(Instant.now());
 
-        when(chatMessageRepository.findTop50ByRoomIdOrderByCreatedAtAsc(roomId)).thenReturn(List.of(msg1, msg2));
+        Page<ChatMessageEntity> mockPage = new PageImpl<>(List.of(msg1, msg2));
 
-        List<ChatMessageResponse> res = chatService.lastMessages(roomId);
+        when(chatMessageRepository.findByChannel_IdOrderByCreatedAtDesc(eq(channelId), any(PageRequest.class)))
+                .thenReturn(mockPage);
+
+        List<ChatMessageResponse> res = chatService.getMessagesPaginated(channelId, 0, 50);
 
         assertEquals(2, res.size());
         assertEquals("hello world1", res.get(0).getContent());
@@ -94,56 +104,35 @@ public class ChatServiceTests {
     @Test
     void getUserChatRoomsSuccessTest() {
         UUID myId = UUID.randomUUID();
-        UUID friendId = UUID.randomUUID();
+        UUID channelId = UUID.randomUUID();
+        UUID otherUserId = UUID.randomUUID();
+        ChannelRepository.ChatChannelProjection mockProjection = mock(ChannelRepository.ChatChannelProjection.class);
+        when(mockProjection.getChannelId()).thenReturn(channelId);
+        when(mockProjection.getOtherUserId()).thenReturn(otherUserId);
+        when(mockProjection.getOtherUserName()).thenReturn("Touka");
+        when(mockProjection.getOtherUserPicture()).thenReturn("touka.png");
 
-        String validRoomId = "dm-" + myId.toString() + "-" + friendId.toString();
+        when(channelRepository.findUserTextChannels(myId)).thenReturn(List.of(mockProjection));
 
-        UserEntity friend = new UserEntity();
-        friend.setId(friendId);
-        friend.setUsername("friend");
-        friend.setPicture("example.jpg");
-
-        when(chatMessageRepository.findDistinctRoomIdsByUserId(myId.toString())).thenReturn(List.of(validRoomId));
-        when(userRepository.findById(friendId)).thenReturn(Optional.of(friend));
-
-        List<ChatRoomDto> rooms = chatService.getUserChatRooms(myId);
+        List<ChatChannelDto> rooms = chatService.getUserChatRooms(myId);
 
         assertEquals(1, rooms.size());
-        assertEquals(validRoomId, rooms.get(0).getRoomId());
-        assertEquals(friendId, rooms.get(0).getOtherUserId());
-        assertEquals("friend", rooms.get(0).getOtherUserName());
-        assertEquals("example.jpg", rooms.get(0).getOtherUserPicture());
-    }
-
-
-    @Test
-    void getUserChatRoomsIncorrectRoomNameTest() {
-        UUID myId = UUID.randomUUID();
-        List<String> roomsIds = List.of(
-                "general-chat",
-                "dm-tooshort",
-                "dm-" + UUID.randomUUID().toString() + "invalid_uuid_string"
-        );
-
-        when(chatMessageRepository.findDistinctRoomIdsByUserId(myId.toString())).thenReturn(roomsIds);
-
-        List<ChatRoomDto> rooms = chatService.getUserChatRooms(myId);
-
-        assertTrue(rooms.isEmpty());
-        verify(chatMessageRepository, never()).save(any());
+        assertEquals(channelId, rooms.get(0).getChannelId());
+        assertEquals(otherUserId, rooms.get(0).getOtherUserId());
+        assertEquals("Touka", rooms.get(0).getOtherUserName());
+        assertEquals("touka.png", rooms.get(0).getOtherUserPicture());
     }
 
     @Test
-    void getUserChatRoomsNonExistentUserTest() {
-        UUID myId = UUID.randomUUID();
-        UUID nonExistentUserId = UUID.randomUUID();
-        String roomId = "dm-" + myId.toString() + "-" + nonExistentUserId.toString();
+    void createChannelReturnsExistingPrivateRoomTest() {
+        UUID userA = UUID.randomUUID();
+        UUID userB = UUID.randomUUID();
+        UUID existingChannelId = UUID.randomUUID();
+        when(channelRepository.findPrivateChannel(userA, userB)).thenReturn(existingChannelId);
 
-        when(chatMessageRepository.findDistinctRoomIdsByUserId(myId.toString())).thenReturn(List.of(roomId));
-        when(userRepository.findById(nonExistentUserId)).thenReturn(Optional.empty());
+        UUID resultId = chatService.createChannel("DM", ChannelType.TEXT, null, List.of(userA, userB));
 
-        List<ChatRoomDto> rooms = chatService.getUserChatRooms(myId);
-
-        assertTrue(rooms.isEmpty());
+        assertEquals(existingChannelId, resultId);
+        verify(channelRepository, never()).save(any());
     }
 }

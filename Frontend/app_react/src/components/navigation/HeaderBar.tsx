@@ -1,5 +1,6 @@
 import React from "react";
 import { MessageSquare, Contact } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 type PageType = "friends" | "messages" | "server";
 
@@ -25,7 +26,14 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   type = "server",
   serverImage,
 }) => {
+  const { t } = useTranslation();
   const icon = getIcon(type);
+  const headerLabel =
+    type === "friends"
+      ? t("header.friends")
+      : type === "messages"
+        ? t("header.messages")
+        : t("header.server");
 
   return (
     <div className="w-full h-[30px] bg-brand-green flex items-center justify-center sticky top-0 z-50 border-b border-brand-peach gap-3">
@@ -38,7 +46,9 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
       ) : (
         icon
       )}
-      <p className="text-md font-ananas font-bold text-brand-beige">{type}</p>
+      <p className="text-md font-ananas font-bold text-brand-beige">
+        {headerLabel}
+      </p>
     </div>
   );
 };

@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import bgLogin from "../img/bg_login.png";
 import { Button } from "../components/Button";
 import { OAuthLogin } from "../components/OAuthLogin";
@@ -7,6 +8,7 @@ import validator from "validator";
 import axios from "axios";
 
 const SignupPage: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -96,18 +98,23 @@ const SignupPage: React.FC = () => {
     };
 
     const missing: string[] = [];
-    if (!Passwordchecks.length) missing.push("8+ characters");
-    if (!Passwordchecks.lower) missing.push("1 lowercase");
-    if (!Passwordchecks.upper) missing.push("1 uppercase");
-    if (!Passwordchecks.number) missing.push("1 number");
-    if (!Passwordchecks.symbol) missing.push("1 symbol");
+    if (!Passwordchecks.length)
+      missing.push(t("auth.signup.passwordRuleLength"));
+    if (!Passwordchecks.lower) missing.push(t("auth.signup.passwordRuleLower"));
+    if (!Passwordchecks.upper) missing.push(t("auth.signup.passwordRuleUpper"));
+    if (!Passwordchecks.number)
+      missing.push(t("auth.signup.passwordRuleNumber"));
+    if (!Passwordchecks.symbol)
+      missing.push(t("auth.signup.passwordRuleSymbol"));
 
     if (missing.length === 0) {
       setErrorMessagePassword("");
       return true;
     }
 
-    setErrorMessagePassword(`password needs: ${missing.join(", ")}`);
+    setErrorMessagePassword(
+      `${t("auth.signup.passwordNeedsPrefix")} ${missing.join(", ")}`,
+    );
     return false;
   };
 
@@ -140,24 +147,27 @@ const SignupPage: React.FC = () => {
       <div className="absolute inset-0 bg-brand-green opacity-80" />
 
       <div className="font-ananias border-2 border-gray-800 bg-white h-20 w-full max-w-md flex items-center justify-center p-4 relative z-10 mb-16">
-        <h1 className="text-l text-gray-800">welcome to anteiku cafe</h1>
+        <h1 className="text-l text-gray-800">{t("auth.welcome")}</h1>
       </div>
 
       <div className="border-2 border-gray-800 bg-brand-beige rounded-2xl p-8 w-full max-w-lg shadow-sharp relative z-10">
         {isSuccess ? (
           <div className="flex flex-col items-center justify-center space-y-6 py-8">
             <h2 className="text-2xl font-ananias font-bold text-brand-brick text-center">
-              you have successfully created an account
+              {t("auth.signup.success")}
             </h2>
-            <Button text="back to log in" onClick={() => navigate("/login")} />
+            <Button
+              text={t("auth.signup.backToLogin")}
+              onClick={() => navigate("/login")}
+            />
           </div>
         ) : (
           <>
             <h2 className="text-3xl font-ananias font-bold text-brand-brick text-center mb-2">
-              sign up
+              {t("auth.signup.title")}
             </h2>
             <h3 className="text-l font-ananias text-brand-green text-center mb-4">
-              sign up to continue
+              {t("auth.signup.subtitle")}
             </h3>
 
             <form
@@ -166,34 +176,40 @@ const SignupPage: React.FC = () => {
             >
               <div>
                 <label className="block text-sm text-brand-brick mb-2">
-                  email<span className="text-red-600"> *</span>
+                  {t("auth.signup.email")}
+                  <span className="text-red-600">
+                    {" "}
+                    {t("auth.signup.requiredMark")}
+                  </span>
                 </label>
                 <input
                   type="email"
                   value={email}
                   onChange={handleEmailChange}
                   className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
-                  placeholder="enter your email"
+                  placeholder={t("auth.signup.placeholderEmail")}
                   required
                 />
                 {emailValidation === "checking" && (
-                  <span className="text-sm text-gray-600">checking...</span>
+                  <span className="text-sm text-gray-600">
+                    {t("auth.signup.checkInProgress")}
+                  </span>
                 )}
                 {emailValidation === "available" && (
                   <span className="text-sm text-green-600 font-semibold">
-                    this email is available
+                    {t("auth.signup.emailAvailable")}
                   </span>
                 )}
                 {emailValidation === "taken" && (
                   <span className="text-sm text-red-600 font-semibold">
-                    this email already exists
+                    {t("auth.signup.emailTaken")}
                   </span>
                 )}
               </div>
 
               <div>
                 <label className="block text-sm text-brand-brick mb-2">
-                  display name
+                  {t("auth.signup.displayName")}
                 </label>
                 <input
                   type="name"
@@ -204,41 +220,51 @@ const SignupPage: React.FC = () => {
                     //validateEmail(val);
                   }}
                   className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
-                  placeholder="this is how others see you"
+                  placeholder={t("auth.signup.placeholderDisplayName")}
                   required
                 />
               </div>
 
               <div>
                 <label className="block text-sm text-brand-brick mb-2">
-                  username <span className="text-red-600"> *</span>
+                  {t("auth.signup.username")}
+                  <span className="text-red-600">
+                    {" "}
+                    {t("auth.signup.requiredMark")}
+                  </span>
                 </label>
                 <input
                   type="text"
                   value={username}
                   onChange={handleUsernameChange}
                   className="w-full px-4 py-3 bg-brand-green placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick"
-                  placeholder="pls only use numbers,underscores and full stops"
+                  placeholder={t("auth.signup.placeholderUsername")}
                   required
                 />
                 {usernameValidation === "checking" && (
-                  <span className="text-sm text-gray-600">checking...</span>
+                  <span className="text-sm text-gray-600">
+                    {t("auth.signup.checkInProgress")}
+                  </span>
                 )}
                 {usernameValidation === "available" && (
                   <span className="text-sm text-green-600 font-semibold">
-                    this username is free
+                    {t("auth.signup.usernameAvailable")}
                   </span>
                 )}
                 {usernameValidation === "taken" && (
                   <span className="text-sm text-red-600 font-semibold">
-                    this username is taken
+                    {t("auth.signup.usernameTaken")}
                   </span>
                 )}
               </div>
 
               <div>
                 <label className="block text-sm text-brand-brick mb-2">
-                  password <span className="text-red-600"> *</span>
+                  {t("auth.signup.password")}
+                  <span className="text-red-600">
+                    {" "}
+                    {t("auth.signup.requiredMark")}
+                  </span>
                 </label>
                 <input
                   type="password"
@@ -249,7 +275,7 @@ const SignupPage: React.FC = () => {
                     // validatePassword(val);
                   }}
                   className={`w-full px-4 py-3 ${errorMessagePassword ? "bg-brand-peach ring-2 ring-brand-brick" : "bg-brand-green"} placeholder-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick`}
-                  placeholder="create your password"
+                  placeholder={t("auth.signup.placeholderPassword")}
                   required
                 />
                 {errorMessagePassword === "" ? null : (
@@ -262,7 +288,7 @@ const SignupPage: React.FC = () => {
               <div className="flex justify-center">
                 <Button
                   type="submit"
-                  text="sign up"
+                  text={t("auth.signup.button")}
                   disabled={loading}
                   className="px-8 py-3 hover:bg-opacity-90"
                 />
@@ -275,9 +301,9 @@ const SignupPage: React.FC = () => {
 
             <div className="text-center font-roboto text-brand-brick">
               <p>
-                already have an account?{" "}
+                {t("auth.signup.hasAccount")}{" "}
                 <a href="/login" className="font-bold hover:underline">
-                  login
+                  {t("auth.signup.login")}
                 </a>
               </p>
             </div>

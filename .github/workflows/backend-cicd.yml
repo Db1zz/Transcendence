@@ -1,0 +1,48 @@
+name: Backend CICD
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'Backend/**'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'Backend/**'
+
+jobs:
+  build-and-test:
+    name: Spring Boot Build & Test
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./Backend
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Make mvnw executable
+        run: chmod +x ./mvnw
+
+      - name: Build and Test
+        run: ./mvnw clean verify
+        env:
+            CRET: ${{ secrets.CRET }}
+            GITHUB_CLIENT_ID: ${{ secrets.GH_CLIENT_ID }}
+            GITHUB_CLIENT_SECRET: ${{ secrets.GH_CLIENT_SECRET }}
+
+      - name: Upload JAR Artifact
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: spring-boot-app
+          path: Backend/target/*.jar

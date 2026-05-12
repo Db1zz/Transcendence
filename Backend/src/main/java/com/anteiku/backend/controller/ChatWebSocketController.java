@@ -22,8 +22,10 @@ public class ChatWebSocketController {
     @MessageMapping("/chat.send")
     public void send(ChatMessageRequest request) {
         ChatMessageResponse saved = chatService.save(request);
+        messagingTemplate.convertAndSend("/topic/chat/" + saved.getChannelId(), saved);
         messagingTemplate.convertAndSend("/topic/chat/" + saved.getRoomId(), saved);
 
+        // TODO
         UUID userId = chatService.extractOtherUserId(saved.getRoomId(), saved.getSenderId());
         DmPayload dmPayload = new DmPayload(userId.toString(), saved.getSenderId().toString(), saved.getRoomId(), saved.getContent(), System.currentTimeMillis());
         notificationService.sendToDm(dmPayload);
