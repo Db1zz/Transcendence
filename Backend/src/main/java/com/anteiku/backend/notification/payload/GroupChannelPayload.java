@@ -2,18 +2,18 @@ package com.anteiku.backend.notification.payload;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public record GroupChatPayload(
+public record GroupChannelPayload(
     @JsonProperty("user_id")
     String userId,
 
     @JsonProperty("sender_id")
     String senderId,
 
-    @JsonProperty("group_id")
-    String groupId,
+    @JsonProperty("channel_name")
+    String channelName,
 
-    @JsonProperty("group_name")
-    String groupName,
+    @JsonProperty("channel_id")
+    String channelId,
 
     String content,
 

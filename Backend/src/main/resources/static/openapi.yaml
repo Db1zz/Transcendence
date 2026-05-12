@@ -603,7 +603,6 @@ paths:
                   $ref: '#/components/schemas/ChatMessageResponse'
         404:
           description: "Channel not found"
-          description: "Room not found"
 
   /notification/token:
     get:

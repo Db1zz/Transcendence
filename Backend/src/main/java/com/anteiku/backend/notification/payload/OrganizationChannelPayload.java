@@ -2,18 +2,21 @@ package com.anteiku.backend.notification.payload;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public record ServerChatPayload(
+public record OrganizationChannelPayload(
     @JsonProperty("user_id")
     String userId,
 
     @JsonProperty("sender_id")
     String senderId,
 
-    @JsonProperty("chat_id")
-    String chatId,
+    @JsonProperty("channel_name")
+    String channelName,
 
-    @JsonProperty("server_id")
-    String serverId,
+    @JsonProperty("channel_id")
+    String channelId,
+
+    @JsonProperty("organization_id")
+    String organizationId,
 
     String content,
 

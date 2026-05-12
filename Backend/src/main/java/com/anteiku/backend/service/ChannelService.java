@@ -1,10 +1,12 @@
 package com.anteiku.backend.service;
 
 import com.anteiku.backend.entity.ChannelEntity;
+import com.anteiku.backend.entity.ChannelMemberEntity;
 import com.anteiku.backend.entity.ChannelType;
 import com.anteiku.backend.exception.ResourceNotFoundException;
 import com.anteiku.backend.model.CreateChannelDto;
 import com.anteiku.backend.model.CreateChannelResponseDto;
+import com.anteiku.backend.repository.ChannelMemberRepository;
 import com.anteiku.backend.repository.ChannelRepository;
 import com.anteiku.backend.repository.OrganizationRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -25,6 +28,7 @@ public class ChannelService {
 
     private final ChannelRepository channelRepository;
     private final OrganizationRepository organizationRepository;
+    private final ChannelMemberRepository channelMemberRepository;
 
     public CreateChannelResponseDto createChannel(CreateChannelDto dto) {
 //        OrganizationEntity organization = organizationRepository.findById(dto.getOrganizationId())
@@ -61,12 +65,21 @@ public class ChannelService {
         return response;
     }
 
-    
     public void deleteChannel(UUID channelId) {
         ChannelEntity channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new ResourceNotFoundException("Channel not found"));
 
         channelRepository.delete(channel);
         log.info("Channel deleted: '{}' of type {}", channel.getName(), channel.getType());
+    }
+
+    public List<ChannelMemberEntity> getChannelMembers(UUID channelId) {
+        return channelMemberRepository.findByChannelId(channelId);
+    }
+
+    public ChannelEntity getChannel(UUID channelId) {
+        return channelRepository.findByChannelId(channelId).orElseThrow(
+                () -> new ResourceNotFoundException("Channel with id " + channelId + " not found")
+        );
     }
 }
