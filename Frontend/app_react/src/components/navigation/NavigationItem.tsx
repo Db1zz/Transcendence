@@ -1,12 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
+import { NotificationBadge } from "../NotificationBadge";
+import { useNotifications } from "../../contexts/NotificationContext";
 
 interface NavigationItemProps {
   id: string;
   imageUrl: string;
   name: string;
   isActive?: boolean;
+  notificationCount?: number;
   onClick: () => void;
 }
 
@@ -18,9 +21,13 @@ export const NavigationItem = ({
   onClick,
 }: NavigationItemProps) => {
   const [active, setActive] = useState(isActive);
+  const { getUnreadCount, setActiveTarget } = useNotifications();
+  const count = getUnreadCount(id);
 
   const handleClick = () => {
     setActive(true);
+    setActiveTarget(id);
+    console.log(`Mapsd to server: ${name}`);
     console.log(`Navigated to server: ${name}`);
     onClick?.();
   };
@@ -36,21 +43,23 @@ export const NavigationItem = ({
           !active && "group-hover:h-[20px]"
         } ${active ? "h-[36px]" : "h-[8px]"}`}
       />
-      <div
-        className={`relative group flex mx-3 h-[48px] w-[48px] rounded-[24px] group-hover:rounded-[16px] transition-all border border-brand-peach overflow-hidden bg-gray-300 flex items-center justify-center text-sm font-bold ${
-          active ? "rounded-[16px]" : ""
-        }`}
-      >
-        <img
-          src={imageUrl}
-          alt={name}
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            target.style.display = "none";
-          }}
-        />
-      </div>
+      <NotificationBadge count={count} className="mx-3">
+        <div
+          className={`relative group flex h-[48px] w-[48px] rounded-[24px] group-hover:rounded-[16px] transition-all border border-brand-peach overflow-hidden bg-gray-300 flex items-center justify-center text-sm font-bold ${
+            active ? "rounded-[16px]" : ""
+          }`}
+        >
+          <img
+            src={imageUrl}
+            alt={name}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.style.display = "none";
+            }}
+          />
+        </div>
+      </NotificationBadge>
     </button>
   );
 };

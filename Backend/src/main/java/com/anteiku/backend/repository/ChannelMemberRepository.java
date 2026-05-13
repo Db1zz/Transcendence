@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @Repository
 public interface ChannelMemberRepository extends JpaRepository<ChannelMemberEntity, ChannelMemberId> {
-    List<ChannelMemberEntity> findByChannel_Id(UUID channelId);
+    List<ChannelMemberEntity> findByChannelId(UUID channelId);
     boolean existsByChannel_IdAndUser_Id(UUID channelId, UUID userId);
     void deleteByChannel_IdAndUser_Id(UUID channelId, UUID userId);
 }

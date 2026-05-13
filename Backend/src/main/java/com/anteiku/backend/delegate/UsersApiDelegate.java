@@ -1,6 +1,7 @@
 package com.anteiku.backend.delegate;
 
 import com.anteiku.backend.api.UsersApi;
+import com.anteiku.backend.exception.UserIsNotAuthorized;
 import com.anteiku.backend.model.UpdateMyProfileDto;
 import com.anteiku.backend.model.UserInfoDto;
 import com.anteiku.backend.model.UserPublicDto;
@@ -51,7 +52,7 @@ public class UsersApiDelegate implements UsersApi {
         try {
             UserInfoDto userInfoDto = userService.getMe();
             return ResponseEntity.ok(userInfoDto);
-        } catch (AuthenticationException e) {
+        } catch (UserIsNotAuthorized e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }

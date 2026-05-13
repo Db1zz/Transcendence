@@ -10,6 +10,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -30,7 +32,8 @@ public class JwtServiceTests {
     @Test
     void generateAndVerifyTokenSuccessTest() {
         String email = "example@example.com";
-        String token = jwtService.generateToken(email);
+        UUID userId = UUID.randomUUID();
+        String token = jwtService.generateToken(email, userId);
 
         assertNotNull(token);
         assertFalse(token.isEmpty());
@@ -43,7 +46,8 @@ public class JwtServiceTests {
     @Test
     void validateTokenWithChangedPayloadTest() {
         String email = "example@example.com";
-        String wrongToken = jwtService.generateToken(email) + "hihi";
+        UUID userId = UUID.randomUUID();
+        String wrongToken = jwtService.generateToken(email, userId) + "hihi";
 
         assertFalse(jwtService.isTokenSignatureValid(wrongToken));
         assertFalse(jwtService.isTokenValid(wrongToken));
@@ -52,8 +56,9 @@ public class JwtServiceTests {
     @Test
     void validateTokenExpiredTokenTest() {
         String email = "example@example.com";
+        UUID userId = UUID.randomUUID();
         Date date = new Date(System.currentTimeMillis() - 3600 * 1000);
-        String expiredToken = jwtService.generateToken(email, date);
+        String expiredToken = jwtService.generateToken(email, userId, date);
 
         assertFalse(jwtService.isTokenValid(expiredToken));
     }

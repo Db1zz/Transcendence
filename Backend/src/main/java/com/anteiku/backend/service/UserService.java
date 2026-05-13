@@ -4,6 +4,7 @@ import com.anteiku.backend.entity.UserCredentialsEntity;
 import com.anteiku.backend.entity.UserEntity;
 import com.anteiku.backend.exception.EmailIsAlreadyUsedException;
 import com.anteiku.backend.exception.ResourceNotFoundException;
+import com.anteiku.backend.exception.UserIsNotAuthorized;
 import com.anteiku.backend.mapper.UserMapper;
 import com.anteiku.backend.model.*;
 import com.anteiku.backend.repository.UserCredentialsRepository;
@@ -17,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.naming.AuthenticationException;
@@ -95,10 +97,10 @@ public class UserService {
         return userMapper.toCredentialsDto(userCredentialsEntity);
     }
 
-    public UserInfoDto getMe() throws AuthenticationException {
+    public UserInfoDto getMe() throws UserIsNotAuthorized {
         UUID userId = SecurityUtils.getCurrentUserId();
         if (userId == null) {
-                throw new AuthenticationCredentialsNotFoundException("User is not authenticated");
+                throw new UserIsNotAuthorized("User is not authenticated");
         }
 
         UserPublicDto userPublicDto = getUserById(userId);

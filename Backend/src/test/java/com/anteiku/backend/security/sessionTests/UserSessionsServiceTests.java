@@ -115,7 +115,7 @@ public class UserSessionsServiceTests {
         when(userService.getUserCredentialsByEmail(email)).thenReturn(userCredentials);
         when(securityProperties.getRefreshTokenExpirationPeriod()).thenReturn(7L);
         when(securityProperties.getAccessTokenExpirationPeriod()).thenReturn(1L);
-        when(jwtService.generateToken(email)).thenReturn("jwt-token");
+        when(jwtService.generateToken(email, userId)).thenReturn("jwt-token");
 
         UserSessionEntity userSessionEntity = new UserSessionEntity();
         UserSessionDto userSessionDto = new UserSessionDto();
@@ -150,7 +150,7 @@ public class UserSessionsServiceTests {
         when(userService.getUserCredentialsById(userId)).thenReturn(userCredentials);
         when(securityProperties.getRefreshTokenExpirationPeriod()).thenReturn(7L);
         when(securityProperties.getAccessTokenExpirationPeriod()).thenReturn(1L);
-        when(jwtService.generateToken("test@example.com")).thenReturn("new-jwt-token");
+        when(jwtService.generateToken("test@example.com", userId)).thenReturn("new-jwt-token");
         when(userSessionMapper.toEntity(any(UserSessionDto.class))).thenReturn(userSessionEntity);
 
         UserAuthTokensDto userAuthTokensDto = userSessionsService.refreshSession(oldRefreshToken);

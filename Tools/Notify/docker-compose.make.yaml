@@ -1,0 +1,75 @@
+services:
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+    networks:
+      - anteiku-network
+  init-kafka:
+    image: confluentinc/cp-kafka:latest
+    volumes:
+      - ./Tools/Notify/docker/kafka:/scripts
+    depends_on:
+      - kafka
+    entrypoint: ["bash", /scripts/init.sh]
+    networks:
+      - anteiku-network
+  cassandra:
+    image: cassandra:latest
+    ports:
+      - "9042:9042"
+    volumes:
+      - cassandra-data:/var/lib/cassandra
+    environment:
+      - CASSANDRA_CLUSTER_NAME=dev-cluster
+    restart: unless-stopped
+    networks:
+      - anteiku-network
+  init-cassandra:
+    image: cassandra:latest
+    depends_on:
+      - cassandra
+    restart: "no"
+    entrypoint: ["/bin/bash", "/scripts/init.sh"]
+    volumes:
+      - ./Tools/Notify/docker/cassandra:/scripts
+    networks:
+      - anteiku-network
+
+  notify:
+    image: rust:latest
+    ports:
+      - "6767:6767"
+      - "9921:9921"
+      - "6969:6969"
+    volumes:
+      - ./Tools/Notify/:/app
+      - rust-cache:/usr/local/cargo/registry
+      - rust-target:/app/target
+    working_dir: /app
+    command: >
+      sh -c "apt update && apt install -y cmake build-essential && cargo run consumer"
+    depends_on:
+      init-cassandra:
+        condition: service_completed_successfully
+    networks:
+      - anteiku-network
+
+volumes:
+  cassandra-data:
+  rust-cache:
+  rust-target:
+
+networks:
+  anteiku-network:
+    name: anteiku-network

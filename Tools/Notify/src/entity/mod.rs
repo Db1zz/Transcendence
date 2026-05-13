@@ -1,0 +1,8 @@
+pub mod notification_preferences_entity;
+pub mod notification_to_send_entity;
+
+pub use notification_preferences_entity::NotificationPreferencesEntity;
+pub use notification_preferences_entity::NotificationPreferencesKey;
+
+pub use notification_to_send_entity::NotificationToSendKey;
+pub use notification_to_send_entity::UserNotificationEntity;

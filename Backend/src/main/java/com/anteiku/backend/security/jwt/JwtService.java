@@ -11,10 +11,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.UUID;
 import java.util.function.Function;
 
 @Slf4j
@@ -26,24 +28,25 @@ public class JwtService {
     @Value("${app.jwt.issuer}")
     private String issuer;
 
-    public String generateToken(String userEmail, Date expiryDate) {
+    public String generateToken(String userEmail, UUID userId, Date expiryDate) {
         Date issuedDate = new Date();
         return Jwts.builder()
                 .setSubject(userEmail)
                 .claim("userEmail", userEmail)
+                .claim("userId", userId)
                 .setIssuedAt(issuedDate)
                 .setIssuer(issuer)
                 .setExpiration(expiryDate)
                 .signWith(getPrivateSignKey(), SignatureAlgorithm.HS256).compact();
     }
 
-    public String generateToken(String userEmail) {
-        return generateToken(userEmail, Date.from(LocalDate.now().plusDays(1L).atStartOfDay(ZoneId.systemDefault()).toInstant()));
+    public String generateToken(String userEmail, UUID userId) {
+        return generateToken(userEmail, userId, Date.from(LocalDate.now().plusDays(1L).atStartOfDay(ZoneId.systemDefault()).toInstant()));
     }
 
     private Key getPrivateSignKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(privateKey);
-        return Keys.hmacShaKeyFor(keyBytes);
+//      byte[] keyBytes = Decoders.BASE64.decode(privateKey);
+        return Keys.hmacShaKeyFor(privateKey.getBytes(StandardCharsets.UTF_8));
     }
 
     public String extractUserEmail(String token) {

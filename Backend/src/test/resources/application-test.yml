@@ -50,3 +50,5 @@ app:
   security:
     refresh-token-expiration-period: 31
     access-token-expiration-period: 2
+
+NOTIFY_PROD_ADDR: localhost:9092

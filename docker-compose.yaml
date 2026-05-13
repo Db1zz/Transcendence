@@ -8,27 +8,35 @@ services:
       - db_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    networks:
+      - anteiku-network
+
   backend:
-    image: eclipse-temurin:25-jdk-alpine
-    platform: linux/amd64
-    container_name: anteiku-backend
-    working_dir: /app
-    volumes:
-      - ./Backend:/app
-      - ~/.m2:/root/.m2
-    ports:
-      - "8080:8080"
-      - "5005:5005"
-    depends_on:
-      - postgres
-    env_file:
-      - .env
-    environment:
-      SPRING_DOCKER_COMPOSE_ENABLED: "false"
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
-    command: ./mvnw clean spring-boot:run -Dspring-boot.run.jvmArguments="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+      image: eclipse-temurin:25-jdk-alpine
+      platform: linux/amd64
+      container_name: anteiku-backend
+      working_dir: /app
+      volumes:
+        - ./Backend:/app
+        - maven_repo:/root/.m2      # Use a named volume for much faster I/O
+        - maven_target:/app/target  # Persists compiled .class files
+      ports:
+        - "8080:8080"
+        - "5005:5005"
+      depends_on:
+        - postgres
+      env_file:
+        - .env
+      environment:
+        SPRING_DOCKER_COMPOSE_ENABLED: "false"
+        SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+        SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+        SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+        MAVEN_OPTS: "-Dmaven.repo.local=/root/.m2/repository"
+      command: ./mvnw spring-boot:run -Dspring-boot.run.jvmArguments="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+      networks:
+        - anteiku-network
+
   frontend:
     build: 
       context: ./Frontend/app_react
@@ -47,6 +55,15 @@ services:
       - REACT_APP_SIGNALING_SERVER=${REACT_APP_SIGNALING_SERVER}
     command: sh -c "npm install && npm start"
     stdin_open: true
+    networks:
+      - anteiku-network
 
 volumes:
   db_data:
+  maven_repo:
+  maven_target:
+  
+
+networks:
+  anteiku-network:
+    name: anteiku-network

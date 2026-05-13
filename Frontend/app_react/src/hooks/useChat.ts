@@ -22,7 +22,7 @@ export const useChat = (channelId: string) => {
 
     try {
       const response = await api.get(`/chat/channels/${channelId}/messages?page=${pageNumber}&size=50`);
-      
+
       if (!isActive) return;
 
       if (response.data.length < 50) {
@@ -105,11 +105,11 @@ export const useChat = (channelId: string) => {
     }
   };
 
-  return { 
-    messages, 
-    sendMessage, 
-    connected, 
-    loadOlderMessages, 
-    hasMore 
+  return {
+    messages,
+    sendMessage,
+    connected,
+    loadOlderMessages,
+    hasMore
   };
 };

@@ -1,17 +1,18 @@
 package com.anteiku.backend.repository;
 
 import com.anteiku.backend.entity.ChannelEntity;
-import com.anteiku.backend.model.ChatChannelDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface ChannelRepository extends JpaRepository<ChannelEntity, UUID> {
+    Optional<ChannelEntity> findById(UUID channelId);
 
     interface ChatChannelProjection {
         UUID getChannelId();

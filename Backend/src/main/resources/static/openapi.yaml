@@ -299,22 +299,21 @@ paths:
         404:
           description: "channel not found"
 
-  /voice:
+  /voice/join:
     post:
-      summary: "Creates a voice room and sends invitations to join to other users"
-      operationId: createVoiceRoom
+      operationId: joinOrCreateVoiceRoom
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateVoiceRoomDto'
+              $ref: '#/components/schemas/JoinOrCreateVoiceRoomDto'
       responses:
         201:
           description: "Voice room created"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreateVoiceRoomResponseDto'
+                $ref: '#/components/schemas/JoinOrCreateVoiceRoomResponseDto'
 
   /roles:
     post:
@@ -604,6 +603,25 @@ paths:
         404:
           description: "Channel not found"
 
+  /notification/token:
+    get:
+      summary: "Generate notification access token"
+      operationId: getNotificationToken
+      description: "Exchange a session-based random key for a stateless JWT to be used with the Notification Service."
+      security:
+        - CookieAuth: []
+      responses:
+        200:
+          description: "Successfully generated JWT"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationTokenResponseDto'
+        401:
+          description: "Unauthorized - Session key is invalid or missing"
+        500:
+          description: "Internal Server Error - Failed to sign the token"
+
 components:
   responses:
     UnauthorizedError:
@@ -877,20 +895,23 @@ components:
           type: string
           format: date-time
 
-    CreateVoiceRoomDto:
+    JoinOrCreateVoiceRoomDto:
       type: object
       properties:
-        creatorId:
+        roomId:
+          type: string
+          format: uuid
+        callerId:
           $ref: '#/components/schemas/UserId'
         invitedUsers:
           type: array
           items:
             $ref: '#/components/schemas/UserId'
 
-    CreateVoiceRoomResponseDto:
+    JoinOrCreateVoiceRoomResponseDto:
       type: object
       properties:
-        channelId:
+        roomId:
           type: string
           format: uuid
 
@@ -996,3 +1017,20 @@ components:
           type: string
           description: "Message content (max 2000 characters)"
           maxLength: 2000
+
+    NotificationTokenResponseDto:
+      type: object
+      description: "Fresh Jwt notification token"
+      properties:
+        token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          description: "The generated JWT token"
+        tokenType:
+          type: string
+          example: "Bearer"
+        expiresAt:
+          type: integer
+          format: int64
+          example: 1776965532804
+          description: "Unix timestamp in milliseconds when the token expires"

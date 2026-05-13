@@ -3,7 +3,6 @@ package com.anteiku.backend.delegate;
 import com.anteiku.backend.api.FriendsApi;
 import com.anteiku.backend.model.FriendDto;
 import com.anteiku.backend.service.FriendsService;
-import com.anteiku.backend.service.UserService;
 import com.anteiku.backend.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +17,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class FriendsApiDelegate implements FriendsApi {
     private final FriendsService friendsService;
-    private final UserService userService;
 
     @Override
     public ResponseEntity<List<FriendDto>> getMyFriends() {

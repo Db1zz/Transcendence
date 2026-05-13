@@ -78,7 +78,7 @@ public class UserSessionsService {
         userSession.setUserId(userCredentialsDto.getUserId());
         userSession.setRefreshToken(UUID.randomUUID().toString());
         userSession.setRefreshTokenExpiresAt(timeNow.plus(Duration.ofDays(securityProperties.getRefreshTokenExpirationPeriod())));
-        userSession.setAccessToken(jwtService.generateToken(userEmail));
+        userSession.setAccessToken(jwtService.generateToken(userEmail, userCredentialsDto.getUserId()));
         userSession.setAccessTokenExpiresAt(timeNow.plus(Duration.ofDays(securityProperties.getAccessTokenExpirationPeriod())));
         userSession.setLastActiveAt(timeNow);
         userSession.setCreatedAt(timeNow);
@@ -97,7 +97,7 @@ public class UserSessionsService {
 
         session.setRefreshToken(UUID.randomUUID().toString());
         session.setRefreshTokenExpiresAt(OffsetDateTime.now().plus(Duration.ofDays(securityProperties.getRefreshTokenExpirationPeriod())));
-        session.setAccessToken(jwtService.generateToken(userCredentialsDto.getEmail()));
+        session.setAccessToken(jwtService.generateToken(userCredentialsDto.getEmail(), session.getUserId()));
         session.setAccessTokenExpiresAt(OffsetDateTime.now().plus(Duration.ofDays(securityProperties.getAccessTokenExpirationPeriod())));
         session.setLastActiveAt(OffsetDateTime.now());
 

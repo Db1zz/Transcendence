@@ -6,7 +6,7 @@ export
 all: up
 
 up:
-	docker compose up -d
+	docker compose -f docker-compose.yaml -f ./Tools/Notify/docker-compose.make.yaml up
 
 up-elk:
 	docker compose -f docker-compose.yaml -f docker-compose.elk.yaml up -d
@@ -59,13 +59,13 @@ setup-elk:
 	@echo "\ndone with elk"
 
 down clean:
-	docker compose down
+	docker compose -f docker-compose.yaml -f ./Tools/Notify/docker-compose.make.yaml down
 
 down-elk:
-	docker compose -f docker-compose.yaml -f docker-compose.elk.yaml down
+	docker compose -f docker-compose.yaml -f docker-compose.elk.yaml -f ./Tools/Notify/docker-compose.make.yaml down
 
 fclean:
-	docker compose -f docker-compose.elk.yaml -f docker-compose.yaml down
+	docker compose -f docker-compose.elk.yaml -f docker-compose.yaml -f ./Tools/Notify/docker-compose.make.yaml down
 	docker system prune -a -f
 	docker compose -f docker-compose.elk.yaml -f docker-compose.yaml down -v
 
