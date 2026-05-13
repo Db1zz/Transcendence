@@ -10,6 +10,9 @@ use crate::entity::UserNotificationEntity;
 pub enum EventType {
     #[serde(rename = "MESSAGE_CREATED")]
     MessageCreated,
+
+    #[serde(rename = "JOIN_CALL_CREATED")]
+    JoinCallCreated,
 }
 
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, Display, EnumString)]
@@ -51,6 +54,7 @@ impl From<UserNotificationEntity> for Notification {
     fn from(entity: UserNotificationEntity) -> Self {
         Self {
             id: entity.id,
+            // TODO, do not hide it silently, just throw 500 as a response
             etype: entity.etype.parse().unwrap_or(EventType::MessageCreated),
             scope: entity.scope.parse().unwrap_or(EventScope::DM),
             payload: entity.payload,

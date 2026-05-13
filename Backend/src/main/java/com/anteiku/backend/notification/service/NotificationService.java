@@ -11,6 +11,7 @@ import com.anteiku.backend.notification.event.EventScope;
 import com.anteiku.backend.notification.event.NotificationEvent;
 import com.anteiku.backend.notification.kafka.producer.NotificationProducer;
 import com.anteiku.backend.notification.payload.DmChannelPayload;
+import com.anteiku.backend.notification.payload.VoiceCallPayload;
 import com.anteiku.backend.security.jwt.JwtService;
 import com.anteiku.backend.service.ChannelService;
 import com.anteiku.backend.service.UserService;
@@ -34,6 +35,23 @@ public class NotificationService {
     public String generateNotificationToken() throws UserIsNotAuthorized {
         UserInfoDto userInfoDto = userService.getMe();;
         return jwtService.generateToken(userInfoDto.getEmail(), userInfoDto.getId());
+    }
+
+    public void sendCallNotification(UUID roomId, UUID callerId, UUID userId) {
+        VoiceCallPayload payload = new VoiceCallPayload(
+                roomId.toString(),
+                callerId.toString(),
+                userId.toString()
+        );
+
+        NotificationEvent notificationEvent = new NotificationEvent(
+                EventType.JOIN_CALL_CREATED,
+                EventScope.DM,
+                payload
+        );
+
+        String json = objectMapper.writeValueAsString(notificationEvent);
+        notificationProducer.send(json);
     }
 
     public void sendMessageNotification(ChatMessageResponse chatMessageResponse) {

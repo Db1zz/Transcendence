@@ -299,22 +299,21 @@ paths:
         404:
           description: "channel not found"
 
-  /voice:
+  /voice/join:
     post:
-      summary: "Creates a voice room and sends invitations to join to other users"
-      operationId: createVoiceRoom
+      operationId: joinOrCreateVoiceRoom
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateVoiceRoomDto'
+              $ref: '#/components/schemas/JoinOrCreateVoiceRoomDto'
       responses:
         201:
           description: "Voice room created"
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreateVoiceRoomResponseDto'
+                $ref: '#/components/schemas/JoinOrCreateVoiceRoomResponseDto'
 
   /roles:
     post:
@@ -896,20 +895,23 @@ components:
           type: string
           format: date-time
 
-    CreateVoiceRoomDto:
+    JoinOrCreateVoiceRoomDto:
       type: object
       properties:
-        creatorId:
+        roomId:
+          type: string
+          format: uuid
+        callerId:
           $ref: '#/components/schemas/UserId'
         invitedUsers:
           type: array
           items:
             $ref: '#/components/schemas/UserId'
 
-    CreateVoiceRoomResponseDto:
+    JoinOrCreateVoiceRoomResponseDto:
       type: object
       properties:
-        channelId:
+        roomId:
           type: string
           format: uuid
 
