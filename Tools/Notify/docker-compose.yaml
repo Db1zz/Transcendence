@@ -53,14 +53,12 @@ services:
       - "9921:9921"
       - "6969:6969"
     volumes:
-      - ./:/app
+      - ./Tools/Notify/:/app
+      - rust-cache:/usr/local/cargo/registry
+      - rust-target:/app/target
     working_dir: /app
     command: >
-      sh -c "
-      apt update &&
-      apt install -y cmake build-essential &&
-      cargo run consumer
-      "
+      sh -c "apt update && apt install -y cmake build-essential && cargo run consumer"
     depends_on:
       init-cassandra:
         condition: service_completed_successfully
@@ -68,6 +66,8 @@ services:
       - anteiku-network
 volumes:
   cassandra-data:
+  rust-cache:
+  rust-target:
 
 networks:
   anteiku-network:
