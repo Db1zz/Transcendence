@@ -150,7 +150,7 @@ public class UserSessionsServiceTests {
         when(userService.getUserCredentialsById(userId)).thenReturn(userCredentials);
         when(securityProperties.getRefreshTokenExpirationPeriod()).thenReturn(7L);
         when(securityProperties.getAccessTokenExpirationPeriod()).thenReturn(1L);
-        when(jwtService.generateToken("test@example.com", UUID.randomUUID())).thenReturn("new-jwt-token");
+        when(jwtService.generateToken("test@example.com", userId)).thenReturn("new-jwt-token");
         when(userSessionMapper.toEntity(any(UserSessionDto.class))).thenReturn(userSessionEntity);
 
         UserAuthTokensDto userAuthTokensDto = userSessionsService.refreshSession(oldRefreshToken);
