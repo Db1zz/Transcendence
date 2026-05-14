@@ -1,16 +1,16 @@
 package com.anteiku.backend.serviceTests;
 
-import com.anteiku.backend.entity.MemberEntity;
+import com.anteiku.backend.entity.OrganizationMemberEntity;
 import com.anteiku.backend.entity.OrganizationEntity;
 import com.anteiku.backend.entity.UserEntity;
 import com.anteiku.backend.exception.ConflictException;
 import com.anteiku.backend.exception.ResourceNotFoundException;
 import com.anteiku.backend.model.AddMemberDto;
 import com.anteiku.backend.model.AddMemberResponseDto;
-import com.anteiku.backend.repository.MemberRepository;
+import com.anteiku.backend.repository.OrganizationMemberRepository;
 import com.anteiku.backend.repository.OrganizationRepository;
 import com.anteiku.backend.repository.UserRepository;
-import com.anteiku.backend.service.MemberService;
+import com.anteiku.backend.service.OrganizationMemberService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -25,16 +25,16 @@ import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
-public class MemberServiceTests {
+public class OrganizationMemberServiceTests {
     @Mock
-    private MemberRepository memberRepository;
+    private OrganizationMemberRepository organizationMemberRepository;
     @Mock
     private UserRepository userRepository;
     @Mock
     private OrganizationRepository organizationRepository;
 
     @InjectMocks
-    private MemberService memberService;
+    private OrganizationMemberService organizationMemberService;
 
     @Test
     void addMemberSuccessTest() {
@@ -50,19 +50,19 @@ public class MemberServiceTests {
         OrganizationEntity organizationEntity = new OrganizationEntity();
         organizationEntity.setId(orgId);
 
-        when(memberRepository.existsByUserIdAndOrganizationId(userId, orgId)).thenReturn(false);
+        when(organizationMemberRepository.existsByUserIdAndOrganizationId(userId, orgId)).thenReturn(false);
         when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
         when(organizationRepository.findById(orgId)).thenReturn(Optional.of(organizationEntity));
 
-        AddMemberResponseDto res =  memberService.addMember(addMemberDto);
+        AddMemberResponseDto res =  organizationMemberService.addMember(addMemberDto);
 
-        ArgumentCaptor<MemberEntity> captor = ArgumentCaptor.forClass(MemberEntity.class);
-        verify(memberRepository, times(1)).save(captor.capture());
+        ArgumentCaptor<OrganizationMemberEntity> captor = ArgumentCaptor.forClass(OrganizationMemberEntity.class);
+        verify(organizationMemberRepository, times(1)).save(captor.capture());
 
-        MemberEntity memberEntity = captor.getValue();
-        assertEquals(userEntity, memberEntity.getUser());
-        assertEquals(organizationEntity, memberEntity.getOrganization());
-        assertNotNull(memberEntity.getJoinedAt());
+        OrganizationMemberEntity organizationMemberEntity = captor.getValue();
+        assertEquals(userEntity, organizationMemberEntity.getUser());
+        assertEquals(organizationEntity, organizationMemberEntity.getOrganization());
+        assertNotNull(organizationMemberEntity.getJoinedAt());
 
         assertNotNull(res);
         assertEquals(userId, res.getUserId());
@@ -79,14 +79,14 @@ public class MemberServiceTests {
         addMemberDto.setUserId(userId);
         addMemberDto.setOrganizationId(orgId);
 
-        when(memberRepository.existsByUserIdAndOrganizationId(userId, orgId)).thenReturn(true);
+        when(organizationMemberRepository.existsByUserIdAndOrganizationId(userId, orgId)).thenReturn(true);
 
-        ConflictException exception = assertThrows(ConflictException.class, () -> memberService.addMember(addMemberDto));
+        ConflictException exception = assertThrows(ConflictException.class, () -> organizationMemberService.addMember(addMemberDto));
 
         assertEquals("User with id '" + userId + "' is already a member of organization '" + orgId + "'", exception.getMessage());
 
         verify(userRepository, never()).findById(any());
-        verify(memberRepository, never()).save(any());
+        verify(organizationMemberRepository, never()).save(any());
     }
 
     @Test
@@ -98,14 +98,14 @@ public class MemberServiceTests {
         addMemberDto.setUserId(userId);
         addMemberDto.setOrganizationId(orgId);
 
-        when(memberRepository.existsByUserIdAndOrganizationId(userId, orgId)).thenReturn(false);
+        when(organizationMemberRepository.existsByUserIdAndOrganizationId(userId, orgId)).thenReturn(false);
 
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> memberService.addMember(addMemberDto));
+        assertThrows(ResourceNotFoundException.class, () -> organizationMemberService.addMember(addMemberDto));
 
         verify(organizationRepository, never()).findById(any());
-        verify(memberRepository, never()).save(any());
+        verify(organizationMemberRepository, never()).save(any());
     }
 
     @Test
@@ -120,36 +120,36 @@ public class MemberServiceTests {
         UserEntity userEntity = new UserEntity();
         userEntity.setId(userId);
 
-        when(memberRepository.existsByUserIdAndOrganizationId(userId, orgId)).thenReturn(false);
+        when(organizationMemberRepository.existsByUserIdAndOrganizationId(userId, orgId)).thenReturn(false);
         when(userRepository.findById(userId)).thenReturn(Optional.of(userEntity));
         when(organizationRepository.findById(orgId)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> memberService.addMember(addMemberDto));
+        assertThrows(ResourceNotFoundException.class, () -> organizationMemberService.addMember(addMemberDto));
 
-        verify(memberRepository, never()).save(any());
+        verify(organizationMemberRepository, never()).save(any());
     }
 
     @Test
     void deleteMemberSuccessTest() {
         UUID memberId = UUID.randomUUID();
-        MemberEntity memberEntity = new MemberEntity();
-        memberEntity.setId(memberId);
+        OrganizationMemberEntity organizationMemberEntity = new OrganizationMemberEntity();
+        organizationMemberEntity.setId(memberId);
 
-        when(memberRepository.findById(memberId)).thenReturn(Optional.of(memberEntity));
+        when(organizationMemberRepository.findById(memberId)).thenReturn(Optional.of(organizationMemberEntity));
 
-        memberService.removeMember(memberId);
+        organizationMemberService.removeMember(memberId);
 
-        verify(memberRepository, times(1)).delete(memberEntity);
+        verify(organizationMemberRepository, times(1)).delete(organizationMemberEntity);
     }
 
     @Test
     void removeMemberNotFoundTest() {
         UUID memberId = UUID.randomUUID();
 
-        when(memberRepository.findById(memberId)).thenReturn(Optional.empty());
+        when(organizationMemberRepository.findById(memberId)).thenReturn(Optional.empty());
 
-        assertThrows(ResourceNotFoundException.class, () -> memberService.removeMember(memberId));
+        assertThrows(ResourceNotFoundException.class, () -> organizationMemberService.removeMember(memberId));
 
-        verify(memberRepository, never()).delete(any());
+        verify(organizationMemberRepository, never()).delete(any());
     }
 }

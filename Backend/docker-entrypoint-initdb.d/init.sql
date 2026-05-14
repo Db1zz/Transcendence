@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS roles (
     FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS members (
+CREATE TABLE IF NOT EXISTS organization_members (
     id UUID PRIMARY KEY,
     organization_id UUID NOT NULL,
     user_id UUID NOT NULL,
@@ -80,13 +80,13 @@ CREATE TABLE IF NOT EXISTS members (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS member_roles (
+CREATE TABLE IF NOT EXISTS organization_member_roles (
     member_id UUID NOT NULL,
     role_id UUID NOT NULL,
 
     PRIMARY KEY (member_id, role_id),
 
-    FOREIGN KEY (member_id) REFERENCES members(id) ON DELETE CASCADE,
+    FOREIGN KEY (member_id) REFERENCES organization_members(id) ON DELETE CASCADE,
     FOREIGN KEY (role_id) REFERENCES  roles(id) ON DELETE CASCADE
 );
 

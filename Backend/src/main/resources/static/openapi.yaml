@@ -218,6 +218,22 @@ paths:
           description: "Invalid access token"
 
   /organizations:
+    get:
+      summary: "Get all servers (organizations) the current user is a member of"
+      operationId: getMyOrganizations
+      security:
+        - bearerAuth: [ ]
+      responses:
+        200:
+          description: "List of user's servers"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrganizationDto'
+        401:
+          description: "Unauthorized"
     post:
       summary: "Creates an organization with specific name"
       operationId: createOrganization
@@ -258,6 +274,31 @@ paths:
           description: "Forbidden – not the owner or insufficient permissions"
         404:
           description: "Organization not found"
+
+  /organizations/{id}/channels:
+    get:
+      summary: "Get all channels inside a specific server (organization)"
+      operationId: getOrganizationChannels
+      parameters:
+        - name: id
+          in: path
+          description: "The organization ID"
+          required: true
+          schema:
+            $ref: '#/components/schemas/OrganizationId'
+      security:
+        - bearerAuth: [ ]
+      responses:
+        200:
+          description: "List of server channels"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ServerChannelDto'
+        404:
+          description: "Server not found"
 
   /channels:
     post:
@@ -1034,3 +1075,35 @@ components:
           format: int64
           example: 1776965532804
           description: "Unix timestamp in milliseconds when the token expires"
+
+    OrganizationDto:
+      type: object
+      description: "Server (Organization) data"
+      properties:
+        id:
+          $ref: '#/components/schemas/OrganizationId'
+        name:
+          type: string
+        ownerId:
+          $ref: '#/components/schemas/UserId'
+        iconUrl:
+          type: string
+          nullable: true
+          description: "Optional URL for the server's icon"
+        createdAt:
+          type: string
+          format: date-time
+
+    ServerChannelDto:
+      type: object
+      description: "Channel data specific to a Server"
+      properties:
+        id:
+          $ref: '#/components/schemas/ChannelId'
+        name:
+          type: string
+        type:
+          type: string
+          enum: [TEXT, VOICE]
+        organizationId:
+          $ref: '#/components/schemas/OrganizationId'

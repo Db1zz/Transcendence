@@ -4,17 +4,17 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "member_roles")
+@Table(name = "organization_member_roles")
 @Builder
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
-public class MemberRoleEntity {
+public class OrganizationMemberRoleEntity {
     @EmbeddedId
-    private MemberRoleId id;
+    private OrganizationMemberRoleId id;
 
     @MapsId("memberId")
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
-    private MemberEntity member;
+    private OrganizationMemberEntity member;
 
     @MapsId("roleId")
     @ManyToOne(fetch = FetchType.LAZY)
