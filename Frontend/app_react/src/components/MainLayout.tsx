@@ -9,13 +9,16 @@ import { HeaderBar } from "./navigation/HeaderBar";
 import { LeftBar } from "./navigation/LeftBar";
 import RightBar from "./navigation/RightBar";
 import { VoiceView } from "./VoiceView";
-import { useCallContext } from "../contexts/CallContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import { ServerLeftBar, ChannelCategory } from "./ServerLeftBar";
 import { ServerHeader } from "./ServerHeader";
 import { MemberList, Member } from "./MemberList";
 import api from "../utils/api";
+import { IncomingCallNotification } from "./IncomingCallNotification";
+import { useNotifications } from "../contexts/NotificationContext";
+import { useCall } from "../hooks/useCall";
+import { useCallContext } from "../contexts/CallContext";
 
 const mockCategories: ChannelCategory[] = [
   {
@@ -46,11 +49,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [activeView, setActiveView] = useState<
     "friends" | "chat" | "voice" | "server"
   >("friends");
-  const { activeCall } = useCallContext();
+  const { incomingCall, setIncomingCall } = useNotifications();
   const [activeDmChannelId, setActiveDmChannelId] = useState<string | null>(null);
   const [activeDmName, setActiveDmName] = useState<string>("");
   const [, setActiveServerId] = useState<string | null>(null);
   const [activeServerChannelId, setActiveServerChannelId] = useState<string>("general");
+  const { joinOrCreateRoom } = useCall();
+  const { activeCall } = useCallContext();
 
   const { user, loading } = useAuth();
 
@@ -60,8 +65,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   }, []);
 
   useEffect(() => {
-    if (activeCall) setActiveView("voice");
-  }, [activeCall]);
+      if (activeCall) {
+        console.log("zxc");
+        setActiveView("voice");
+      }
+    }, [activeCall]);
 
   const handleViewChange = (view: "friends" | "chat" | "voice" | "server") => {
     setActiveView(view);
@@ -175,6 +183,16 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           </div>
         </main>
       </div>
+        {incomingCall && (
+        <IncomingCallNotification
+          event={incomingCall}
+          onAnswer={(roomId) => {
+            setIncomingCall(null);
+            joinOrCreateRoom(roomId);
+          }}
+          onReject={() => setIncomingCall(null)}
+        />
+      )}
     </div>
   );
 };

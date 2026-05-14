@@ -2,8 +2,8 @@ import React, { createContext, useContext, useState } from "react";
 import { type ReactNode } from "react";
 
 type CallData = {
-  // callerId: string;
-  // invitedUsers: [string] | null;
+  // callerId: string; ?
+  // invitedUsers: [string] | null; ?
   roomId: string;
   signalingServerAddress: string;
   stunAddress: string;
@@ -20,7 +20,9 @@ const CallContext = createContext<CallContextType | undefined>(undefined);
 export const CallProvider = ({ children }: { children: ReactNode }) => {
   const [activeCall, setActiveCall] = useState<CallData | null>(null);
 
-  const startCall = (data: CallData) => setActiveCall(data);
+  const startCall = (data: CallData) => {
+    setActiveCall(data);
+  }
   const endCall = () => setActiveCall(null);
 
   return (

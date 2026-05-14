@@ -8,6 +8,8 @@ type NotificationContextType = {
     markAsRead: (id: string) => void;
     latestToast: any | null;
     setActiveTarget: (id: string | null) => void;
+    setIncomingCall: (call: any | null) => void;
+    incomingCall: any | null;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -17,6 +19,7 @@ export function NotificationProvider({ children, notifyServerAddr }: { children:
     
     const [unreadIds, setUnreadIds] = useState<Record<string, string[]>>({});
     const [latestToast, setLatestToast] = useState<any | null>(null);
+    const [incomingCall, setIncomingCall] = useState<any | null>(null);
     
     const activeTargetRef = useRef<string | null>(null);
     const tokenRef = useRef<string | null>(null);
@@ -30,6 +33,9 @@ export function NotificationProvider({ children, notifyServerAddr }: { children:
         try {
             const inner = typeof item.payload === 'string' ? JSON.parse(item.payload) : item.payload;
             if (item.scope === "DM" || item.scope === "SERVER_CHANNEL" || item.scope === "GROUP_CHANNEL") {
+                if (item.etype === "JOIN_CALL_CREATED") {
+                    return inner.room_id;
+                }
                 return inner.channel_id;
             }
         } catch (e) {
@@ -63,6 +69,11 @@ export function NotificationProvider({ children, notifyServerAddr }: { children:
         client.onMessageReceived = (event: any) => {
             const targetId = getTargetId(event);
             if (!targetId) return;
+
+            if (event.etype === "JOIN_CALL_CREATED") {
+                setIncomingCall(event);
+                return;
+            }
 
             if (targetId === activeTargetRef.current) {
                 if (tokenRef.current) {
@@ -119,7 +130,7 @@ export function NotificationProvider({ children, notifyServerAddr }: { children:
     };
 
     return (
-        <NotificationContext.Provider value={{ getUnreadCount, markAsRead, latestToast, setActiveTarget }}>
+        <NotificationContext.Provider value={{ getUnreadCount, markAsRead, latestToast, setActiveTarget, setIncomingCall, incomingCall }}>
             {children}
             
             {latestToast && (

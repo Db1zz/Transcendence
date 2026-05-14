@@ -5,7 +5,7 @@ export const useCall = () => {
   const { startCall } = useCallContext();
   const { user } = useAuth();
 
-  const callToAUser = async (calleeId: string) => {
+  const joinOrCreateRoom = async (calleeId: string) => {
     const response = await fetch('http://localhost:8080/api/voice/join', {
     method: "POST",
     credentials: "include",
@@ -32,13 +32,7 @@ export const useCall = () => {
     });
   };
 
-  const joinCall = async () => {
-    // startCall({
-    // });
-  };
-
   return {
-    callToAUser,
-    joinCall,
+    joinOrCreateRoom
   };
 };
