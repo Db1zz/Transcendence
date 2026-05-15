@@ -8,9 +8,9 @@ type WebRtcSessionCallbacks = {
 
 export class WebRtcSession {
   public roomId: string;
-  public signalingServerSocket: WebSocket | null;
-  public peers: Map<string, RTCPeerConnection>;
-  public localStream: void | MediaStream | null;
+  public signalingServerSocket: WebSocket | null = null;
+  public peers: Map<string, RTCPeerConnection> = new Map();
+  public localStream: MediaStream | null = null;
 
   private stunAddress: string;
   private signalingServerAddress: URL;
@@ -23,157 +23,158 @@ export class WebRtcSession {
     callbacks: WebRtcSessionCallbacks = {},
   ) {
     this.roomId = roomId;
-    this.signalingServerSocket = null;
-    this.peers = new Map<string, RTCPeerConnection>();
     this.signalingServerAddress = new URL(signalingServerAddress);
     this.signalingServerAddress.searchParams.append("roomId", roomId);
     this.stunAddress = stunAddress;
-    this.localStream = null;
     this.callbacks = callbacks;
   }
 
-  public destroy() {
-    console.log("Destroying WebRtc session...");
+  public async start() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+      this.localStream = stream;
+      this.callbacks.onLocalStream?.(stream);
 
-    if (this.signalingServerSocket != null) {
-      this.signalingServerSocket.close();
+      this.signalingServerSocket = new WebSocket(this.signalingServerAddress);
+      this.signalingServerSocket.onmessage = (msg) => this.onMessageCallback(msg);
+      
+      // Handle socket errors or unexpected closures
+      this.signalingServerSocket.onclose = () => this.destroy();
+    } catch (err) {
+      console.error("Failed to acquire media or connect to signaling:", err);
     }
   }
 
-  public async start() {
-    navigator.mediaDevices
-      .getUserMedia({ audio: true, video: true })
-      .then((stream) => {
-        this.localStream = stream;
+  public destroy() {
+    console.log("Destroying WebRtc session and cleaning hardware...");
 
-        if (this.callbacks.onLocalStream) {
-          this.callbacks.onLocalStream(this.localStream);
-        }
+    // 1. Close signaling socket
+    if (this.signalingServerSocket) {
+      this.signalingServerSocket.close();
+      this.signalingServerSocket = null;
+    }
 
-        this.signalingServerSocket = new WebSocket(this.signalingServerAddress);
-        this.signalingServerSocket!.addEventListener("message", (message) =>
-          this.onMessageCallback(message),
-        );
-      });
+    // 2. Stop all camera/mic tracks
+    this.localStream?.getTracks().forEach(track => track.stop());
+    this.localStream = null;
+
+    // 3. Close and clear all peer connections
+    this.peers.forEach((pc, peerId) => {
+      pc.close();
+      this.callbacks.onRemoteStreamDelete?.(peerId);
+    });
+    this.peers.clear();
   }
 
-  private onMessageCallback(message: MessageEvent) {
-    console.log("Message data: ", message.data);
+  private async onMessageCallback(message: MessageEvent) {
     const pm = JSON.parse(message.data) as RtcSignal;
 
-    switch (pm.type) {
-      case "new-connection": {
-        this.handleNewConnectionEvent(pm.from);
-        break;
+    try {
+      switch (pm.type) {
+        case "new-connection":
+          await this.handleNewConnectionEvent(pm.from);
+          break;
+        case "user-disconnection":
+          this.handleUserDisconnectionEvent(pm.from);
+          break;
+        case "offer":
+          await this.handleOfferEvent(pm.from, pm.sdp);
+          break;
+        case "answer":
+          await this.handleAnswerEvent(pm.from, pm.sdp);
+          break;
+        case "ice":
+          await this.handleIceEvent(pm.from, pm.candidate);
+          break;
       }
-      case "user-disconnection": {
-        this.handleUserDisconnectionEvent(pm.from);
-        break;
-      }
-      case "offer": {
-        this.handleOfferEvent(pm.from, pm.sdp);
-        break;
-      }
-      case "answer": {
-        this.handleAnswerEvent(pm.from, pm.sdp);
-        break;
-      }
-      case "ice": {
-        this.handleIceEvent(pm.from, pm.candidate);
-        break;
-      }
+    } catch (err) {
+      console.error(`Error handling ${pm.type} from ${pm.from}:`, err);
     }
   }
 
   private async handleNewConnectionEvent(from: string) {
     const pc = this.createPeerConnection(from);
-
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
-    const message = { type: "offer", to: from, sdp: pc.localDescription! };
-    this.signalingServerSocket!.send(JSON.stringify(message));
-  }
 
-  private handleUserDisconnectionEvent(from: string) {
-    this.peers.delete(from);
-
-    if (this.callbacks.onRemoteStreamDelete) {
-      this.callbacks.onRemoteStreamDelete(from);
-    }
+    this.sendSignal({ type: "offer", to: from, sdp: pc.localDescription! });
   }
 
   private async handleOfferEvent(from: string, sdp: RTCSessionDescriptionInit) {
     const pc = this.createPeerConnection(from);
-
-    pc.setRemoteDescription(sdp);
+    
+    // IMPORTANT: must await setRemoteDescription before creating answer
+    await pc.setRemoteDescription(new RTCSessionDescription(sdp));
     const answer = await pc.createAnswer();
     await pc.setLocalDescription(answer);
 
-    const message = { type: "answer", to: from, sdp: pc.localDescription! };
-    this.signalingServerSocket!.send(JSON.stringify(message));
+    this.sendSignal({ type: "answer", to: from, sdp: pc.localDescription! });
   }
 
-  private async handleAnswerEvent(
-    from: string,
-    sdp: RTCSessionDescriptionInit,
-  ) {
+  private async handleAnswerEvent(from: string, sdp: RTCSessionDescriptionInit) {
     const pc = this.peers.get(from);
-    if (pc === undefined) {
-      throw new Error("TODO2");
-    }
+    if (!pc) return;
 
-    pc.setRemoteDescription(sdp);
-  }
-
-  private async handleIceEvent(from: string, candidate: RTCIceCandidateInit) {
-    if (candidate == null) {
+    if (pc.signalingState === "stable") {
+      console.warn("Received answer but connection is already stable.");
       return;
     }
 
-    const pc = this.peers.get(from);
-    if (pc === undefined) {
-      throw new Error("TODO3 WTf?");
-    }
+    await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+  }
 
-    await pc.addIceCandidate(candidate);
+  private async handleIceEvent(from: string, candidate: RTCIceCandidateInit) {
+    const pc = this.peers.get(from);
+    if (!pc || !candidate) return;
+
+    if (pc.remoteDescription) {
+      await pc.addIceCandidate(new RTCIceCandidate(candidate));
+    }
+  }
+
+  private handleUserDisconnectionEvent(from: string) {
+    const pc = this.peers.get(from);
+    if (pc) {
+      pc.close();
+      this.peers.delete(from);
+    }
+    this.callbacks.onRemoteStreamDelete?.(from);
   }
 
   private createPeerConnection(peerId: string): RTCPeerConnection {
-    const pcConfig: RTCConfiguration = {
+    if (this.peers.has(peerId)) {
+      this.peers.get(peerId)?.close();
+    }
+
+    const pc = new RTCPeerConnection({
       iceServers: [{ urls: this.stunAddress }],
+    });
+
+    this.localStream?.getTracks().forEach((track) => {
+      pc.addTrack(track, this.localStream!);
+    });
+
+    pc.ontrack = (event) => {
+      this.callbacks.onRemoteStream?.(peerId, event.streams[0]);
     };
-    const pc = new RTCPeerConnection(pcConfig);
 
-    this.localStream!.getTracks().forEach((track) =>
-      pc.addTrack(track, this.localStream!),
-    );
-
-    pc.addEventListener("track", (event) =>
-      this.onTrackCallback(peerId, event),
-    );
-    pc.addEventListener("icecandidate", (event) =>
-      this.onIceCandidateCallback(event, peerId),
-    );
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        this.sendSignal({
+          type: "ice",
+          to: peerId,
+          candidate: event.candidate.toJSON(),
+        });
+      }
+    };
 
     this.peers.set(peerId, pc);
-
     return pc;
   }
 
-  private onIceCandidateCallback(event: RTCPeerConnectionIceEvent, to: string) {
-    if (event.candidate) {
-      const message = {
-        type: "ice",
-        to: to,
-        candidate: event.candidate.toJSON(),
-      };
-      this.signalingServerSocket!.send(JSON.stringify(message));
-    }
-  }
-
-  private onTrackCallback(from: string, event: RTCTrackEvent) {
-    if (this.callbacks.onRemoteStream) {
-      this.callbacks.onRemoteStream(from, event.streams[0]);
+  private sendSignal(message: any) {
+    if (this.signalingServerSocket?.readyState === WebSocket.OPEN) {
+      this.signalingServerSocket.send(JSON.stringify(message));
     }
   }
 }

@@ -1,41 +1,51 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { WebRtcSession } from "../services/webrtc/session";
 
-export function useWebRtc(
-  roomId: string,
-  signalingServerAddress: string,
-  stunAddress: string,
-) {
+export function useWebRtc() {
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
-  const [remoteStreams, setRemoteStream] = useState<Map<string, MediaStream>>(
-    new Map(),
-  );
+  const [remoteStreams, setRemoteStream] = useState<Map<string, MediaStream>>(new Map());
   const webRtcSessionRef = useRef<WebRtcSession | null>(null);
 
-  useEffect(() => {
+  const leave = useCallback(() => {
+    localStream?.getTracks().forEach((track) => track.stop());
+    
+    webRtcSessionRef.current?.destroy();
+    webRtcSessionRef.current = null;
+
+    setLocalStream(null);
+    setRemoteStream(new Map());
+  }, [localStream]);
+
+  const start = useCallback((roomId: string, signalingAddress: string, stunAddress: string) => {
+    if (webRtcSessionRef.current) return;
+
     webRtcSessionRef.current = new WebRtcSession(
       roomId,
-      signalingServerAddress,
+      signalingAddress,
       stunAddress,
       {
         onLocalStream: setLocalStream,
         onRemoteStream: (peerId, stream) => {
-          setRemoteStream((prev) => new Map(prev.set(peerId, stream)));
+          setRemoteStream((prev) => new Map(prev).set(peerId, stream));
         },
         onRemoteStreamDelete: (peerId) => {
-          setRemoteStream((perv) => {
-            const newMap = new Map(perv);
+          setRemoteStream((prev) => {
+            const newMap = new Map(prev);
             newMap.delete(peerId);
             return newMap;
           });
         },
       },
     );
-    webRtcSessionRef.current.start();
 
+    webRtcSessionRef.current.start();
+  }, []);
+
+  useEffect(() => {
     return () => {
       webRtcSessionRef.current?.destroy();
     };
-  }, [roomId, signalingServerAddress, stunAddress]);
-  return { localStream, remoteStreams, webRtcSessionRef };
+  }, []);
+
+  return { localStream, remoteStreams, start, leave };
 }
