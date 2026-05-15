@@ -65,6 +65,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   useEffect(() => {
       if (activeCall) {
         setActiveView("voice");
+      } else {
+        setActiveView("friends");
       }
   }, [activeCall]);
 
