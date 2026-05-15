@@ -17,46 +17,78 @@ import { ServerHeader } from "./ServerHeader";
 import { MemberList, Member } from "./MemberList";
 import api from "../utils/api";
 
-const mockCategories: ChannelCategory[] = [
-  {
-    id: "text",
-    name: "Text Channels",
-    channels: [
-      { id: "general", name: "general", type: "text" },
-      { id: "help", name: "help", type: "text" },
-    ],
-  },
-  {
-    id: "voice",
-    name: "Voice Channels",
-    channels: [{ id: "lounge", name: "Lounge", type: "voice" }],
-  },
-];
 const mockMembers: Member[] = [
   { id: "1", name: "Kaneki", status: "online", role: "Admin" },
   { id: "2", name: "Touka", status: "idle", role: "Staff" },
   { id: "3", name: "Hide", status: "offline" },
 ];
+
 interface MainLayoutProps {
   children: React.ReactNode;
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const { t } = useTranslation();
-  const [activeView, setActiveView] = useState<
-    "friends" | "chat" | "voice" | "server"
-  >("friends");
+  const [activeView, setActiveView] = useState<"friends" | "chat" | "voice" | "server">("friends");
   const { activeCall } = useCallContext();
   const [activeDmChannelId, setActiveDmChannelId] = useState<string | null>(null);
   const [activeDmName, setActiveDmName] = useState<string>("");
-  const [, setActiveServerId] = useState<string | null>(null);
-  const [activeServerChannelId, setActiveServerChannelId] = useState<string>("general");
-
+  
+  const [activeServerId, setActiveServerId] = useState<string | null>(null);
+  const [activeServerName, setActiveServerName] = useState<string>("");
+  const [activeServerChannelId, setActiveServerChannelId] = useState<string | null>(null);
+  const [activeServerChannelName, setActiveServerChannelName] = useState<string>("");
+  const [serverCategories, setServerCategories] = useState<ChannelCategory[]>([]);
+  
   const { user, loading } = useAuth();
+
+  const fetchServerData = async (serverId: string) => {
+    try {
+      const response = await api.get(`/organizations/${serverId}/channels`);
+      const channels = response.data;
+
+      const textChannels = channels
+        .filter((c: any) => c.type === "TEXT")
+        .map((c: any) => ({ id: c.id, name: c.name, type: "text" }));
+
+      const voiceChannels = channels
+        .filter((c: any) => c.type === "VOICE")
+        .map((c: any) => ({ id: c.id, name: c.name, type: "voice" }));
+
+      setServerCategories([
+        { id: "text", name: "Text Channels", channels: textChannels },
+        { id: "voice", name: "Voice Channels", channels: voiceChannels },
+      ]);
+
+      const savedChannelId = localStorage.getItem("activeServerChannelId");
+      const savedChannelName = localStorage.getItem("activeServerChannelName");
+
+      if (savedChannelId && textChannels.some((c: any) => c.id === savedChannelId)) {
+        setActiveServerChannelId(savedChannelId);
+        setActiveServerChannelName(savedChannelName || "");
+      } else if (textChannels.length > 0) {
+        setActiveServerChannelId(textChannels[0].id);
+        setActiveServerChannelName(textChannels[0].name);
+      } else {
+        setActiveServerChannelId(null);
+        setActiveServerChannelName("");
+      }
+    } catch (error) {
+      console.error("Failed to fetch server channels", error);
+      setServerCategories([]);
+    }
+  };
 
   useEffect(() => {
     const savedView = localStorage.getItem("activeView") as any;
     if (savedView) setActiveView(savedView);
+    const savedServerId = localStorage.getItem("activeServerId");
+    const savedServerName = localStorage.getItem("activeServerName");
+    if (savedView === "server" && savedServerId && savedServerName) {
+      setActiveServerId(savedServerId);
+      setActiveServerName(savedServerName);
+      fetchServerData(savedServerId);
+    }
   }, []);
 
   useEffect(() => {
@@ -70,15 +102,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
   const handleOpenChatFromFriendList = async (friend: Friend) => {
     if (!user) return;
-    
     try {
       const response = await api.post("/channels", {
         name: null,
         channelType: "TEXT",
         organizationId: null,
-        memberIds: [user.id, friend.id]
+        memberIds: [user.id, friend.id],
       });
-      
       setActiveDmChannelId(response.data.id);
       setActiveDmName(friend.name);
       handleViewChange("chat");
@@ -93,9 +123,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     handleViewChange("chat");
   };
 
-  const handleServerClick = (serverId: string) => {
+  const handleServerClick = async (serverId: string, serverName: string) => {
     setActiveServerId(serverId);
+    setActiveServerName(serverName);
+    localStorage.setItem("activeServerId", serverId);
+    localStorage.setItem("activeServerName", serverName);
+    
     handleViewChange("server");
+    await fetchServerData(serverId);
   };
 
   if (loading) return null;
@@ -103,7 +138,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   return (
     <div className="h-screen flex flex-col overflow-hidden relative">
       {activeView === "server" ? (
-        <ServerHeader channelName={activeServerChannelId} />
+        <ServerHeader channelName={activeServerChannelName || "general"} />
       ) : (
         <HeaderBar type={activeView === "chat" ? "messages" : "friends"} />
       )}
@@ -121,10 +156,15 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           <div className="w-full md:w-1/5 flex-shrink-0 overflow-hidden relative">
             {activeView === "server" ? (
               <ServerLeftBar
-                serverName="monki"
-                categories={mockCategories}
-                activeChannelId={activeServerChannelId}
-                onSelectChannel={(c) => setActiveServerChannelId(c.id)}
+                serverName={activeServerName}
+                categories={serverCategories}
+                activeChannelId={activeServerChannelId || ""}
+                onSelectChannel={(c) => {
+                  setActiveServerChannelId(c.id);
+                  setActiveServerChannelName(c.name);
+                  localStorage.setItem("activeServerChannelId", c.id);
+                  localStorage.setItem("activeServerChannelName", c.name);
+                }}
               />
             ) : (
               <LeftBar
@@ -141,12 +181,18 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           <div className="hidden md:flex w-3/5 min-h-0 overflow-hidden">
             <div className="flex-1 min-h-0">
               {activeView === "server" ? (
-                <Chat
-                  personName={`# ${activeServerChannelId}`}
-                  userId={user?.id || ""}
-                  channelId={activeServerChannelId}
-                  hideHeader={true}
-                />
+                activeServerChannelId ? (
+                  <Chat
+                    personName={`# ${activeServerChannelName}`}
+                    userId={user?.id || ""}
+                    channelId={activeServerChannelId}
+                    hideHeader={true}
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-brand-beige">
+                    No text channels available.
+                  </div>
+                )
               ) : activeView === "friends" ? (
                 <FriendsView onOpenChat={handleOpenChatFromFriendList} />
               ) : activeView === "voice" ? (

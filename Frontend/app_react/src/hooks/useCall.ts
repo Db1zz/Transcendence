@@ -6,20 +6,20 @@ export const useCall = () => {
   const { user } = useAuth();
 
   const callToAUser = async (calleeId: string) => {
-    const response = await fetch('http://localhost:8080/api/voice/join', {
-    method: "POST",
-    credentials: "include",
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-    	callerId : user?.id,
-    	invitedUsers: [calleeId]
-    	})
-    })
+    const response = await fetch("http://localhost:8080/api/voice/join", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        callerId: user?.id,
+        invitedUsers: [calleeId],
+      }),
+    });
 
     if (!response.ok) {
-    	throw Error("TODO");
+      throw Error("TODO");
     }
 
     const responseData = await response.json();

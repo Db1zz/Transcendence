@@ -57,7 +57,6 @@ public class OrganizationService {
         organizationRepository.save(organization);
 
         OrganizationMemberEntity ownerMember = new OrganizationMemberEntity();
-        ownerMember.setId(UUID.randomUUID());
         ownerMember.setOrganization(organization);
         ownerMember.setUser(owner);
         ownerMember.setJoinedAt(Instant.now());

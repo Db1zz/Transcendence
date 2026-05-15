@@ -16,15 +16,15 @@ const root = ReactDOM.createRoot(
 root.render(
   <AuthProvider>
     <Router>
-        <NotificationProvider notifyServerAddr="ws://localhost:6969">
+      <NotificationProvider notifyServerAddr="ws://localhost:6969">
         <Routes>
-            <Route path="/" element={<HomePage />}></Route>
-            <Route path="/login" element={<LoginPage />}></Route>
-            <Route path="/info" element={<ShowInfo />}></Route>
-            <Route path="/testGrisha" element={<TestFriendsView />}></Route>
-            <Route path="/signup" element={<SignupPage />}></Route>
-          </Routes>
-        </NotificationProvider>
+          <Route path="/" element={<HomePage />}></Route>
+          <Route path="/login" element={<LoginPage />}></Route>
+          <Route path="/info" element={<ShowInfo />}></Route>
+          <Route path="/testGrisha" element={<TestFriendsView />}></Route>
+          <Route path="/signup" element={<SignupPage />}></Route>
+        </Routes>
+      </NotificationProvider>
     </Router>
   </AuthProvider>,
 );

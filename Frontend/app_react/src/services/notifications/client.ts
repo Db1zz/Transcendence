@@ -16,9 +16,9 @@ export class NotifyClient {
       const response = await fetch(`http://127.0.0.1:9921/notification`, {
         method: "GET",
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
       });
 
       if (!response.ok) throw new Error("Failed to fetch notifications");
@@ -29,23 +29,26 @@ export class NotifyClient {
     }
   }
 
-  public async markNotificationsAsRead(token: string, notificationIds: string[]): Promise<boolean> {
-      if (notificationIds.length === 0) return true;
+  public async markNotificationsAsRead(
+    token: string,
+    notificationIds: string[],
+  ): Promise<boolean> {
+    if (notificationIds.length === 0) return true;
 
-      try {
-          const response = await fetch(`http://127.0.0.1:9921/notification/read`, {
-              method: "POST",
-              headers: {
-                  'Authorization': `Bearer ${token}`,
-                  'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({ notification_ids: notificationIds })            
-          });
-          return response.ok;
-      } catch (err) {
-          console.error("Failed to mark notifications as read:", err);
-          return false;
-      }
+    try {
+      const response = await fetch(`http://127.0.0.1:9921/notification/read`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ notification_ids: notificationIds }),
+      });
+      return response.ok;
+    } catch (err) {
+      console.error("Failed to mark notifications as read:", err);
+      return false;
+    }
   }
 
   public async start(): Promise<string | null> {

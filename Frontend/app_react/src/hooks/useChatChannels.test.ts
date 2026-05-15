@@ -12,7 +12,7 @@ const mockedUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 describe("useChatChannels Hook", () => {
   const mockChatChannels = [
     {
-      channelId: "channel-1", 
+      channelId: "channel-1",
       otherUserId: "user-2",
       otherUserName: "Touka",
       otherUserPicture: "touka.png",
