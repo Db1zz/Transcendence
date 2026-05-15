@@ -19,19 +19,19 @@ const Chat: React.FC<ChatProps> = ({
   hideHeader = false,
 }) => {
   const { t } = useTranslation();
-  
-  const { 
-    messages: wsMessages, 
-    sendMessage, 
+
+  const {
+    messages: wsMessages,
+    sendMessage,
     connected,
-    loadOlderMessages, 
-    hasMore 
+    loadOlderMessages,
+    hasMore,
   } = useChat(channelId);
-  
+
   const [inputValue, setInputValue] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const prevScrollHeightRef = useRef<number>(0); 
+  const prevScrollHeightRef = useRef<number>(0);
   const handleScroll = () => {
     const container = messagesContainerRef.current;
     if (!container) return;
@@ -45,8 +45,9 @@ const Chat: React.FC<ChatProps> = ({
     const container = messagesContainerRef.current;
     if (!container) return;
     if (prevScrollHeightRef.current > 0) {
-      container.scrollTop = container.scrollHeight - prevScrollHeightRef.current;
-      prevScrollHeightRef.current = 0; 
+      container.scrollTop =
+        container.scrollHeight - prevScrollHeightRef.current;
+      prevScrollHeightRef.current = 0;
     } else {
       container.scrollTop = container.scrollHeight;
     }
@@ -76,18 +77,19 @@ const Chat: React.FC<ChatProps> = ({
       {!hideHeader && (
         <div className="bg-brand-peach border-y border-brand-green text-white p-4 shadow-md">
           <h2 className="text-xl font-bold">{personName}</h2>
-          <p className={`text-sm ${connected ? "text-green-100" : "text-red-100"}`}>
+          <p
+            className={`text-sm ${connected ? "text-green-100" : "text-red-100"}`}
+          >
             {connected ? t("chat.online") : t("chat.connecting")}
           </p>
         </div>
       )}
-      
+
       <div
         ref={messagesContainerRef}
-        onScroll={handleScroll} // <--- ADDED THE SCROLL LISTENER HERE
+        onScroll={handleScroll}
         className="flex-1 min-h-0 overflow-y-auto scrollbar-hide p-4 space-y-4"
       >
-        {/* We can leave a tiny loading indicator here that only shows when scrolling up */}
         {hasMore && wsMessages.length > 0 && (
           <div className="text-center text-xs text-brand-beige opacity-50 my-2">
             Loading...

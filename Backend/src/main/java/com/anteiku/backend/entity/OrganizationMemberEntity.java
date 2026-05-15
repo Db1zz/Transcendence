@@ -8,10 +8,10 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "members")
+@Table(name = "organization_members")
 @Builder
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
-public class MemberEntity {
+public class OrganizationMemberEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;

@@ -17,29 +17,34 @@ export const useChat = (channelId: string) => {
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
 
-  const loadHistory = useCallback(async (pageNumber: number, isActive: boolean = true) => {
-    if (!channelId) return;
+  const loadHistory = useCallback(
+    async (pageNumber: number, isActive: boolean = true) => {
+      if (!channelId) return;
 
-    try {
-      const response = await api.get(`/chat/channels/${channelId}/messages?page=${pageNumber}&size=50`);
+      try {
+        const response = await api.get(
+          `/chat/channels/${channelId}/messages?page=${pageNumber}&size=50`,
+        );
 
-      if (!isActive) return;
+        if (!isActive) return;
 
-      if (response.data.length < 50) {
-        setHasMore(false);
+        if (response.data.length < 50) {
+          setHasMore(false);
+        }
+
+        const fetchedMessages = response.data.reverse();
+
+        setMessages((prev) => {
+          if (pageNumber === 0) return fetchedMessages;
+          return [...fetchedMessages, ...prev];
+        });
+      } catch (error) {
+        console.error("Failed to load messages", error);
+        if (isActive && pageNumber === 0) setMessages([]);
       }
-
-      const fetchedMessages = response.data.reverse();
-
-      setMessages((prev) => {
-        if (pageNumber === 0) return fetchedMessages;
-        return [...fetchedMessages, ...prev];
-      });
-    } catch (error) {
-      console.error("Failed to load messages", error);
-      if (isActive && pageNumber === 0) setMessages([]);
-    }
-  }, [channelId]);
+    },
+    [channelId],
+  );
 
   useEffect(() => {
     let isActive = true;
@@ -110,6 +115,6 @@ export const useChat = (channelId: string) => {
     sendMessage,
     connected,
     loadOlderMessages,
-    hasMore
+    hasMore,
   };
 };

@@ -1,7 +1,4 @@
-import {
-  BrowserRouter as Router,
-  Outlet,
-} from "react-router-dom";
+import { BrowserRouter as Router, Outlet } from "react-router-dom";
 import "./index.css";
 import LoginPage from "./pages/LoginPage";
 
