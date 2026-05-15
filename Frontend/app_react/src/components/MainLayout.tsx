@@ -18,7 +18,6 @@ import api from "../utils/api";
 import { IncomingCallNotification } from "./IncomingCallNotification";
 import { useNotifications } from "../contexts/NotificationContext";
 import { useCall } from "../hooks/useCall";
-import { useCallContext } from "../contexts/CallContext";
 
 const mockCategories: ChannelCategory[] = [
   {
@@ -54,8 +53,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [activeDmName, setActiveDmName] = useState<string>("");
   const [, setActiveServerId] = useState<string | null>(null);
   const [activeServerChannelId, setActiveServerChannelId] = useState<string>("general");
-  const { joinOrCreateRoom } = useCall();
-  const { activeCall } = useCallContext();
+  const { activeCall, joinOrCreateRoom } = useCall();
 
   const { user, loading } = useAuth();
 
@@ -66,10 +64,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
   useEffect(() => {
       if (activeCall) {
-        console.log("zxc");
         setActiveView("voice");
       }
-    }, [activeCall]);
+  }, [activeCall]);
 
   const handleViewChange = (view: "friends" | "chat" | "voice" | "server") => {
     setActiveView(view);

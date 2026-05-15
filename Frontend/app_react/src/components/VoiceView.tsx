@@ -5,6 +5,7 @@ import React, {
   useCallback,
   useMemo,
 } from "react";
+
 import {
   Mic,
   MicOff,
@@ -13,9 +14,9 @@ import {
   HeadphoneOff,
   Phone,
 } from "lucide-react";
+
 import { useTranslation } from "react-i18next";
-import { useCallContext } from "../contexts/CallContext";
-import { useWebRtc } from "../hooks/useWebRtc";
+import { useCall } from "../hooks/useCall";
 
 const IconMicOn = () => <Mic size={20} />;
 const IconMicOff = () => <MicOff size={20} />;
@@ -76,13 +77,7 @@ const VideoTile: React.FC<VideoTileProps> = ({
 
 export const VoiceView: React.FC = () => {
   const { t } = useTranslation();
-  const callContext = useCallContext();
-  const { endCall } = callContext;
-  const { remoteStreams, localStream } = useWebRtc(
-    callContext.activeCall?.roomId!,
-    callContext.activeCall?.signalingServerAddress!,
-    callContext.activeCall?.stunAddress!,
-  );
+  const { localStream, remoteStreams, leaveRoom } = useCall();
 
   const audioEnabled = false;
   const videoEnabled = false;
@@ -141,7 +136,7 @@ export const VoiceView: React.FC = () => {
       </div>
       <div className="flex items-center rounded-lg border border-brand-brick/70 bg-red-700 px-3 py-2 shadow-sm hover:bg-red-800">
         <button
-          onClick={endCall}
+          onClick={leaveRoom}
           className="w-10 h-10 text-white flex items-center justify-center"
           aria-label={t("voice.endCall")}
         >
