@@ -34,8 +34,21 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
   return (
     <CallContext.Provider value={{ activeCall, localStream, remoteStreams, initiateCall, endCall }}>
       {children}
+      <div className="hidden">
+        {Array.from(remoteStreams.entries()).map(([peerId, stream]) => (
+          <RemoteAudio key={peerId} stream={stream} />
+        ))}
+      </div>
     </CallContext.Provider>
   );
+};
+
+const RemoteAudio = ({ stream }: { stream: MediaStream }) => {
+  const audioRef = React.useRef<HTMLAudioElement>(null);
+  React.useEffect(() => {
+    if (audioRef.current) audioRef.current.srcObject = stream;
+  }, [stream]);
+  return <audio ref={audioRef} autoPlay />;
 };
 
 export const useCallContext = () => {
