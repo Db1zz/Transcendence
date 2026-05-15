@@ -163,6 +163,17 @@ const resources = {
         you: "You",
         user: "User {{id}}",
       },
+      server: {
+        create: {
+          title: "create your server",
+          description:
+            "give your server a name. you can always change it later.",
+          nameLabel: "server name",
+          namePlaceholder: "server",
+          cancel: "cancel",
+          submit: "create",
+        },
+      },
     },
   },
   ru: {
@@ -325,6 +336,17 @@ const resources = {
         you: "Вы",
         user: "Пользователь {{id}}",
       },
+      server: {
+        create: {
+          title: "создать свой сервер",
+          description:
+            "добавьте имя своему серверу. вы всегда можете поменять его позже.",
+          nameLabel: "имя сервера",
+          namePlaceholder: "сервер",
+          cancel: "отмена",
+          submit: "создать",
+        },
+      },
     },
   },
   de: {
@@ -485,6 +507,17 @@ const resources = {
         endCall: "Anruf beenden",
         you: "Du",
         user: "Benutzer {{id}}",
+      },
+      server: {
+        create: {
+          title: "Erstelle deinen Server",
+          description:
+            "Gib deinem neuen Server mit einem Namen. Du kannst ihn später jederzeit ändern.",
+          nameLabel: "Servername",
+          namePlaceholder: "Server",
+          cancel: "Abbrechen",
+          submit: "Erstellen",
+        },
       },
     },
   },

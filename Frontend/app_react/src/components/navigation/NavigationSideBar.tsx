@@ -1,67 +1,72 @@
 "use client";
 
-import React from "react";
-import { NavigationItem } from "./NavigationItem";
-import { MessageSquare } from "lucide-react";
+import React, { useState } from "react";
+import { MessageSquare, Plus } from "lucide-react";
+import { useServers } from "../../hooks/useServers";
+import { CreateServerPopup } from "../CreateServerPopup";
 
 interface NavigationSidebarProps {
-  onChatClick?: () => void;
-  onFriendsClick?: () => void;
-  onServerClick?: (serverId: string) => void;
+  onChatClick: () => void;
+  onFriendsClick: () => void;
+  onServerClick: (serverId: string, serverName: string) => void;
 }
-
-const MOCK_SERVERS = [
-  {
-    id: "1",
-    name: "monki",
-    imageUrl: "https://media.tenor.com/I9qt03YKkjQAAAAe/monkey-thinking.png",
-  },
-  {
-    id: "2",
-    name: "goshan4ik",
-    imageUrl:
-      "https://i.pinimg.com/736x/62/ef/9e/62ef9ed6a92c43292d2e3d67faa62664.jpg",
-  },
-  {
-    id: "3",
-    name: "meow",
-    imageUrl:
-      "https://i.pinimg.com/736x/ad/b4/0a/adb40a610c898a70fb990dc5e224f397.jpg",
-  },
-];
 
 export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
   onChatClick,
   onFriendsClick,
   onServerClick,
 }) => {
+  const { servers, createServer } = useServers();
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+
+  const handleCreateServer = async (name: string) => {
+    const newServer = await createServer(name);
+    if (newServer) {
+      onServerClick(newServer.id, newServer.name);
+    }
+  };
+
   return (
-    <div className="space-y-4 flex flex-col items-center text-primary w-full bg-brand-green py-3 h-full border-r border-brand-peach overflow-hidden">
-      <button
-        onClick={onChatClick}
-        className="group relative flex items-center transition-all duration-150"
-      >
-        <div className="flex h-[48px] w-[48px] rounded-[24px] group-hover:rounded-[16px] transition-all overflow-hidden items-center justify-center bg-brand-beige border border-brand-peach group-hover:border-brand-peach hover:bg-brand-peach shadow-sm hover:shadow-none">
-          <MessageSquare
-            size={24}
-            className="text-brand-green group-hover:text-brand-brick transition-colors duration-200"
-          />
-        </div>
-      </button>
-      <div className="h-[2px] bg-brand-peach rounded-md w-10 mx-auto" />
-      <div className="flex-1 w-full overflow-y-auto overflow-x-hidden">
-        {MOCK_SERVERS.map((chat, index) => (
-          <div key={chat.id} className="mb-4">
-            <NavigationItem
-              id={chat.id}
-              imageUrl={chat.imageUrl}
-              name={chat.name}
-              isActive={index === 0}
-              onClick={() => onServerClick?.(chat.id)}
-            />
-          </div>
+    <>
+      <div className="flex-1 overflow-y-auto scrollbar-hide py-3 space-y-3 bg-brand-peach flex flex-col items-center border-r border-brand-green relative z-20">
+        <button
+          onClick={onChatClick}
+          className="w-12 h-12 rounded-[24px] hover:rounded-[16px] bg-brand-beige flex items-center justify-center text-brand-green transition-all duration-200 shadow-sm"
+        >
+          <MessageSquare size={24} />
+        </button>
+        <div className="w-8 h-[2px] bg-brand-green/20 rounded-full my-2" />
+        {servers.map((server) => (
+          <button
+            key={server.id}
+            onClick={() => onServerClick(server.id, server.name)}
+            className="w-12 h-12 rounded-[24px] hover:rounded-[16px] bg-brand-green text-brand-beige font-bold text-lg flex items-center justify-center transition-all duration-200 shadow-sm overflow-hidden"
+            title={server.name}
+          >
+            {server.iconUrl ? (
+              <img
+                src={server.iconUrl}
+                alt={server.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              server.name.charAt(0).toUpperCase()
+            )}
+          </button>
         ))}
+        <button
+          onClick={() => setIsPopupOpen(true)}
+          className="w-12 h-12 rounded-[24px] hover:rounded-[16px] bg-brand-beige flex items-center justify-center text-brand-green transition-all duration-200 shadow-sm border border-dashed border-brand-green hover:bg-brand-green hover:text-brand-beige"
+          title="Add a Server"
+        >
+          <Plus size={24} />
+        </button>
       </div>
-    </div>
+      <CreateServerPopup
+        isOpen={isPopupOpen}
+        onClose={() => setIsPopupOpen(false)}
+        onCreate={handleCreateServer}
+      />
+    </>
   );
 };

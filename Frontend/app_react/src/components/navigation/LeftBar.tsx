@@ -22,7 +22,7 @@ export const LeftBar: React.FC<LeftBarProps> = ({
       onFriendsClick();
     }
     setActiveTarget(null);
-  }
+  };
   const { t } = useTranslation();
   const { chatChannels, loading, error } = useChatChannels();
 
@@ -54,29 +54,40 @@ export const LeftBar: React.FC<LeftBarProps> = ({
           </div>
           <div className="flex-1 overflow-y-auto space-y-2 scrollbar-thin scrollbar-thumb-brand-green/30 scrollbar-track-transparent">
             {loading ? (
-              <div className="text-brand-green/70 text-sm text-center py-4">{t("friends.loadingChats")}</div>
+              <div className="text-brand-green/70 text-sm text-center py-4">
+                {t("friends.loadingChats")}
+              </div>
             ) : error ? (
-              <div className="text-brand-green/70 text-sm text-center py-4">{error}</div>
+              <div className="text-brand-green/70 text-sm text-center py-4">
+                {error}
+              </div>
             ) : chatChannels.length === 0 ? (
-              <div className="text-brand-green/70 text-sm text-center py-4">{t("friends.noChats")}</div>
+              <div className="text-brand-green/70 text-sm text-center py-4">
+                {t("friends.noChats")}
+              </div>
             ) : (
               chatChannels.map((channel) => (
                 <button
                   key={channel.channelId}
                   type="button"
                   onClick={() => {
-                    onChatChannelClick?.(channel.channelId, channel.otherUserName)
-                    setActiveTarget(channel.channelId)
+                    onChatChannelClick?.(
+                      channel.channelId,
+                      channel.otherUserName,
+                    );
+                    setActiveTarget(channel.channelId);
                   }}
                   className="w-full flex items-center gap-3 rounded-lg border border-brand-green/50 bg-brand-beige/80 px-3 py-2 text-left transition-colors hover:bg-brand-beige hover:border-brand-green"
                 >
-                <NotificationBadge count={getUnreadCount(channel.channelId) || 0}> 
-                  <img
-                    src={channel.otherUserPicture}
-                    alt={channel.otherUserName}
-                    className="h-8 w-8 rounded-full object-cover border border-brand-green/30"
-                  />
-                </NotificationBadge>
+                  <NotificationBadge
+                    count={getUnreadCount(channel.channelId) || 0}
+                  >
+                    <img
+                      src={channel.otherUserPicture}
+                      alt={channel.otherUserName}
+                      className="h-8 w-8 rounded-full object-cover border border-brand-green/30"
+                    />
+                  </NotificationBadge>
                   <div className="flex-1 min-w-0">
                     <p className="text-brand-green font-medium text-sm truncate">
                       {channel.otherUserName}

@@ -11,7 +11,7 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class MemberRoleId implements Serializable {
+public class OrganizationMemberRoleId implements Serializable {
     private UUID memberId;
     private UUID roleId;
 }
