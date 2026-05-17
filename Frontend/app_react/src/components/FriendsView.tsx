@@ -27,7 +27,7 @@ export const FriendsView: React.FC<FriendsViewProps> = ({ onOpenChat }) => {
   const [activeTab, setActiveTab] = useState<FriendsTab>("online");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { callToAUser } = useCall();
+  const { joinOrCreateRoom } = useCall();
 
   const {
     friends,
@@ -96,7 +96,7 @@ export const FriendsView: React.FC<FriendsViewProps> = ({ onOpenChat }) => {
             onRemove={removeFriend}
             onBlock={blockUser}
             onUnblock={unblockUser}
-            onCall={callToAUser}
+            onCall={joinOrCreateRoom}
           />
         )}
       </div>
