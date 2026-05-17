@@ -43,4 +43,9 @@ public class OrganizationsApiDelegate implements OrganizationsApi {
     public ResponseEntity<List<ServerChannelDto>> getOrganizationChannels(UUID id) {
         return ResponseEntity.ok(organizationService.getOrganizationChannels(id));
     }
+
+    @Override
+    public ResponseEntity<com.anteiku.backend.model.InviteDto> createInvite(UUID id) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(organizationService.createInvite(id));
+    }
 }

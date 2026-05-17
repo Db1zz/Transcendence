@@ -300,6 +300,52 @@ paths:
         404:
           description: "Server not found"
 
+  /organizations/{id}/invites:
+    post:
+      summary: "Generate a new invite code for a server"
+      operationId: createInvite
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/OrganizationId'
+      security:
+        - bearerAuth: [ ]
+      responses:
+        201:
+          description: "Invite code created"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InviteDto'
+        403:
+          description: "Not a member of the server"
+
+  /invites/{code}/join:
+    post:
+      summary: "Join a server using an invite code"
+      operationId: joinWithInvite
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - bearerAuth: [ ]
+      responses:
+        200:
+          description: "Successfully joined the server"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationDto'
+        400:
+          description: "Already a member"
+        404:
+          description: "Invalid or expired invite code"
+
   /channels:
     post:
       summary: "Creates a channel (Server Channel or DM)"
@@ -1107,3 +1153,15 @@ components:
           enum: [TEXT, VOICE]
         organizationId:
           $ref: '#/components/schemas/OrganizationId'
+
+    InviteDto:
+      type: object
+      properties:
+        code:
+          type: string
+        organizationId:
+          $ref: '#/components/schemas/OrganizationId'
+        expiresAt:
+          type: string
+          format: date-time
+          nullable: false

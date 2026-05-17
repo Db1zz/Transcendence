@@ -135,3 +135,14 @@ CREATE TABLE IF NOT EXISTS channel_members (
     FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS organization_invites (
+    code varchar(10) PRIMARY KEY,
+    organization_id UUID NOT NULL,
+    creator_id UUID NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT now(),
+    expires_at TIMESTAMP NOT NULL, -- idk if this should be nullable or no
+
+    FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE,
+    FOREIGN KEY (creator_id) REFERENCES users(id) ON DELETE CASCADE
+);
