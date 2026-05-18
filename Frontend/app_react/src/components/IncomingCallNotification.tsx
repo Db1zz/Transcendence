@@ -46,7 +46,6 @@ if (!callData) return null;
     <div className="fixed top-1/2 left-1/2 z-50 w-80 -translate-x-1/2 -translate-y-1/2 animate-in fade-in zoom-in-95 duration-300">
       <div className="bg-brand-peach border-4 border-gray-800 shadow-[8px_8px_0px_0px_rgba(31,41,55,1)] p-4 flex flex-col gap-4">
         
-        {/* Header */}
         <div className="flex items-center gap-3 border-b-2 border-gray-800 pb-3">
           <div className="relative">
             {caller?.picture ? (
@@ -72,7 +71,6 @@ if (!callData) return null;
           </div>
         </div>
 
-        {/* Action Buttons */}
         <div className="flex gap-3">
           <Button
             onClick={() => onAnswer(callData.room_id)}

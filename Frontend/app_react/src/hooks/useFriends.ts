@@ -32,7 +32,6 @@ export const useFriends = () => {
         ),
         ...blockedRes.data.map((f: any) => mapToFrontend(f, "blocked")),
       ];
-
       setFriends(allFriends);
     } catch (error) {
       console.log("Failed to fetch friends", error);

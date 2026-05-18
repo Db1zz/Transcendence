@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
-import { Client } from "@stomp/stompjs";
 import api from "../utils/api";
+import { useSocket } from "../contexts/SocketContext";
 
 export interface ChatMessage {
   id: string;
@@ -11,9 +11,9 @@ export interface ChatMessage {
 }
 
 export const useChat = (channelId: string) => {
+  const { isConnected, subscribe, send } = useSocket();
+  
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [client, setClient] = useState<Client | null>(null);
-  const [connected, setConnected] = useState(false);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
 
@@ -62,42 +62,25 @@ export const useChat = (channelId: string) => {
   }, [channelId, loadHistory]);
 
   useEffect(() => {
-    if (!channelId) return;
+    if (!channelId || !isConnected) return;
 
-    const stompClient = new Client({
-      brokerURL: "ws://localhost:8080/ws",
-      onConnect: () => {
-        setConnected(true);
-        stompClient.subscribe(
-          `/topic/chat/${channelId}`,
-          (message: { body: string }) => {
-            const parsed = JSON.parse(message.body);
-            setMessages((prev) => [...prev, parsed]);
-          },
-        );
-      },
-      onDisconnect: () => {
-        setConnected(false);
-      },
+    const subscription = subscribe(`/topic/chat/${channelId}`, (parsedMessage: ChatMessage) => {
+      setMessages((prev) => [...prev, parsedMessage]);
     });
 
-    stompClient.activate();
-    setClient(stompClient);
-
     return () => {
-      stompClient.deactivate();
+      if (subscription) {
+        subscription.unsubscribe();
+      }
     };
-  }, [channelId]);
+  }, [channelId, isConnected, subscribe]);
 
   const sendMessage = (content: string, senderId: string) => {
-    if (client?.connected && content.trim()) {
-      client.publish({
-        destination: "/app/chat.send",
-        body: JSON.stringify({
-          channelId,
-          senderId,
-          content,
-        }),
+    if (isConnected && content.trim()) {
+      send("/app/chat.send", {
+        channelId,
+      senderId,
+        content,
       });
     }
   };
@@ -113,7 +96,7 @@ export const useChat = (channelId: string) => {
   return {
     messages,
     sendMessage,
-    connected,
+    connected: isConnected,
     loadOlderMessages,
     hasMore,
   };

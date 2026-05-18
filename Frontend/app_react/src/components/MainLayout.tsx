@@ -47,7 +47,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     const { user, loading } = useAuth();
     const callRedirectHandled = useRef(false);
 
-    // Fetch server logic
     const fetchServerData = async (serverId: string) => {
         try {
             const response = await api.get(`/organizations/${serverId}/channels`);
@@ -73,7 +72,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         }
     };
 
-    // View initialization
     useEffect(() => {
         const savedView = localStorage.getItem("activeView") as any;
         if (savedView) setActiveView(savedView);
@@ -86,7 +84,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         }
     }, []);
 
-    // Call redirection logic
     useEffect(() => {
         if (activeCall) {
             if (!callRedirectHandled.current) {
@@ -99,7 +96,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         }
     }, [activeCall]);
 
-    // 15s Timer for notification
     useEffect(() => {
         let timer: NodeJS.Timeout;
         if (incomingCall) {

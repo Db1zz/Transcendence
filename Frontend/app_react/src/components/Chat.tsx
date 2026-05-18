@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "./Button";
 import { useChat } from "../hooks/useChat";
+import { useUserStatuses } from "../hooks/useUserStatuses";
 
 interface ChatProps {
   personName: string;
@@ -80,7 +81,7 @@ const Chat: React.FC<ChatProps> = ({
           <p
             className={`text-sm ${connected ? "text-green-100" : "text-red-100"}`}
           >
-            {connected ? t("chat.online") : t("chat.connecting")}
+            {connected ? t("chat.connected") : t("chat.connecting")}
           </p>
         </div>
       )}
