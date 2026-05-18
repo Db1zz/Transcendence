@@ -17,6 +17,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -142,6 +143,17 @@ public class OrganizationService {
             throw new AccessDeniedException("You must be a member of this organization");
         }
 
+        Optional<OrganizationInviteEntity> existingInvite = organizationInviteRepository
+                .findFirstByOrganizationIdAndCreatorIdAndExpiresAtAfter(organizationId, currentUserId, Instant.now());
+        if (existingInvite.isPresent()) {
+            OrganizationInviteEntity activeInvite = existingInvite.get();
+            InviteDto dto = new InviteDto();
+            dto.setCode(activeInvite.getCode());
+            dto.setOrganizationId(activeInvite.getOrganization().getId());
+            dto.setExpiresAt(OffsetDateTime.ofInstant(activeInvite.getExpiresAt(), ZoneId.systemDefault()));
+            return dto;
+        }
+
         OrganizationEntity org = organizationRepository.findById(organizationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Organization not found"));
         UserEntity creator = userRepository.getReferenceById(currentUserId);
@@ -207,5 +219,11 @@ public class OrganizationService {
         orgDto.setOwnerId(org.getOwner().getId());
         orgDto.setCreatedAt(OffsetDateTime.ofInstant(org.getCreatedAt(), ZoneId.systemDefault()));
         return orgDto;
+    }
+
+    @org.springframework.scheduling.annotation.Scheduled(cron = "0 0 3 * * ?")
+    public void cleanupExpiredInvites() {
+        log.info("Running scheduled cleanup of invite codes in db...");
+        organizationInviteRepository.deleteByExpiresAtBefore(Instant.now());
     }
 }

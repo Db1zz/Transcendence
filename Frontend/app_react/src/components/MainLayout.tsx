@@ -33,21 +33,20 @@ interface MainLayoutProps {
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     const { t } = useTranslation();
     const [activeView, setActiveView] = useState<"friends" | "chat" | "voice" | "server">("friends");
+    const [inServerVoice, setInServerVoice] = useState(false);
     const { incomingCall, setIncomingCall } = useNotifications();
-    const { activeCall, joinOrCreateRoom } = useCall();
+    const { activeCall, joinOrCreateRoom, joinVoiceChannel } = useCall();
     const [activeDmChannelId, setActiveDmChannelId] = useState<string | null>(null);
     const [activeDmName, setActiveDmName] = useState<string>("");
-
     const [activeServerId, setActiveServerId] = useState<string | null>(null);
     const [activeServerName, setActiveServerName] = useState<string>("");
     const [activeServerChannelId, setActiveServerChannelId] = useState<string | null>(null);
     const [activeServerChannelName, setActiveServerChannelName] = useState<string>("");
     const [serverCategories, setServerCategories] = useState<ChannelCategory[]>([]);
-
     const { user, loading } = useAuth();
     const callRedirectHandled = useRef(false);
+    const lastServerId = useRef<string | null>(null);
 
-    // Fetch server logic
     const fetchServerData = async (serverId: string) => {
         try {
             const response = await api.get(`/organizations/${serverId}/channels`);
@@ -73,7 +72,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         }
     };
 
-    // View initialization
     useEffect(() => {
         const savedView = localStorage.getItem("activeView") as any;
         if (savedView) setActiveView(savedView);
@@ -81,25 +79,25 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         const savedServerName = localStorage.getItem("activeServerName");
         if (savedView === "server" && savedServerId) {
             setActiveServerId(savedServerId);
+            lastServerId.current = savedServerId; // Update ref
             setActiveServerName(savedServerName || "");
             fetchServerData(savedServerId);
         }
     }, []);
 
-    // Call redirection logic
     useEffect(() => {
         if (activeCall) {
-            if (!callRedirectHandled.current) {
+            if (!callRedirectHandled.current && activeView !== "server") {
                 setActiveView("voice");
                 callRedirectHandled.current = true;
             }
         } else {
             callRedirectHandled.current = false;
+            setInServerVoice(false);
             if (activeView === "voice") setActiveView("friends");
         }
     }, [activeCall]);
 
-    // 15s Timer for notification
     useEffect(() => {
         let timer: NodeJS.Timeout;
         if (incomingCall) {
@@ -123,6 +121,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
     const handleServerClick = async (serverId: string, serverName: string) => {
         setActiveServerId(serverId);
+        lastServerId.current = serverId;
         setActiveServerName(serverName);
         localStorage.setItem("activeServerId", serverId);
         localStorage.setItem("activeServerName", serverName);
@@ -132,6 +131,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
     if (loading) return null;
 
+    const isServerCall = activeCall && serverCategories.some(cat => 
+        cat.id === "voice" && cat.channels.some(ch => ch.id === activeCall.roomId)
+    );
+
     return (
         <div className="h-screen flex flex-col overflow-hidden relative">
             {activeView === "server" ? (
@@ -139,7 +142,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             ) : (
                 <HeaderBar type={activeView === "chat" ? "messages" : "friends"} />
             )}
-
             <div className="flex flex-1 min-h-0 overflow-hidden">
                 <div className="flex w-[72px] z-30 flex-col overflow-hidden">
                     <NavigationSidebar
@@ -148,30 +150,37 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                         onServerClick={handleServerClick}
                     />
                 </div>
-
                 <main className="flex-1 flex flex-col pt-2 pl-2 pr-0 md:p-2 overflow-hidden relative min-h-0">
                     <div className="absolute inset-0 bg-brand-green opacity-80 -z-10"></div>
-
-                    {activeCall && activeView !== "voice" && (
+                    {activeCall && activeView !== "voice" && !(activeView === "server" && inServerVoice) && (
                         <div className="mb-2 mr-2 flex items-center justify-between bg-brand-brick text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-pulse flex-shrink-0">
                             <div className="flex items-center gap-2">
                                 <Phone size={16} />
                                 <span className="text-sm font-medium">Voice call active</span>
                             </div>
                             <button
-                                onClick={() => handleViewChange("voice")}
+                                onClick={() => {
+                                    if (inServerVoice || isServerCall) {
+                                        setInServerVoice(true);
+                                        if(lastServerId.current && activeServerId !== lastServerId.current) {
+                                            setActiveServerId(lastServerId.current);
+                                        }
+                                        handleViewChange("server");
+                                    } else {
+                                        handleViewChange("voice");
+                                    }
+                                }}
                                 className="flex items-center gap-1 text-xs bg-white/20 hover:bg-white/30 px-2 py-1 rounded transition-colors"
                             >
                                 Return <ArrowUpRight size={14} />
                             </button>
                         </div>
                     )}
-
                     <div className="flex flex-1 flex-row gap-0 overflow-hidden">
-
                         <div className="w-full md:w-1/5 flex-shrink-0 overflow-hidden relative flex flex-col">
                             {activeView === "server" ? (
                                 <ServerLeftBar
+                                    serverId={activeServerId || ""}
                                     serverName={activeServerName}
                                     categories={serverCategories}
                                     activeChannelId={activeServerChannelId || ""}
@@ -180,6 +189,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                                         setActiveServerChannelName(c.name);
                                         localStorage.setItem("activeServerChannelId", c.id);
                                         localStorage.setItem("activeServerChannelName", c.name);
+                                        if (c.type === "voice") {
+                                            joinVoiceChannel(c.id);
+                                            setInServerVoice(true);
+                                        } else {
+                                            setInServerVoice(false);
+                                        }
                                     }}
                                 />
                             ) : (
@@ -194,11 +209,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                                 </div>
                             )}
                         </div>
-
                         <div className="hidden md:flex flex-1 min-h-0 overflow-hidden">
                             <div className="flex-1 min-h-0">
                                 {activeView === "server" ? (
-                                    activeServerChannelId ? (
+                                    inServerVoice ? (
+                                        <VoiceView />
+                                    ) : activeServerChannelId ? (
                                         <Chat
                                             personName={`# ${activeServerChannelName}`}
                                             userId={user?.id || ""}
@@ -237,7 +253,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                                 )}
                             </div>
                         </div>
-
                         <div className="hidden lg:block w-1/5 flex-shrink-0 overflow-hidden">
                             <RightBar>
                                 {activeView === "server" && <MemberList members={mockMembers} />}
