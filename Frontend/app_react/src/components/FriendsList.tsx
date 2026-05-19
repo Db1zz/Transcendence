@@ -55,6 +55,7 @@ export const FriendsList: React.FC<FriendsListProps> = ({
   onCall,
 }) => {
   const { t } = useTranslation();
+
   return (
     <div className="flex flex-col h-full p-6">
       <div className="relative mb-6">

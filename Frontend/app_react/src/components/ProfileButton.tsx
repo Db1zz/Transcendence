@@ -3,6 +3,7 @@ import { ProfilePopup } from "./ProfilePopup";
 
 interface ProfileButtonProps {
   user: any;
+  isOnline?: boolean;
   className?: string;
   children?: React.ReactNode;
   disablePopup?: boolean;
@@ -18,6 +19,7 @@ export const StatusColors = {
 
 export const ProfileButton: React.FC<ProfileButtonProps> = ({
   user,
+  isOnline,
   className = "",
   children,
   disablePopup = false,
@@ -25,10 +27,12 @@ export const ProfileButton: React.FC<ProfileButtonProps> = ({
 }) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const isV2 = variant === "v2";
+  
   const containerStyle =
     variant === "v2"
       ? "bg-white/40 hover:bg-white/80 border-2 border-transparent hover:border-brand-peach shadow-none transplate-x-0 translate-y-0"
       : "bg-brand-beige border-2 border-gray-800 shadow-sharp-button hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px]";
+      
   const avatarStyle =
     variant === "v2"
       ? "border-2 border-white shadow-sm"
@@ -39,6 +43,13 @@ export const ProfileButton: React.FC<ProfileButtonProps> = ({
       setIsPopupOpen(true);
     }
   };
+
+  const currentStatus =
+    isOnline === true
+      ? "online"
+      : isOnline === false
+      ? "offline"
+      : user.status?.toLowerCase() || "offline";
 
   return (
     <>
@@ -65,7 +76,7 @@ export const ProfileButton: React.FC<ProfileButtonProps> = ({
             <div
               className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full
                 border-2 ${isV2 ? "border-white" : "border-brand-beige"}
-                ${StatusColors[user.status as keyof typeof StatusColors] || "bg-gray-400"}
+                ${StatusColors[currentStatus as keyof typeof StatusColors] || "bg-gray-400"}
               `}
             />
           </div>
@@ -75,9 +86,11 @@ export const ProfileButton: React.FC<ProfileButtonProps> = ({
               {user.name}
             </p>
             <p
-              className={`font-roboto text-xs font-bold uppercase truncate ${isV2 ? "text-gray-500" : "text-brand-brick"}`}
+              className={`font-roboto text-xs font-bold uppercase truncate ${
+                isV2 ? "text-gray-500" : "text-brand-brick"
+              }`}
             >
-              {user.status || "offline"}
+              {currentStatus}
             </p>
           </div>
         </div>
