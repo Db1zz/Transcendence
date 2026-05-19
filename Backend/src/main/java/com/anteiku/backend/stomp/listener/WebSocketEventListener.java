@@ -47,6 +47,7 @@ public class WebSocketEventListener {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
         UUID userId = stompSessionService.getUserId(accessor.getSessionId());
         handleDisconnect(userId);
+        stompSessionService.removeSession(accessor.getSessionId());
         log.info("User {} disconnected", userId);
     }
 
@@ -73,7 +74,7 @@ public class WebSocketEventListener {
 
         for (UUID friendId : onlineFriends) {
             messagingTemplate.convertAndSend(
-                    "/topic/statuses/userId" + friendId,
+                    "/topic/statuses/" + friendId,
                     String.format("{\"userId\":\"%s\", \"status\":\"offline\"}", userId)
             );
         }
