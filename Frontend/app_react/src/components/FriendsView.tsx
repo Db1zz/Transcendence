@@ -1,11 +1,14 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { FriendsHeader } from "./FriendsHeader";
 import { AddFriendView } from "./AddFriendView";
 import { FriendsList } from "./FriendsList";
 import { useFriends } from "../hooks/useFriends";
 import { useCall } from "../hooks/useCall";
+import { useUserStatuses } from "../hooks/useUserStatuses";
+import { useAuth } from "../contexts/AuthContext";
 
 export type FriendsTab = "online" | "all" | "pending" | "blocked" | "add";
+
 export interface Friend {
   id: string;
   name: string;
@@ -27,6 +30,8 @@ export const FriendsView: React.FC<FriendsViewProps> = ({ onOpenChat }) => {
   const [activeTab, setActiveTab] = useState<FriendsTab>("online");
   const [searchQuery, setSearchQuery] = useState("");
 
+  const { user } = useAuth();
+  const { statuses } = useUserStatuses(user?.id ?? "");
   const { joinOrCreateRoom } = useCall();
 
   const {
@@ -39,38 +44,57 @@ export const FriendsView: React.FC<FriendsViewProps> = ({ onOpenChat }) => {
     refresh,
   } = useFriends();
 
-  const getFiltered = () => {
-    let filtered = friends;
+  const updatedFriends = useMemo<Friend[]>(() => {
+    return friends.map((friend) => {
+      return {
+        ...friend,
+        status: statuses[friend.id] ?? "offline",
+      };
+    });
+  }, [friends, statuses]);
 
-    if (activeTab === "online") {
-      filtered = friends.filter(
-        (f) => f.status !== "offline" && f.isFriend === "friend",
-      );
-    } else if (activeTab === "pending") {
-      filtered = friends.filter((f) => f.isFriend === "pending");
-    } else if (activeTab === "blocked") {
-      filtered = friends.filter((f) => f.isFriend === "blocked");
-    } else if (activeTab === "all") {
-      filtered = friends.filter((f) => f.isFriend === "friend");
+  const filteredFriends = useMemo(() => {
+    let filtered = updatedFriends;
+    console.log(updatedFriends);
+
+    switch (activeTab) {
+      case "online":
+        filtered = updatedFriends.filter(
+          (f) => f.isFriend === "friend" && f.status !== "offline",
+        );
+        break;
+      case "all":
+        filtered = updatedFriends.filter((f) => f.isFriend === "friend");
+        break;
+      case "pending":
+        filtered = updatedFriends.filter((f) => f.isFriend === "pending");
+        break;
+      case "blocked":
+        filtered = updatedFriends.filter((f) => f.isFriend === "blocked");
+        break;
+      case "add":
+        break;
     }
 
-    if (searchQuery) {
-      filtered = filtered.filter((f) =>
-        f.name.toLowerCase().includes(searchQuery.toLowerCase()),
-      );
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter((f) => f.name.toLowerCase().includes(q));
     }
 
     return filtered;
-  };
+  }, [updatedFriends, activeTab, searchQuery]);
 
-  const counts = {
-    online: friends.filter(
-      (f) => f.isFriend === "friend" && f.status !== "offline",
-    ).length,
-    all: friends.filter((f) => f.isFriend === "friend").length,
-    pending: friends.filter((f) => f.isFriend === "pending").length,
-    blocked: friends.filter((f) => f.isFriend === "blocked").length,
-  };
+  const counts = useMemo(
+    () => ({
+      online: updatedFriends.filter(
+        (f) => f.isFriend === "friend" && f.status !== "offline",
+      ).length,
+      all: updatedFriends.filter((f) => f.isFriend === "friend").length,
+      pending: updatedFriends.filter((f) => f.isFriend === "pending").length,
+      blocked: updatedFriends.filter((f) => f.isFriend === "blocked").length,
+    }),
+    [updatedFriends],
+  );
 
   return (
     <div className="flex flex-col h-full bg-brand-beige border border-brand-green">
@@ -82,12 +106,13 @@ export const FriendsView: React.FC<FriendsViewProps> = ({ onOpenChat }) => {
         }}
         counts={counts}
       />
+
       <div className="flex-1 overflow-hidden">
         {activeTab === "add" ? (
           <AddFriendView onAddFriend={addFriend} />
         ) : (
           <FriendsList
-            friends={getFiltered()}
+            friends={filteredFriends}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
             activeTab={activeTab}

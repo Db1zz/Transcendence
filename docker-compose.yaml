@@ -11,6 +11,13 @@ services:
     networks:
       - anteiku-network
 
+  # redis:
+  #   image: redis:alpine
+  #   ports:
+  #     - "6379:6379"
+  #   networks:
+  #     - anteiku-network
+
   backend:
       image: eclipse-temurin:25-jdk-alpine
       platform: linux/amd64
@@ -18,8 +25,8 @@ services:
       working_dir: /app
       volumes:
         - ./Backend:/app
-        - maven_repo:/root/.m2      # Use a named volume for much faster I/O
-        - maven_target:/app/target  # Persists compiled .class files
+        - maven_repo:/root/.m2
+        - maven_target:/app/target
       ports:
         - "8080:8080"
         - "5005:5005"

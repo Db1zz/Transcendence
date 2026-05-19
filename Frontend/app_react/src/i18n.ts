@@ -313,6 +313,8 @@ const resources = {
         },
       },
       chat: {
+        offline: "не в сети",
+        idle: "нет на месте",
         online: "онлайн",
         connecting: "подключение...",
         inputPlaceholder: "введите сообщение...",
