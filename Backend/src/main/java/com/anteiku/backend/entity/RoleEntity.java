@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.Instant;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -22,6 +24,12 @@ public class RoleEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
+    @Column(name = "permission_mask", nullable = false)
+    private Long permissionMask = 0L;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
+
+    @ManyToMany(mappedBy = "roles")
+    private Set<OrganizationMemberEntity> members = new HashSet<>();
 }

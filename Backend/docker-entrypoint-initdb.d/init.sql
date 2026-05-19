@@ -66,6 +66,7 @@ CREATE TABLE IF NOT EXISTS roles (
     organization_id UUID NOT NULL,
     name VARCHAR NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    permission_mask BIGINT NOT NULL DEFAULT 0;
 
     FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE
 );

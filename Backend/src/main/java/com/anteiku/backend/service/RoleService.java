@@ -2,6 +2,7 @@ package com.anteiku.backend.service;
 
 import com.anteiku.backend.entity.OrganizationEntity;
 import com.anteiku.backend.entity.RoleEntity;
+import com.anteiku.backend.exception.ConflictException;
 import com.anteiku.backend.exception.ResourceNotFoundException;
 import com.anteiku.backend.model.CreateRoleDto;
 import com.anteiku.backend.model.CreateRoleResponseDto;
@@ -28,19 +29,22 @@ public class RoleService {
                 .orElseThrow(() -> new ResourceNotFoundException("Organization with id '"  + createRoleDto.getOrganizationId() + "' not found"));
 
         if (roleRepository.existsByNameAndOrganizationId(createRoleDto.getName(), createRoleDto.getOrganizationId())) {
-            throw new ResourceNotFoundException("Role with name '" + createRoleDto.getName() + "' is already exists in organization '" + createRoleDto.getOrganizationId() + "'");
+            throw new ConflictException("Role with name '" + createRoleDto.getName() + "' is already exists in organization '" + createRoleDto.getOrganizationId() + "'");
         }
 
         RoleEntity roleEntity = new RoleEntity();
         roleEntity.setName(createRoleDto.getName());
         roleEntity.setOrganization(organizationEntity);
+        roleEntity.setPermissionMask(createRoleDto.getPermissions() != null ? createRoleDto.getPermissions() : 0L);
         roleEntity.setCreatedAt(Instant.now());
 
         roleRepository.save(roleEntity);
 
         CreateRoleResponseDto createRoleResponseDto = new CreateRoleResponseDto();
+        createRoleResponseDto.setId(roleEntity.getId());
         createRoleResponseDto.setName(roleEntity.getName());
         createRoleResponseDto.setOrganizationId(organizationEntity.getId());
+        createRoleResponseDto.setPermissions(roleEntity.getPermissionMask());
         createRoleResponseDto.setCreatedAt(OffsetDateTime.ofInstant(roleEntity.getCreatedAt(), ZoneId.systemDefault()));
 
         return createRoleResponseDto;

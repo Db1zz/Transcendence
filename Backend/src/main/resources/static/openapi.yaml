@@ -978,6 +978,11 @@ components:
           enum:
             - TEXT
             - VOICE
+        organizationId:
+          type: string
+          format: uuid
+          nullable: true
+          description: "ID of the organization. Null if it is a Direct Message."
         createdAt:
           type: string
           format: date-time
@@ -1005,12 +1010,20 @@ components:
     CreateRoleDto:
       type: object
       description: "Information about the role to create"
+      required:
+        - name
+        - organizationId
       properties:
         name:
           type: string
         organizationId:
           type: string
           format: uuid
+        permissions:
+          type: integer
+          format: int64
+          default: 0
+          description: "Bitmask of permissions for this role"
 
     CreateRoleResponseDto:
       type: object
@@ -1021,6 +1034,9 @@ components:
           type: string
         organizationId:
           $ref: '#/components/schemas/OrganizationId'
+        permissions:
+          type: integer
+          format: int64
         createdAt:
           type: string
           format: date-time

@@ -38,4 +38,5 @@ public interface ChannelRepository extends JpaRepository<ChannelEntity, UUID> {
             "AND cm1.user.id = :userA AND cm2.user.id = :userB")
     UUID findPrivateChannel(@Param("userA") UUID userA, @Param("userB") UUID userB);
     List<ChannelEntity> findByOrganizationId(UUID organizationId);
+    boolean existsByNameAndOrganizationId(String name, UUID organizationId);
 }

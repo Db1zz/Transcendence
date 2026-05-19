@@ -1,14 +1,16 @@
 package com.anteiku.backend.service;
 
-import com.anteiku.backend.entity.ChannelEntity;
-import com.anteiku.backend.entity.ChannelMemberEntity;
-import com.anteiku.backend.entity.ChannelType;
+import com.anteiku.backend.entity.*;
+import com.anteiku.backend.exception.ConflictException;
 import com.anteiku.backend.exception.ResourceNotFoundException;
 import com.anteiku.backend.model.CreateChannelDto;
 import com.anteiku.backend.model.CreateChannelResponseDto;
 import com.anteiku.backend.repository.ChannelMemberRepository;
 import com.anteiku.backend.repository.ChannelRepository;
 import com.anteiku.backend.repository.OrganizationRepository;
+import com.anteiku.backend.repository.UserRepository;
+import com.anteiku.backend.util.PermissionFlags;
+import com.anteiku.backend.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -29,14 +31,11 @@ public class ChannelService {
     private final ChannelRepository channelRepository;
     private final OrganizationRepository organizationRepository;
     private final ChannelMemberRepository channelMemberRepository;
+    private final UserRepository userRepository;
+    private final PermissionService permissionService;
 
     public CreateChannelResponseDto createChannel(CreateChannelDto dto) {
-//        OrganizationEntity organization = organizationRepository.findById(dto.getOrganizationId())
-//                .orElseThrow(() -> new ResourceNotFoundException("Organization not found with id: " + dto.getOrganizationId()));
-//
-//        if (channelRepository.existsByNameAndOrganizationId(dto.getName(), organization.getId())) {
-//            throw new ConflictException("Channel with name '" + dto.getName() + "' already exists in this organization");
-//        }
+        UUID currentUserId = SecurityUtils.getCurrentUserId();
 
         ChannelType channelType;
         try {
@@ -45,20 +44,44 @@ public class ChannelService {
             throw new IllegalArgumentException("Invalid channel type: " + dto.getChannelType());
         }
 
-        ChannelEntity channel = ChannelEntity.builder()
+        ChannelEntity.ChannelEntityBuilder channelBuilder = ChannelEntity.builder()
                 .name(dto.getName())
                 .type(channelType)
-//                .organization(organization)
-                .createdAt(Instant.now())
-                .build();
+                .createdAt(Instant.now());
 
+        if (dto.getOrganizationId() != null) {
+            permissionService.verifyPermissions(dto.getOrganizationId(), currentUserId, PermissionFlags.MANAGE_CHANNELS);
+
+            OrganizationEntity organizationEntity = organizationRepository.findById(dto.getOrganizationId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Organization not found"));
+
+            if (channelRepository.existsByNameAndOrganizationId(dto.getName(), organizationEntity.getId())) {
+                throw new ConflictException("Organization with '" + dto.getName() + "' already exists in this organization");
+            }
+
+            channelBuilder.organization(organizationEntity);
+        }
+
+        ChannelEntity channel = channelBuilder.build();
         channelRepository.save(channel);
+
+        if (dto.getMemberIds() != null && !dto.getMemberIds().isEmpty()) {
+            for (UUID memberId : dto.getMemberIds()) {
+                UserEntity user = userRepository.getReferenceById(memberId);
+                ChannelMemberEntity channelMember = new ChannelMemberEntity();
+                channelMember.setChannel(channel);
+                channelMember.setUser(user);
+                channelMember.setJoinedAt(Instant.now());
+                channelMemberRepository.save(channelMember);
+            }
+        }
+
         log.info("Channel created: '{}' of type {} (ID: {})", channel.getName(), channel.getType(), channel.getId());
         
         CreateChannelResponseDto response = new CreateChannelResponseDto();
         response.setId(channel.getId());
         response.setName(channel.getName());
-//        response.setOrganizationId(organization.getId());
+        response.setOrganizationId(channel.getOrganization().getId());
         response.setChannelType(CreateChannelResponseDto.ChannelTypeEnum.valueOf(channel.getType().name()));
         response.setCreatedAt(OffsetDateTime.ofInstant(channel.getCreatedAt(), ZoneId.systemDefault()));
 
@@ -66,8 +89,13 @@ public class ChannelService {
     }
 
     public void deleteChannel(UUID channelId) {
+        UUID currentUserId = SecurityUtils.getCurrentUserId();
         ChannelEntity channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new ResourceNotFoundException("Channel not found"));
+
+        if (channel.getOrganization() != null) {
+            permissionService.verifyPermissions(channel.getOrganization().getId(), currentUserId, PermissionFlags.MANAGE_CHANNELS);
+        }
 
         channelRepository.delete(channel);
         log.info("Channel deleted: '{}' of type {}", channel.getName(), channel.getType());
