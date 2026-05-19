@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "./Button";
 import { useChat } from "../hooks/useChat";
-import { useUserStatuses } from "../hooks/useUserStatuses";
 
 interface ChatProps {
   personName: string;

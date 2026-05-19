@@ -6,8 +6,8 @@ import java.util.*;
 
 @Service
 public class UserStatusService {
+    // userId/userIds
     private final HashMap<UUID, Set<UUID>> subscribedUsers = new HashMap<>();
-
     public void subscribe(UUID userId, Set<UUID> friendIds) {
         subscribedUsers.put(userId, friendIds);
     }

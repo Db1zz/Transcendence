@@ -3,6 +3,7 @@ package com.anteiku.backend.stomp.listener;
 import com.anteiku.backend.model.FriendDto;
 import com.anteiku.backend.service.UserStatusService;
 import com.anteiku.backend.service.FriendsService;
+import com.anteiku.backend.stomp.service.StompSessionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 public class WebSocketEventListener {
+    private final StompSessionService stompSessionService;
     private final UserStatusService userStatusService;
     private final SimpMessagingTemplate messagingTemplate;
     private final FriendsService friendsService;
@@ -43,12 +45,9 @@ public class WebSocketEventListener {
     @EventListener
     public void handleSessionDisconnectEvent(SessionDisconnectEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
-
-        if (accessor.getSessionAttributes() != null && accessor.getSessionAttributes().containsKey("userId")) {
-            UUID userId = (UUID) accessor.getSessionAttributes().get("userId");
-            handleDisconnect(userId);
-            log.info("User {} disconnected", userId);
-        }
+        UUID userId = stompSessionService.getUserId(accessor.getSessionId());
+        handleDisconnect(userId);
+        log.info("User {} disconnected", userId);
     }
 
     private void handleSubscribe(UUID userId, Set<UUID> friends) {

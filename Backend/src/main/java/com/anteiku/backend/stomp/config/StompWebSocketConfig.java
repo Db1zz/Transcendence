@@ -26,7 +26,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Order(Ordered.HIGHEST_PRECEDENCE + 99)
 public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
-
     private final WebSocketAuthInterceptor authInterceptor;
 
     @Override

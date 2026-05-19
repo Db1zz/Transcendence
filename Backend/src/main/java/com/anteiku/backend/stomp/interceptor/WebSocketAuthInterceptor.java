@@ -5,6 +5,7 @@ import com.anteiku.backend.model.UserPublicDto;
 import com.anteiku.backend.security.jwt.JwtService;
 import com.anteiku.backend.security.session.UserSessionsService;
 import com.anteiku.backend.service.UserService;
+import com.anteiku.backend.stomp.service.StompSessionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.Message;
@@ -24,7 +25,7 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 public class WebSocketAuthInterceptor implements ChannelInterceptor {
-
+    private final StompSessionService stompSessionService;
     private final JwtService jwtService;
     private final UserSessionsService sessionService;
     private final UserService userService;
@@ -59,6 +60,7 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
                             Collections.singleton(authority)
                     );
                     accessor.setUser(authToken);
+                    stompSessionService.addSession(accessor.getSessionId(), userPublicDto.getId());
                     log.info("WS User [{}] successfully authenticated via Cookie", userEmail);
                 }
             } else {
