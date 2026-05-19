@@ -16,13 +16,20 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
   onFriendsClick,
   onServerClick,
 }) => {
-  const { servers, createServer } = useServers();
+  const { servers, createServer, joinServer } = useServers();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
 
   const handleCreateServer = async (name: string) => {
     const newServer = await createServer(name);
     if (newServer) {
       onServerClick(newServer.id, newServer.name);
+    }
+  };
+
+  const handleJoinServer = async (code: string) => {
+    const joinedServer = await joinServer(code);
+    if (joinedServer) {
+      onServerClick(joinedServer.id, joinedServer.name);
     }
   };
 
@@ -66,6 +73,7 @@ export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
         isOpen={isPopupOpen}
         onClose={() => setIsPopupOpen(false)}
         onCreate={handleCreateServer}
+        onJoin={handleJoinServer}
       />
     </>
   );

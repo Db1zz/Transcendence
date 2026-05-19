@@ -38,5 +38,16 @@ export const useServers = () => {
     }
   };
 
-  return { servers, loading, refetch: fetchServers, createServer };
+  const joinServer = async (code: string) => {
+    try {
+      const response = await api.post(`/invites/${code}/join`);
+      await fetchServers();
+      return response.data;
+    } catch (error) {
+      console.error("Failed to join server!", error);
+      throw error;
+    }
+  };
+
+  return { servers, loading, refetch: fetchServers, createServer, joinServer };
 };
