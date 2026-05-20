@@ -385,6 +385,35 @@ paths:
           description: "Forbidden – not the owner or insufficient permissions"
         404:
           description: "channel not found"
+    patch:
+      summary: "Update channel details"
+      operationId: updateChannel
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/ChannelId'
+            description: "ID of the channel to update"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateChannelDto'
+      responses:
+        200:
+          description: "Channel successfully updated"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerChannelDto'
+        403:
+          description: "Forbidden – insufficient permissions"
+        404:
+          description: "Channel not found"
+        409:
+          description: "Conflict - name already exists"
 
   /voice/join:
     post:
@@ -965,6 +994,15 @@ components:
           items:
             $ref: '#/components/schemas/UserId'
           description: "Optional list of User IDs to add to the channel immediately upon creation"
+
+    UpdateChannelDto:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: "The new name for the channel"
 
     CreateChannelResponseDto:
       type: object

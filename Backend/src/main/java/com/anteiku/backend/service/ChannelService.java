@@ -5,6 +5,8 @@ import com.anteiku.backend.exception.ConflictException;
 import com.anteiku.backend.exception.ResourceNotFoundException;
 import com.anteiku.backend.model.CreateChannelDto;
 import com.anteiku.backend.model.CreateChannelResponseDto;
+import com.anteiku.backend.model.ServerChannelDto;
+import com.anteiku.backend.model.UpdateChannelDto;
 import com.anteiku.backend.repository.ChannelMemberRepository;
 import com.anteiku.backend.repository.ChannelRepository;
 import com.anteiku.backend.repository.OrganizationRepository;
@@ -109,5 +111,34 @@ public class ChannelService {
         return channelRepository.findById(channelId).orElseThrow(
                 () -> new ResourceNotFoundException("Channel with id " + channelId + " not found")
         );
+    }
+
+    public ServerChannelDto updateChannel(UUID channelId, UpdateChannelDto dto) {
+        UUID currentUserId = SecurityUtils.getCurrentUserId();
+        ChannelEntity channel = channelRepository.findById(channelId)
+                .orElseThrow(() -> new ResourceNotFoundException("Channel with id " + channelId + " not found"));
+
+        if (channel.getOrganization() != null) {
+            permissionService.verifyPermissions(channel.getOrganization().getId(), currentUserId, PermissionFlags.MANAGE_CHANNELS);
+            if (!channel.getName().equals(dto.getName())) {
+                if (channelRepository.existsByNameAndOrganizationId(dto.getName(), channel.getOrganization().getId())) {
+                    throw new ConflictException("A channel with name '" + dto.getName() + "' already exists in this organization");
+                }
+
+                channel.setName(dto.getName());
+            }
+        } else {
+            throw new ConflictException("Direct message channels cannot be renamed");
+        }
+
+        channelRepository.save(channel);
+
+        ServerChannelDto response = new ServerChannelDto();
+        response.setId(channel.getId());
+        response.setName(channel.getName());
+        response.setType(ServerChannelDto.TypeEnum.valueOf(channel.getType().name()));
+        response.setOrganizationId(channel.getOrganization().getId());
+
+        return response;
     }
 }
