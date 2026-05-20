@@ -9,8 +9,8 @@ const StatusColors: Record<string, string> = {
 	offline: "bg-gray-400",
 };
 interface MobileNavBarProps {
-	active?: "friends" | "chat" | "voice" | "server" | "friendsList";
-	onNavigate?: (view: "friends" | "chat" | "voice" | "server" | "friendsList") => void;
+	active?: "friends" | "chat" | "voice" | "server" | "friendsList" | "notifications";
+	onNavigate?: (view: "friends" | "chat" | "voice" | "server" | "friendsList" | "notifications") => void;
 	onMainClick?: () => void;
 	onYouClick?: () => void;
 }
@@ -26,7 +26,7 @@ export const MobileNavBar: React.FC<MobileNavBarProps> = ({ active = "friends", 
 		onNavigate?.("chat");
 	};
 	const handleFriends = () => onNavigate?.("friendsList");
-	const handleNotifications = () => onNavigate?.("voice");
+	const handleNotifications = () => onNavigate?.("notifications");
 	const handleYou = () => {
 		if (onYouClick) {
 			onYouClick();
@@ -40,7 +40,7 @@ export const MobileNavBar: React.FC<MobileNavBarProps> = ({ active = "friends", 
 	const btnBase = "flex-1 flex flex-col items-center justify-center gap-1 py-2 rounded-lg transition-colors";
 	const mainActive = active === "chat";
 	const friendsActive = active === "friendsList";
-	const notifActive = active === "voice";
+	const notifActive = active === "notifications";
 	const youActive = active === "server";
 
 	return (

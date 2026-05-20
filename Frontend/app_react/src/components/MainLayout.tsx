@@ -21,6 +21,7 @@ import { useNotifications } from "../contexts/NotificationContext";
 import { useCall } from "../hooks/useCall";
 import MobileNavBar from "./MobileNavBar";
 import { ProfilePopup } from "./ProfilePopup";
+import { NotificationsPage } from "./NotificationsPage";
 
 const mockMembers: Member[] = [
 	{ id: "1", name: "Kaneki", status: "online", role: "Admin" },
@@ -34,7 +35,7 @@ interface MainLayoutProps {
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 	const { t } = useTranslation();
-	const [activeView, setActiveView] = useState<"friends" | "chat" | "voice" | "server" | "friendsList">("chat");
+	const [activeView, setActiveView] = useState<"friends" | "chat" | "voice" | "server" | "friendsList" | "notifications">("chat");
 	const [inServerVoice, setInServerVoice] = useState(false);
 	const { incomingCall, setIncomingCall } = useNotifications();
 	const { activeCall, joinOrCreateRoom, joinVoiceChannel } = useCall();
@@ -113,7 +114,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 		};
 	}, [incomingCall, setIncomingCall]);
 
-	const handleViewChange = (view: "friends" | "chat" | "voice" | "server" | "friendsList") => {
+	const handleViewChange = (view: "friends" | "chat" | "voice" | "server" | "friendsList" | "notifications") => {
 		setIsMobileProfileOpen(false);
 		setActiveView(view);
 		localStorage.setItem("activeView", view);
@@ -152,6 +153,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 	if (loading) return null;
 	const showMobileMessagesPage = activeView === "chat" && !activeDmChannelId;
 	const showMobileFriendsPage = activeView === "friendsList";
+	const showMobileNotificationsPage = activeView === "notifications";
 	const isFriendsView = activeView === "friends" || activeView === "friendsList";
 
 	const isServerCall = activeCall && serverCategories.some(
@@ -179,6 +181,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 		<div className="min-h-dvh flex flex-col overflow-hidden relative">
 			{showMobileFriendsPage ? (
 				<HeaderBar type="friends" />
+			) : showMobileNotificationsPage ? (
+				<HeaderBar type="notifications" />
 			) : activeView === "server" ? (
 				<ServerHeader channelName={activeServerChannelName || "general"} />
 			) : showMobileMessagesPage ? (
@@ -227,6 +231,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 					{showMobileFriendsPage ? (
 						<div className="flex h-full min-h-0 w-full md:hidden overflow-hidden pb-24">
 							<FriendsView onOpenChat={handleMobileFriendsOpenChat} />
+						</div>
+					) : showMobileNotificationsPage ? (
+						<div className="flex h-full min-h-0 w-full md:hidden overflow-hidden pb-24">
+							<NotificationsPage />
 						</div>
 					) : (
 						<>
