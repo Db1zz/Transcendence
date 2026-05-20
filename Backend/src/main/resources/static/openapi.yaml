@@ -319,6 +319,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InviteDto'
+
+  /organizations/{id}/roles:
+    get:
+      summary: "Get all roles inside a specific server"
+      operationId: getOrganizationRoles
+      parameters:
+        - name: id
+          in: path
+          description: "The organization ID"
+          required: true
+          schema:
+            $ref: '#/components/schemas/OrganizationId'
+      security:
+        - bearerAuth: [ ]
+      responses:
+        200:
+          description: "List of server roles"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CreateRoleResponseDto'
+        404:
+          description: "Server not found"
         403:
           description: "Not a member of the server"
 
@@ -475,6 +500,36 @@ paths:
           description: "Forbidden – insufficient permissions"
         '404':
           description: "Role not found"
+    patch:
+      summary: "Update an existing role"
+      operationId: updateRole
+      parameters:
+        - name: roleId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/RoleId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRoleDto'
+      responses:
+        '200':
+          description: "Role updated successfully"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateRoleResponseDto'
+        '400':
+          description: "Invalid input"
+        '403':
+          description: "Forbidden – insufficient permissions"
+        '404':
+          description: "Role not found"
+        '409':
+          description: "Name conflict"
 
   /members:
     post:
@@ -1062,6 +1117,16 @@ components:
           format: int64
           default: 0
           description: "Bitmask of permissions for this role"
+
+    UpdateRoleDto:
+      type: object
+      description: "Data to update an existing role"
+      properties:
+        name:
+          type: string
+        permissions:
+          type: integer
+          format: int64
 
     CreateRoleResponseDto:
       type: object
