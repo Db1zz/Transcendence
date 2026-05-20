@@ -59,4 +59,8 @@ public class OrganizationMemberService {
 
         organizationMemberRepository.delete(organizationMemberEntity);
     }
+
+    public boolean isUserMemberOfOrganization(UUID memberId, UUID organizationId) {
+        return organizationMemberRepository.existsByUserIdAndOrganizationId(memberId, organizationId);
+    }
 }

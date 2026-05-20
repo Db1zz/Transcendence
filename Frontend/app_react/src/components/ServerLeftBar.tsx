@@ -3,6 +3,8 @@ import { ChevronDown, ChevronRight, Hash, Volume2, Plus, UserPlus, Settings, X, 
 import bgLSideBar from "../img/bg_l_sidebar.png";
 import api from "../utils/api";
 import { useCall } from "../hooks/useCall";
+import { useAuth } from "../contexts/AuthContext";
+import { useOrganizationEvents } from "../hooks/useOrganizationEvents"; // Import your STOMP hook
 
 export type ChannelType = "text" | "voice";
 
@@ -41,6 +43,10 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
   activeChannelId,
   onSelectChannel,
 }) => {
+  const { user } = useAuth();
+  const { sendOrganizationAction } = useOrganizationEvents();
+  const { activeCall, leaveRoom, joinVoiceChannel } = useCall();
+
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const toggle = (id: string) => setCollapsed((c) => ({ ...c, [id]: !c[id] }));
   
@@ -51,8 +57,6 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const { activeCall, leaveRoom } = useCall();
-
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -62,6 +66,40 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleChannelClick = async (ch: Channel) => {
+    if (ch.type === "voice") {
+      try {
+        await joinVoiceChannel(ch.id);
+        
+        if (user) {
+          sendOrganizationAction(serverId, "voice/join", {
+            type: "VOICE_STATE_UPDATE",
+            userId: user.id,
+            channelId: ch.id,
+            action: "JOIN"
+          });
+        }
+      } catch (error) {
+        console.error("Failed to connect to voice channel:", error);
+      }
+    }
+    
+    onSelectChannel(ch);
+  };
+
+  const handleDisconnect = () => {
+    leaveRoom();
+    
+    if (user) {
+      sendOrganizationAction(serverId, "voice/leave", {
+        type: "VOICE_STATE_UPDATE",
+        userId: user.id,
+        channelId: null,
+        action: "LEAVE"
+      });
+    }
+  };
 
   const handleGenerateInvite = async () => {
     setIsMenuOpen(false);
@@ -90,6 +128,7 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
         <div className="absolute inset-0 bg-cover bg-center rounded-tl-lg" style={{ backgroundImage: `url(${bgLSideBar})` }} />
         <div className="absolute inset-0 bg-brand-peach opacity-90 rounded-tl-lg" />
         <div className="relative z-10 flex flex-col h-full">
+          
           <div className="relative" ref={menuRef}>
             <button 
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -118,6 +157,7 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
               </div>
             )}
           </div>
+
           <div className="flex-1 space-y-3 overflow-y-auto px-2 py-3 scrollbar-hide mt-2">
             {categories.map((cat) => {
               const isCollapsed = collapsed[cat.id];
@@ -135,7 +175,7 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
                         const Icon = ch.type === "voice" ? Volume2 : Hash;
                         return (
                           <div key={ch.id} className="flex flex-col">
-                            <button onClick={() => onSelectChannel(ch)} className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm font-roboto font-medium transition-colors border-2 ${isActive ? "bg-brand-green border-gray-800 text-brand-beige shadow-sharp-xs" : "border-transparent text-gray-800 hover:bg-brand-green/30"}`}>
+                            <button onClick={() => handleChannelClick(ch)} className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm font-roboto font-medium transition-colors border-2 ${isActive ? "bg-brand-green border-gray-800 text-brand-beige shadow-sharp-xs" : "border-transparent text-gray-800 hover:bg-brand-green/30"}`}>
                               <Icon className="h-4 w-4 shrink-0" />
                               <span className="truncate">{ch.name}</span>
                             </button>
@@ -155,7 +195,6 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
                                 ))}
                               </div>
                             )}
-
                           </div>
                         );
                       })}
@@ -165,6 +204,7 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
               );
             })}
           </div>
+
           {activeCall && (
             <div className="mt-auto shrink-0 bg-brand-green border-t border-brand-brick p-3 flex flex-col gap-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-20">
               <div className="flex items-center justify-between">
@@ -177,7 +217,7 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
                   </div>
                 </div>
                 <button
-                  onClick={leaveRoom}
+                  onClick={handleDisconnect}
                   className="p-1.5 bg-brand-brick hover:bg-red-600 text-white rounded-md transition-colors shadow-sm"
                   title="Disconnect"
                 >
@@ -188,6 +228,7 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
           )}
         </div>
       </div>
+
       {inviteModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
           <div className="bg-brand-beige rounded-lg shadow-xl w-full max-w-sm overflow-hidden border-2 border-brand-green p-6 relative">

@@ -2,6 +2,7 @@ package com.anteiku.backend.stomp.config;
 
 import com.anteiku.backend.constant.TokenNames;
 import com.anteiku.backend.stomp.interceptor.WebSocketAuthInterceptor;
+import com.anteiku.backend.stomp.interceptor.WebSocketOrganizationInterceptor;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ import java.util.Map;
 @Order(Ordered.HIGHEST_PRECEDENCE + 99)
 public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private final WebSocketAuthInterceptor authInterceptor;
+    private final WebSocketOrganizationInterceptor organizationInterceptor;
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
@@ -67,6 +69,9 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors(authInterceptor);
+        registration.interceptors(
+                authInterceptor,
+                organizationInterceptor
+                );
     }
 }

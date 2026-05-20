@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class WebSocketEventListener {
+public class StatusesEventListener {
     private final StompSessionService stompSessionService;
     private final UserStatusService userStatusService;
     private final SimpMessagingTemplate messagingTemplate;
@@ -33,21 +33,18 @@ public class WebSocketEventListener {
         String destination = accessor.getDestination();
 
         if (destination != null && destination.startsWith("/topic/statuses/")) {
-            if (event.getUser() != null) {
-                UUID userId = UUID.fromString(event.getUser().getName());
+            UUID userId = UUID.fromString(event.getUser().getName());
 
-                Set<UUID> userFriends = fetchKnownUsersFromDb(userId);
-                handleSubscribe(userId, userFriends);
-            }
+            Set<UUID> userFriends = fetchKnownUsersFromDb(userId);
+            handleSubscribe(userId, userFriends);
         }
     }
 
     @EventListener
     public void handleSessionDisconnectEvent(SessionDisconnectEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
-        UUID userId = stompSessionService.getUserId(accessor.getSessionId());
+        UUID userId = stompSessionService.removeSession(accessor.getSessionId());
         handleDisconnect(userId);
-        stompSessionService.removeSession(accessor.getSessionId());
         log.info("User {} disconnected", userId);
     }
 
