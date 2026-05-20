@@ -19,6 +19,7 @@ import { IncomingCallNotification } from "./IncomingCallNotification";
 import { ArrowUpRight, Phone } from "lucide-react";
 import { useNotifications } from "../contexts/NotificationContext";
 import { useCall } from "../hooks/useCall";
+import MobileNavBar from "./MobileNavBar";
 
 const mockMembers: Member[] = [
 	{ id: "1", name: "Kaneki", status: "online", role: "Admin" },
@@ -146,8 +147,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 			) : (
 				<HeaderBar type="friends" />
 			)}
-			<div className="flex flex-1 min-h-0 flex-col md:flex-row overflow-y-auto md:overflow-hidden">
-				<div className={`${activeView === "chat" ? "hidden md:flex" : "flex"} w-full md:w-[72px] z-30 flex-col overflow-hidden`}>
+			<div className={`flex flex-1 min-h-0 overflow-y-auto md:overflow-hidden ${activeView === "chat" ? "flex-col" : "flex-row"} md:flex-row`}>
+				<div className={`${activeView === "chat" ? "hidden md:flex" : "flex"} w-[72px] z-30 flex-col overflow-hidden`}>
 					<NavigationSidebar
 						onChatClick={() => handleViewChange("chat")}
 						onFriendsClick={() => handleViewChange("friends")}
@@ -181,7 +182,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 						</div>
 					)}
 					<div className="flex flex-1 flex-col gap-2 overflow-hidden md:flex-row md:gap-0">
-						<div className={`${activeView === "chat" ? "hidden md:flex" : "flex"} w-full md:w-1/5 flex-shrink-0 overflow-hidden relative flex-col max-h-[42dvh] md:max-h-none`}>
+						<div className={`${activeView === "chat" || activeView === "friends" ? "hidden md:flex" : "flex"} w-full md:w-1/5 flex-shrink-0 overflow-hidden relative flex-col max-h-[42dvh] md:max-h-none`}>
 							{activeView === "server" ? (
 								<ServerLeftBar
 									serverId={activeServerId || ""}
@@ -277,6 +278,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 					onReject={() => setIncomingCall(null)}
 				/>
 			)}
+
+			{/* Mobile navigation - hidden on chat view */}
+			{activeView !== "chat" && <MobileNavBar active={activeView} onNavigate={(v) => handleViewChange(v)} />}
 		</div>
 	);
 };
