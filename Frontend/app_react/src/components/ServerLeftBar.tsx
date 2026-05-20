@@ -3,6 +3,7 @@ import { ChevronDown, ChevronRight, Hash, Volume2, Plus, UserPlus, Settings, X, 
 import bgLSideBar from "../img/bg_l_sidebar.png";
 import api from "../utils/api";
 import { useCall } from "../hooks/useCall";
+import { ServerSettingsModal } from "./ServerSettingsModal";
 
 export type ChannelType = "text" | "voice";
 
@@ -43,15 +44,13 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
 }) => {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const toggle = (id: string) => setCollapsed((c) => ({ ...c, [id]: !c[id] }));
-  
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-
   const { activeCall, leaveRoom } = useCall();
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -109,8 +108,11 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
                 </button>
                 <div className="mx-2 my-1 border-b border-brand-green/20" />
                 <button 
-                  disabled
-                  className="w-full flex items-center justify-between px-3 py-2 text-sm font-bold text-gray-500 hover:bg-gray-200 transition-colors cursor-not-allowed opacity-70"
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    setSettingsModalOpen(true);
+                  }}
+                  className="w-full flex items-center justify-between px-3 py-2 text-sm font-bold text-gray-700 hover:bg-gray-200 transition-colors"
                 >
                   <span>Server Settings</span>
                   <Settings className="h-4 w-4" />
@@ -204,6 +206,12 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
           </div>
         </div>
       )}
+      <ServerSettingsModal 
+        isOpen={settingsModalOpen} 
+        onClose={() => setSettingsModalOpen(false)} 
+        serverId={serverId} 
+        serverName={serverName}
+      />
     </>
   );
 };
