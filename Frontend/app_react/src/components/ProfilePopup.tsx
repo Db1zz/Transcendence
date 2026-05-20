@@ -53,7 +53,10 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
 	>(null);
 	const [isSavingProfile, setIsSavingProfile] = useState(false);
 	const [saveError, setSaveError] = useState("");
-	const [isMobile, setIsMobile] = useState(false);
+	const [isMobile, setIsMobile] = useState(() => {
+		if (typeof window === "undefined") return false;
+		return window.matchMedia("(max-width: 767px)").matches;
+	});
 	const [mobileSettingsView, setMobileSettingsView] = useState<"menu" | "profile" | "language">("menu");
 	const [selectedLanguage, setSelectedLanguage] = useState<LanguageOption>(
 		normalizeLanguageOption(localStorage.getItem("preferredLanguage")),
@@ -235,7 +238,7 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
 					className="absolute inset-0 bg-black/40 backdrop-blur-sm"
 					onClick={handleClose}
 				/>
-				<div className="fixed inset-0 w-full h-[100dvh] bg-brand-beige border-2 border-gray-800 overflow-hidden flex flex-col animate-slide-up shadow-sharp">
+				<div className="fixed inset-0 w-full h-[100dvh] bg-brand-beige border-2 border-gray-800 overflow-hidden flex flex-col shadow-sharp">
 					{mobileSettingsView === "menu" ? (
 						<div className="flex flex-col h-full min-h-0">
 							<div className="flex items-center justify-between gap-3 border-b-2 border-gray-800 bg-brand-green/60 p-4 shrink-0">
@@ -321,7 +324,7 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
           w-full h-[100dvh] md:w-[500px] md:h-[550px]
           bg-brand-beige border-2 border-gray-800 rounded-none md:rounded-xl overflow-hidden
           duration-300 ease-out flex flex-col md:flex-row
-          animate-slide-up
+						${isMobile ? "" : "animate-slide-up"}
 						${showSettingsPanel ? "md:w-[900px] md:h-[700px] shadow-sharp" : "shadow-sharp"}
         `}
 			>
