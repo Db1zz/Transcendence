@@ -50,6 +50,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 	const callRedirectHandled = useRef(false);
 	const lastServerId = useRef<string | null>(null);
 	const [isMobileProfileOpen, setIsMobileProfileOpen] = useState(false);
+	const [isMobile, setIsMobile] = useState(() => {
+		if (typeof window === "undefined") return false;
+		return window.matchMedia("(max-width: 767px)").matches;
+	});
 
 	const fetchServerData = async (serverId: string) => {
 		try {
@@ -75,6 +79,16 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 			console.error("Failed to fetch server channels", error);
 		}
 	};
+
+	useEffect(() => {
+		const mediaQuery = window.matchMedia("(max-width: 767px)");
+		const updateIsMobile = () => setIsMobile(mediaQuery.matches);
+
+		updateIsMobile();
+		mediaQuery.addEventListener("change", updateIsMobile);
+
+		return () => mediaQuery.removeEventListener("change", updateIsMobile);
+	}, []);
 
 	useEffect(() => {
 		const savedView = localStorage.getItem("activeView") as any;
@@ -152,8 +166,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
 	if (loading) return null;
 	const showMobileMessagesPage = activeView === "chat" && !activeDmChannelId;
-	const showMobileFriendsPage = activeView === "friendsList";
-	const showMobileNotificationsPage = activeView === "notifications";
+	const showMobileFriendsPage = isMobile && activeView === "friendsList";
+	const showMobileNotificationsPage = isMobile && activeView === "notifications";
 	const isFriendsView = activeView === "friends" || activeView === "friendsList";
 
 	const isServerCall = activeCall && serverCategories.some(
