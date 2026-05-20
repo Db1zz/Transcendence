@@ -20,11 +20,9 @@ interface IncomingCallNotificationProps {
   onReject: () => void;
 }
 
-export const IncomingCallNotification: React.FC<IncomingCallNotificationProps> = ({
-  event,
-  onAnswer,
-  onReject,
-}) => {
+export const IncomingCallNotification: React.FC<
+  IncomingCallNotificationProps
+> = ({ event, onAnswer, onReject }) => {
   const { t } = useTranslation();
   const { friends } = useFriends();
   const callData = useMemo(() => {
@@ -40,12 +38,11 @@ export const IncomingCallNotification: React.FC<IncomingCallNotificationProps> =
     return friends.find((f) => f.id === callData?.sender_id);
   }, [friends, callData]);
 
-if (!callData) return null;
+  if (!callData) return null;
 
   return (
     <div className="fixed top-1/2 left-1/2 z-50 w-80 -translate-x-1/2 -translate-y-1/2 animate-in fade-in zoom-in-95 duration-300">
       <div className="bg-brand-peach border-4 border-gray-800 shadow-[8px_8px_0px_0px_rgba(31,41,55,1)] p-4 flex flex-col gap-4">
-        
         <div className="flex items-center gap-3 border-b-2 border-gray-800 pb-3">
           <div className="relative">
             {caller?.picture ? (

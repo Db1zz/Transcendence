@@ -17,8 +17,7 @@ const HomePage = () => {
   return (
     <CallProvider>
       <SocketProvider>
-        <MainLayout>
-        </MainLayout>
+        <MainLayout></MainLayout>
       </SocketProvider>
     </CallProvider>
   );

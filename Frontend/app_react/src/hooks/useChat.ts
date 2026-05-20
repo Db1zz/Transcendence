@@ -12,7 +12,7 @@ export interface ChatMessage {
 
 export const useChat = (channelId: string) => {
   const { isConnected, subscribe, send } = useSocket();
-  
+
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
@@ -64,9 +64,12 @@ export const useChat = (channelId: string) => {
   useEffect(() => {
     if (!channelId || !isConnected) return;
 
-    const subscription = subscribe(`/topic/chat/${channelId}`, (parsedMessage: ChatMessage) => {
-      setMessages((prev) => [...prev, parsedMessage]);
-    });
+    const subscription = subscribe(
+      `/topic/chat/${channelId}`,
+      (parsedMessage: ChatMessage) => {
+        setMessages((prev) => [...prev, parsedMessage]);
+      },
+    );
 
     return () => {
       if (subscription) {
@@ -79,7 +82,7 @@ export const useChat = (channelId: string) => {
     if (isConnected && content.trim()) {
       send("/app/chat.send", {
         channelId,
-      senderId,
+        senderId,
         content,
       });
     }
