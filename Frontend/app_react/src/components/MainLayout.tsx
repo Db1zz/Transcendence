@@ -193,7 +193,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 						</div>
 					)}
 					<div className="flex flex-1 flex-col gap-0 overflow-hidden md:flex-row md:gap-0">
-						<div className={`${activeView === "chat" || activeView === "friends" || activeView === "friendsList" ? "flex" : "hidden md:flex"} flex-1 w-full md:flex-none md:w-1/5 md:flex-shrink-0 overflow-hidden relative flex-col h-full max-h-none`}>
+						<div className={`${activeView === "chat" && activeDmChannelId ? "hidden md:flex" : activeView === "chat" || activeView === "friends" || activeView === "friendsList" ? "flex" : "hidden md:flex"} flex-1 w-full md:flex-none md:w-1/5 md:flex-shrink-0 overflow-hidden relative flex-col h-full max-h-none`}>
 							{activeView === "server" ? (
 								<ServerLeftBar
 									serverId={activeServerId || ""}
@@ -293,8 +293,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 				/>
 			)}
 
-			{/* Mobile navigation - always visible on mobile */}
-			<MobileNavBar active={activeView} onNavigate={(v) => handleViewChange(v)} onYouClick={handleOpenMobileProfile} />
+			{/* Mobile navigation - hidden while a direct message chat is open */}
+			{!(activeView === "chat" && activeDmChannelId) && (
+				<MobileNavBar active={activeView} onNavigate={(v) => handleViewChange(v)} onYouClick={handleOpenMobileProfile} />
+			)}
 
 			{user && (
 				<ProfilePopup
