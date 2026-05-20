@@ -33,7 +33,7 @@ interface MainLayoutProps {
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 	const { t } = useTranslation();
-	const [activeView, setActiveView] = useState<"friends" | "chat" | "voice" | "server" | "friendsList">("friends");
+	const [activeView, setActiveView] = useState<"friends" | "chat" | "voice" | "server" | "friendsList">("chat");
 	const [inServerVoice, setInServerVoice] = useState(false);
 	const { incomingCall, setIncomingCall } = useNotifications();
 	const { activeCall, joinOrCreateRoom, joinVoiceChannel } = useCall();
@@ -151,15 +151,15 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 			) : (
 				<HeaderBar type="friends" />
 			)}
-			<div className={`flex flex-1 min-h-0 overflow-y-auto md:overflow-hidden ${activeView === "chat" || activeView === "friends" ? "flex-col" : "flex-row"} md:flex-row`}>
-				<div className={`${activeView === "chat" || activeView === "friends" ? "hidden md:flex" : "flex"} w-[72px] z-30 flex-col overflow-hidden`}>
+			<div className="flex flex-1 min-h-0 overflow-y-auto md:overflow-hidden flex-row">
+				<div className="flex w-[72px] z-30 flex-col overflow-hidden">
 					<NavigationSidebar
 						onChatClick={() => handleViewChange("chat")}
 						onFriendsClick={() => handleViewChange("friends")}
 						onServerClick={handleServerClick}
 					/>
 				</div>
-				<main className="flex-1 flex flex-col pt-2 px-2 md:p-2 overflow-hidden relative min-h-0">
+				<main className="flex-1 flex flex-col p-0 pb-20 md:p-2 md:pb-2 overflow-hidden relative min-h-0">
 					<div className="absolute inset-0 bg-brand-green opacity-80 -z-10"></div>
 					{activeCall && activeView !== "voice" && !(activeView === "server" && inServerVoice) && (
 						<div className="mb-2 mr-2 flex items-center justify-between bg-brand-brick text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-pulse flex-shrink-0">
@@ -185,8 +185,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 							</button>
 						</div>
 					)}
-					<div className="flex flex-1 flex-col gap-2 overflow-hidden md:flex-row md:gap-0">
-						<div className={`${activeView === "chat" || activeView === "friends" ? "flex" : "hidden md:flex"} w-full md:w-1/5 flex-shrink-0 overflow-hidden relative flex-col max-h-[42dvh] md:max-h-none`}>
+					<div className="flex flex-1 flex-col gap-0 overflow-hidden md:flex-row md:gap-0">
+						<div className={`${activeView === "chat" || activeView === "friends" || activeView === "friendsList" ? "flex" : "hidden md:flex"} w-full md:w-1/5 flex-shrink-0 overflow-hidden relative flex-col h-full max-h-none`}>
 							{activeView === "server" ? (
 								<ServerLeftBar
 									serverId={activeServerId || ""}
@@ -219,7 +219,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 								</div>
 							)}
 						</div>
-						<div className="flex flex-1 min-h-0 overflow-hidden">
+						<div className={`${activeView === "friends" ? "hidden md:flex" : "flex"} flex-1 min-h-0 overflow-hidden`}>
 							<div className="flex-1 min-h-0">
 								{activeView === "server" ? (
 									inServerVoice ? (
@@ -286,8 +286,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 				/>
 			)}
 
-			{/* Mobile navigation - hidden on chat view */}
-			{activeView !== "chat" && <MobileNavBar active={activeView} onNavigate={(v) => handleViewChange(v)} />}
+			{/* Mobile navigation - always visible on mobile */}
+			<MobileNavBar active={activeView} onNavigate={(v) => handleViewChange(v)} />
 		</div>
 	);
 };

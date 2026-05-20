@@ -36,7 +36,7 @@ export const LeftBar: React.FC<LeftBarProps> = ({
 			/>
 			<div className="absolute inset-0 bg-brand-peach opacity-90" />
 			<div className="relative z-10 flex flex-col gap-4 h-full">
-				<div className="flex flex-col gap-2 md:gap-3">
+				<div className="hidden md:flex md:flex-col gap-2 md:gap-3">
 					<button
 						type="button"
 						onClick={handleFriendsClick}
