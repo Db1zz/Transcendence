@@ -130,6 +130,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 		await fetchServerData(serverId);
 	};
 
+	const handleOpenAddFriends = () => {
+		handleViewChange("friends");
+	};
+
 	if (loading) return null;
 
 	const isServerCall = activeCall && serverCategories.some(cat =>
@@ -147,8 +151,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 			) : (
 				<HeaderBar type="friends" />
 			)}
-			<div className={`flex flex-1 min-h-0 overflow-y-auto md:overflow-hidden ${activeView === "chat" ? "flex-col" : "flex-row"} md:flex-row`}>
-				<div className={`${activeView === "chat" ? "hidden md:flex" : "flex"} w-[72px] z-30 flex-col overflow-hidden`}>
+			<div className={`flex flex-1 min-h-0 overflow-y-auto md:overflow-hidden ${activeView === "chat" || activeView === "friends" ? "flex-col" : "flex-row"} md:flex-row`}>
+				<div className={`${activeView === "chat" || activeView === "friends" ? "hidden md:flex" : "flex"} w-[72px] z-30 flex-col overflow-hidden`}>
 					<NavigationSidebar
 						onChatClick={() => handleViewChange("chat")}
 						onFriendsClick={() => handleViewChange("friends")}
@@ -182,7 +186,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 						</div>
 					)}
 					<div className="flex flex-1 flex-col gap-2 overflow-hidden md:flex-row md:gap-0">
-						<div className={`${activeView === "chat" || activeView === "friends" ? "hidden md:flex" : "flex"} w-full md:w-1/5 flex-shrink-0 overflow-hidden relative flex-col max-h-[42dvh] md:max-h-none`}>
+						<div className={`${activeView === "chat" || activeView === "friends" ? "flex" : "hidden md:flex"} w-full md:w-1/5 flex-shrink-0 overflow-hidden relative flex-col max-h-[42dvh] md:max-h-none`}>
 							{activeView === "server" ? (
 								<ServerLeftBar
 									serverId={activeServerId || ""}
@@ -206,10 +210,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 								<LeftBar
 									onFriendsClick={() => handleViewChange("friends")}
 									onChatChannelClick={handleChatChannelClick}
+									onAddFriendsClick={handleOpenAddFriends}
 								/>
 							)}
 							{user && (
-								<div className="mt-auto p-2 z-40">
+								<div className="hidden md:block mt-auto p-2 z-40">
 									<ProfileButton user={user} className="w-full" />
 								</div>
 							)}
@@ -232,6 +237,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 										</div>
 									)
 								) : activeView === "friends" ? (
+								<div className="hidden md:block w-full h-full">
 									<FriendsView onOpenChat={async (friend) => {
 										if (!user) return;
 										try {
@@ -243,6 +249,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 											handleViewChange("chat");
 										} catch (e) { console.error(e); }
 									}} />
+								</div>
 								) : activeView === "voice" ? (
 									<VoiceView />
 								) : !activeDmChannelId ? (
