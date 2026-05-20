@@ -29,7 +29,7 @@ export const LeftBar: React.FC<LeftBarProps> = ({
 	const { chatChannels, loading, error } = useChatChannels();
 
 	return (
-		<div className="h-full rounded-l-lg p-4 border border-brand-green relative overflow-hidden flex flex-col">
+		<div className="h-full rounded-none md:rounded-l-lg p-4 border border-brand-green md:border-brand-green border-x-0 md:border-x relative overflow-hidden flex flex-col">
 			<div
 				className="absolute inset-0 bg-cover bg-center"
 				style={{ backgroundImage: `url(${bgLSideBar})` }}

@@ -159,7 +159,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 						onServerClick={handleServerClick}
 					/>
 				</div>
-				<main className="flex-1 flex flex-col p-0 pb-20 md:p-2 md:pb-2 overflow-hidden relative min-h-0">
+				<main className="flex-1 flex flex-col p-0 pb-0 md:p-2 md:pb-0 overflow-hidden relative min-h-0">
 					<div className="absolute inset-0 bg-brand-green opacity-80 -z-10"></div>
 					{activeCall && activeView !== "voice" && !(activeView === "server" && inServerVoice) && (
 						<div className="mb-2 mr-2 flex items-center justify-between bg-brand-brick text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-pulse flex-shrink-0">
@@ -186,7 +186,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 						</div>
 					)}
 					<div className="flex flex-1 flex-col gap-0 overflow-hidden md:flex-row md:gap-0">
-						<div className={`${activeView === "chat" || activeView === "friends" || activeView === "friendsList" ? "flex" : "hidden md:flex"} w-full md:w-1/5 flex-shrink-0 overflow-hidden relative flex-col h-full max-h-none`}>
+						<div className={`${activeView === "chat" || activeView === "friends" || activeView === "friendsList" ? "flex" : "hidden md:flex"} flex-1 w-full md:flex-none md:w-1/5 md:flex-shrink-0 overflow-hidden relative flex-col h-full max-h-none`}>
 							{activeView === "server" ? (
 								<ServerLeftBar
 									serverId={activeServerId || ""}
@@ -214,12 +214,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 								/>
 							)}
 							{user && (
-								<div className="hidden md:block mt-auto p-2 z-40">
-									<ProfileButton user={user} className="w-full" />
+								<div className="hidden md:block absolute bottom-0 left-0 right-0 p-2 z-40 pointer-events-none">
+									<ProfileButton user={user} className="w-full pointer-events-auto" />
 								</div>
 							)}
 						</div>
-						<div className={`${activeView === "friends" ? "hidden md:flex" : "flex"} flex-1 min-h-0 overflow-hidden`}>
+						<div className={`${activeView === "friends" || (activeView === "chat" && !activeDmChannelId) ? "hidden md:flex" : "flex"} flex-1 min-h-0 overflow-hidden`}>
 							<div className="flex-1 min-h-0">
 								{activeView === "server" ? (
 									inServerVoice ? (
