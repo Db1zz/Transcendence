@@ -1,5 +1,5 @@
 import React from "react";
-import { Home, Bell } from "lucide-react";
+import { Home, Bell, Users } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 
 const StatusColors: Record<string, string> = {
@@ -9,14 +9,15 @@ const StatusColors: Record<string, string> = {
 	offline: "bg-gray-400",
 };
 interface MobileNavBarProps {
-	active?: "friends" | "chat" | "voice" | "server";
-	onNavigate?: (view: "friends" | "chat" | "voice" | "server") => void;
+	active?: "friends" | "chat" | "voice" | "server" | "friendsList";
+	onNavigate?: (view: "friends" | "chat" | "voice" | "server" | "friendsList") => void;
 }
 
 export const MobileNavBar: React.FC<MobileNavBarProps> = ({ active = "friends", onNavigate }) => {
 	const { user } = useAuth();
 
 	const handleMain = () => onNavigate?.("friends");
+	const handleFriends = () => onNavigate?.("friendsList");
 	const handleNotifications = () => onNavigate?.("voice");
 	const handleYou = () => onNavigate?.("server");
 
@@ -24,6 +25,7 @@ export const MobileNavBar: React.FC<MobileNavBarProps> = ({ active = "friends", 
 
 	const btnBase = "flex-1 flex flex-col items-center justify-center gap-1 py-2 rounded-lg transition-colors";
 	const mainActive = active === "friends";
+	const friendsActive = active === "friendsList";
 	const notifActive = active === "voice";
 	const youActive = active === "server";
 
@@ -37,6 +39,15 @@ export const MobileNavBar: React.FC<MobileNavBarProps> = ({ active = "friends", 
 				>
 					<Home size={20} className={`${mainActive ? "text-brand-beige" : "text-brand-beige"}`} />
 					<span className="text-[10px]">main</span>
+				</button>
+
+				<button
+					onClick={handleFriends}
+					className={`${btnBase} ${friendsActive ? "bg-brand-brick text-brand-beige" : "text-brand-beige hover:bg-white/5"}`}
+					aria-label="Friends"
+				>
+					<Users size={20} className={`${friendsActive ? "text-brand-beige" : "text-brand-beige"}`} />
+					<span className="text-[10px]">friends</span>
 				</button>
 
 				<button

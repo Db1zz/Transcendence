@@ -110,7 +110,7 @@ const resources = {
       },
       friends: {
         title: "Friends",
-        addFriend: "Add Friend",
+        addFriend: "add friend",
         tabs: {
           online: "Online",
           all: "All",
@@ -130,7 +130,7 @@ const resources = {
         loadingChats: "loading chats...",
         noChats: "no chats yet",
         addView: {
-          title: "Add Friend",
+          title: "add friend",
           subtitle: "you can add friends with their 'names'.",
           placeholder: "enter a name",
           sendRequest: "send request",

@@ -33,7 +33,7 @@ interface MainLayoutProps {
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 	const { t } = useTranslation();
-	const [activeView, setActiveView] = useState<"friends" | "chat" | "voice" | "server">("friends");
+	const [activeView, setActiveView] = useState<"friends" | "chat" | "voice" | "server" | "friendsList">("friends");
 	const [inServerVoice, setInServerVoice] = useState(false);
 	const { incomingCall, setIncomingCall } = useNotifications();
 	const { activeCall, joinOrCreateRoom, joinVoiceChannel } = useCall();
@@ -109,7 +109,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 		return () => { if (timer) clearTimeout(timer); };
 	}, [incomingCall, setIncomingCall]);
 
-	const handleViewChange = (view: "friends" | "chat" | "voice" | "server") => {
+	const handleViewChange = (view: "friends" | "chat" | "voice" | "server" | "friendsList") => {
 		setActiveView(view);
 		localStorage.setItem("activeView", view);
 	};
@@ -237,19 +237,19 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 										</div>
 									)
 								) : activeView === "friends" ? (
-								<div className="hidden md:block w-full h-full">
-									<FriendsView onOpenChat={async (friend) => {
-										if (!user) return;
-										try {
-											const response = await api.post("/channels", {
-												name: null, channelType: "TEXT", organizationId: null, memberIds: [user.id, friend.id],
-											});
-											setActiveDmChannelId(response.data.id);
-											setActiveDmName(friend.name);
-											handleViewChange("chat");
-										} catch (e) { console.error(e); }
-									}} />
-								</div>
+									<div className="hidden md:block w-full h-full">
+										<FriendsView onOpenChat={async (friend) => {
+											if (!user) return;
+											try {
+												const response = await api.post("/channels", {
+													name: null, channelType: "TEXT", organizationId: null, memberIds: [user.id, friend.id],
+												});
+												setActiveDmChannelId(response.data.id);
+												setActiveDmName(friend.name);
+												handleViewChange("chat");
+											} catch (e) { console.error(e); }
+										}} />
+									</div>
 								) : activeView === "voice" ? (
 									<VoiceView />
 								) : !activeDmChannelId ? (
