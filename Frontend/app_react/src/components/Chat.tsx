@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft } from "lucide-react";
 import { Button } from "./Button";
 import { useChat } from "../hooks/useChat";
+import BackButton from "./BackButton";
 
 interface ChatProps {
 	personName: string;
@@ -81,14 +81,7 @@ const Chat: React.FC<ChatProps> = ({
 				<div className="bg-brand-peach border-y border-brand-green text-white p-3 sm:p-4 shadow-md">
 					<div className="flex items-start gap-3">
 						{onBack && (
-							<button
-								type="button"
-								onClick={onBack}
-								className="md:hidden mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-full border border-brand-green/30 bg-brand-beige text-brand-green shadow-sm"
-								aria-label="Go back"
-							>
-								<ArrowLeft size={18} />
-							</button>
+							<BackButton onClick={onBack} className="md:hidden mt-0.5" />
 						)}
 						<div className="min-w-0 flex-1">
 							<h2 className="text-lg sm:text-xl font-bold truncate">{personName}</h2>

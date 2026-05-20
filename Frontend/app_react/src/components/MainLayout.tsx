@@ -20,6 +20,7 @@ import { ArrowUpRight, Phone } from "lucide-react";
 import { useNotifications } from "../contexts/NotificationContext";
 import { useCall } from "../hooks/useCall";
 import MobileNavBar from "./MobileNavBar";
+import { ProfilePopup } from "./ProfilePopup";
 
 const mockMembers: Member[] = [
 	{ id: "1", name: "Kaneki", status: "online", role: "Admin" },
@@ -47,6 +48,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 	const { user, loading } = useAuth();
 	const callRedirectHandled = useRef(false);
 	const lastServerId = useRef<string | null>(null);
+	const [isMobileProfileOpen, setIsMobileProfileOpen] = useState(false);
 
 	const fetchServerData = async (serverId: string) => {
 		try {
@@ -110,6 +112,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 	}, [incomingCall, setIncomingCall]);
 
 	const handleViewChange = (view: "friends" | "chat" | "voice" | "server" | "friendsList") => {
+		setIsMobileProfileOpen(false);
 		setActiveView(view);
 		localStorage.setItem("activeView", view);
 	};
@@ -132,6 +135,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
 	const handleOpenAddFriends = () => {
 		handleViewChange("friends");
+	};
+
+	const handleOpenMobileProfile = () => {
+		setIsMobileProfileOpen(true);
 	};
 
 	if (loading) return null;
@@ -287,7 +294,15 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 			)}
 
 			{/* Mobile navigation - always visible on mobile */}
-			<MobileNavBar active={activeView} onNavigate={(v) => handleViewChange(v)} />
+			<MobileNavBar active={activeView} onNavigate={(v) => handleViewChange(v)} onYouClick={handleOpenMobileProfile} />
+
+			{user && (
+				<ProfilePopup
+					user={user}
+					isOpen={isMobileProfileOpen}
+					onClose={() => setIsMobileProfileOpen(false)}
+				/>
+			)}
 		</div>
 	);
 };

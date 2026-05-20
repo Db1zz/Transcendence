@@ -11,15 +11,22 @@ const StatusColors: Record<string, string> = {
 interface MobileNavBarProps {
 	active?: "friends" | "chat" | "voice" | "server" | "friendsList";
 	onNavigate?: (view: "friends" | "chat" | "voice" | "server" | "friendsList") => void;
+	onYouClick?: () => void;
 }
 
-export const MobileNavBar: React.FC<MobileNavBarProps> = ({ active = "friends", onNavigate }) => {
+export const MobileNavBar: React.FC<MobileNavBarProps> = ({ active = "friends", onNavigate, onYouClick }) => {
 	const { user } = useAuth();
 
 	const handleMain = () => onNavigate?.("friends");
 	const handleFriends = () => onNavigate?.("friendsList");
 	const handleNotifications = () => onNavigate?.("voice");
-	const handleYou = () => onNavigate?.("server");
+	const handleYou = () => {
+		if (onYouClick) {
+			onYouClick();
+			return;
+		}
+		onNavigate?.("server");
+	};
 
 	const status = user?.status || "offline";
 
