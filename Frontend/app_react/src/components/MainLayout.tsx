@@ -143,7 +143,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 		setIsMobileProfileOpen(true);
 	};
 
+	const handleMobileMainClick = () => {
+		setActiveDmChannelId(null);
+		setActiveDmName("");
+		handleViewChange("chat");
+	};
+
 	if (loading) return null;
+	const showMobileMessagesPage = activeView === "chat" && !activeDmChannelId;
 	const showMobileFriendsPage = activeView === "friendsList";
 	const isFriendsView = activeView === "friends" || activeView === "friendsList";
 
@@ -170,8 +177,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
 	return (
 		<div className="min-h-dvh flex flex-col overflow-hidden relative">
-			{showMobileFriendsPage ? null : activeView === "server" ? (
+			{showMobileFriendsPage ? (
+				<HeaderBar type="friends" />
+			) : activeView === "server" ? (
 				<ServerHeader channelName={activeServerChannelName || "general"} />
+			) : showMobileMessagesPage ? (
+				<HeaderBar type="messages" />
 			) : activeView === "chat" ? (
 				<div className="hidden md:block">
 					<HeaderBar type="messages" />
@@ -180,7 +191,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 				<HeaderBar type="friends" />
 			)}
 			<div className="flex flex-1 min-h-0 overflow-y-auto md:overflow-hidden flex-row">
-				<div className="hidden md:flex w-[72px] z-30 flex-col overflow-hidden">
+				<div className={`${showMobileMessagesPage ? "flex" : "hidden md:flex"} w-[72px] z-30 flex-col overflow-hidden flex-shrink-0`}>
 					<NavigationSidebar
 						onChatClick={() => handleViewChange("chat")}
 						onFriendsClick={() => handleViewChange("friends")}
@@ -220,7 +231,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 					) : (
 						<>
 							<div className="flex flex-1 flex-col gap-0 overflow-hidden md:flex-row md:gap-0">
-								<div className={`${activeView === "chat" && !activeDmChannelId ? "flex" : "hidden md:flex"} flex-1 w-full md:flex-none md:w-1/5 md:flex-shrink-0 overflow-hidden relative flex-col h-full max-h-none`}>
+								<div className={`${showMobileMessagesPage ? "flex" : activeView === "chat" && !activeDmChannelId ? "flex" : "hidden md:flex"} flex-1 w-full md:flex-none md:w-1/5 md:flex-shrink-0 overflow-hidden relative flex-col h-full max-h-none`}>
 									{activeView === "server" ? (
 										<ServerLeftBar
 											serverId={activeServerId || ""}
@@ -253,7 +264,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 										</div>
 									)}
 								</div>
-								<div className={`${activeView === "chat" && activeDmChannelId ? "hidden md:flex" : "flex"} flex-1 min-h-0 overflow-hidden`}>
+								<div className={`${showMobileMessagesPage ? "hidden md:flex" : "flex"} flex-1 min-h-0 overflow-hidden`}>
 									<div className="flex-1 min-h-0">
 										{activeView === "server" ? (
 											inServerVoice ? (
@@ -331,7 +342,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 			)}
 
 			{!(activeView === "chat" && activeDmChannelId) && (
-				<MobileNavBar active={activeView} onNavigate={(v) => handleViewChange(v)} onYouClick={handleOpenMobileProfile} />
+				<MobileNavBar
+					active={activeView}
+					onNavigate={(v) => handleViewChange(v)}
+					onMainClick={handleMobileMainClick}
+					onYouClick={handleOpenMobileProfile}
+				/>
 			)}
 
 			{user && (

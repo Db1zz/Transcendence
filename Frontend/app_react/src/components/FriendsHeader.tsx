@@ -30,8 +30,8 @@ export const FriendsHeader: React.FC<FriendsHeaderProps> = ({
 	return (
 		<div className="flex flex-col gap-3 px-3 py-3 border-b-2 border-gray-800 bg-brand-peach sm:flex-row sm:items-center sm:gap-4 sm:px-4">
 			<div className="flex items-center gap-2 sm:pr-4 sm:border-r-2 border-gray-800">
-				<Users className="w-5 h-5 text-gray-800" />
-				<span className="font-ananias font-bold text-gray-800 text-sm sm:text-base">
+				<Users className="hidden sm:inline w-5 h-5 text-gray-800" />
+				<span className="hidden sm:inline font-ananias font-bold text-gray-800 text-sm sm:text-base">
 					{t("friends.title")}
 				</span>
 			</div>
