@@ -9,8 +9,9 @@ up:
 	docker compose -f docker-compose.yaml -f ./Tools/Notify/docker-compose.make.yaml up
 
 up-elk:
-	docker compose -f docker-compose.yaml -f docker-compose.elk.yaml up -d
+	docker compose -f docker-compose.yaml -f docker-compose.elk.yaml -f ./Tools/Notify/docker-compose.make.yaml up -d
 	@$(MAKE) setup-elk
+	docker compose -f docker-compose.yaml -f docker-compose.elk.yaml -f ./Tools/Notify/docker-compose.make.yaml logs -f
 
 setup-elk:
 	@echo "waiting for elk to wek up"

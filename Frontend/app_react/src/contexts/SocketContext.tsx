@@ -1,18 +1,28 @@
-
-import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
-import { StompSubscription } from '@stomp/stompjs';
-import { useAuth } from './AuthContext';
-import { socketService } from '../services/socket/socketService';
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useRef,
+} from "react";
+import { StompSubscription } from "@stomp/stompjs";
+import { useAuth } from "./AuthContext";
+import { socketService } from "../services/socket/socketService";
 
 interface SocketContextValue {
   isConnected: boolean;
-  subscribe: (destination: string, callback: (payload: any) => void) => StompSubscription | null;
+  subscribe: (
+    destination: string,
+    callback: (payload: any) => void,
+  ) => StompSubscription | null;
   send: (destination: string, body: any) => void;
 }
 
 const SocketContext = createContext<SocketContextValue | undefined>(undefined);
 
-export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const { user } = useAuth();
   const [isConnected, setIsConnected] = useState(false);
   const subscriptionsRef = useRef<StompSubscription[]>([]);
@@ -24,15 +34,16 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       return;
     }
 
-    socketService.connect()
+    socketService
+      .connect()
       .then(() => {
         setIsConnected(true);
-        console.log('Global STOMP socket connected');
+        console.log("Global STOMP socket connected");
       })
-      .catch((err: Error) => console.error('STOMP connection failed', err));
+      .catch((err: Error) => console.error("STOMP connection failed", err));
 
     return () => {
-      subscriptionsRef.current.forEach(sub => sub.unsubscribe());
+      subscriptionsRef.current.forEach((sub) => sub.unsubscribe());
       subscriptionsRef.current = [];
       socketService.disconnect();
       setIsConnected(false);
@@ -66,6 +77,6 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
 export const useSocket = () => {
   const ctx = useContext(SocketContext);
-  if (!ctx) throw new Error('useSocket must be used within SocketProvider');
+  if (!ctx) throw new Error("useSocket must be used within SocketProvider");
   return ctx;
 };

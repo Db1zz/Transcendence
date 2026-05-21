@@ -27,12 +27,12 @@ export const ProfileButton: React.FC<ProfileButtonProps> = ({
 }) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const isV2 = variant === "v2";
-  
+
   const containerStyle =
     variant === "v2"
       ? "bg-white/40 hover:bg-white/80 border-2 border-transparent hover:border-brand-peach shadow-none transplate-x-0 translate-y-0"
       : "bg-brand-beige border-2 border-gray-800 shadow-sharp-button hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px]";
-      
+
   const avatarStyle =
     variant === "v2"
       ? "border-2 border-white shadow-sm"
@@ -48,8 +48,8 @@ export const ProfileButton: React.FC<ProfileButtonProps> = ({
     isOnline === true
       ? "online"
       : isOnline === false
-      ? "offline"
-      : user.status?.toLowerCase() || "offline";
+        ? "offline"
+        : user.status?.toLowerCase() || "offline";
 
   return (
     <>

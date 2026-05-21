@@ -31,13 +31,17 @@ export class WebRtcSession {
 
   public async start() {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: true,
+      });
       this.localStream = stream;
       this.callbacks.onLocalStream?.(stream);
 
       this.signalingServerSocket = new WebSocket(this.signalingServerAddress);
-      this.signalingServerSocket.onmessage = (msg) => this.onMessageCallback(msg);
-      
+      this.signalingServerSocket.onmessage = (msg) =>
+        this.onMessageCallback(msg);
+
       this.signalingServerSocket.onclose = () => this.destroy();
     } catch (err) {
       console.error("Failed to acquire media or connect to signaling:", err);
@@ -52,7 +56,7 @@ export class WebRtcSession {
       this.signalingServerSocket = null;
     }
 
-    this.localStream?.getTracks().forEach(track => track.stop());
+    this.localStream?.getTracks().forEach((track) => track.stop());
     this.localStream = null;
 
     this.peers.forEach((pc, peerId) => {
@@ -98,7 +102,7 @@ export class WebRtcSession {
 
   private async handleOfferEvent(from: string, sdp: RTCSessionDescriptionInit) {
     const pc = this.createPeerConnection(from);
-    
+
     await pc.setRemoteDescription(new RTCSessionDescription(sdp));
     const answer = await pc.createAnswer();
     await pc.setLocalDescription(answer);
@@ -106,7 +110,10 @@ export class WebRtcSession {
     this.sendSignal({ type: "answer", to: from, sdp: pc.localDescription! });
   }
 
-  private async handleAnswerEvent(from: string, sdp: RTCSessionDescriptionInit) {
+  private async handleAnswerEvent(
+    from: string,
+    sdp: RTCSessionDescriptionInit,
+  ) {
     const pc = this.peers.get(from);
     if (!pc) return;
 

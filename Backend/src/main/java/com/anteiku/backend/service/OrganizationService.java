@@ -7,6 +7,7 @@ import com.anteiku.backend.exception.ResourceNotFoundException;
 import com.anteiku.backend.mapper.ChannelMapper;
 import com.anteiku.backend.model.*;
 import com.anteiku.backend.repository.*;
+import com.anteiku.backend.util.PermissionFlags;
 import com.anteiku.backend.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,7 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -33,6 +35,7 @@ public class OrganizationService {
     private final OrganizationMemberRepository organizationMemberRepository;
     private final ChannelRepository channelRepository;
     private final OrganizationInviteRepository organizationInviteRepository;
+    private final RoleRepository roleRepository;
     private final ChannelMapper channelMapper;
 
     public CreateOrganizationResponseDto createOrganization(CreateOrganizationDto dto) {
@@ -52,10 +55,25 @@ public class OrganizationService {
 
         organizationRepository.save(organization);
 
+        RoleEntity ownerRole = new RoleEntity();
+        ownerRole.setName("Owner");
+        ownerRole.setOrganization(organization);
+        ownerRole.setPermissionMask(PermissionFlags.ADMINISTRATOR);
+        ownerRole.setCreatedAt(Instant.now());
+        ownerRole = roleRepository.save(ownerRole);
+
+        RoleEntity memberRole = new RoleEntity();
+        memberRole.setName("Member");
+        memberRole.setOrganization(organization);
+        memberRole.setPermissionMask(PermissionFlags.SEND_MESSAGES |  PermissionFlags.CONNECT_VOICE);
+        memberRole.setCreatedAt(Instant.now());
+        roleRepository.save(memberRole);
+
         OrganizationMemberEntity ownerMember = new OrganizationMemberEntity();
         ownerMember.setOrganization(organization);
         ownerMember.setUser(owner);
         ownerMember.setJoinedAt(Instant.now());
+        ownerMember.setRoles(Set.of(ownerRole));
         organizationMemberRepository.save(ownerMember);
 
         ChannelEntity generalText = ChannelEntity.builder()
@@ -211,6 +229,13 @@ public class OrganizationService {
         member.setOrganization(org);
         member.setUser(user);
         member.setJoinedAt(Instant.now());
+
+        List<RoleEntity> orgRoles = roleRepository.findByOrganizationId(org.getId());
+        orgRoles.stream()
+                .filter(r -> r.getName().equals("Member"))
+                .findFirst()
+                .ifPresent(memberRole -> member.setRoles(Set.of(memberRole)));
+
         organizationMemberRepository.save(member);
 
         log.info("User {} joined server {} via invite code [{}]", currentUserId, org.getId(), inviteCode);

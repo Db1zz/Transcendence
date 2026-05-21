@@ -152,7 +152,7 @@ export const VoiceView: React.FC<VoiceViewProps> = ({ onLeave }) => {
         >
           {micEnabled ? <IconMicOn /> : <IconMicOff />}
         </button>
-        
+
         <button
           onClick={toggleAudio}
           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
@@ -160,7 +160,9 @@ export const VoiceView: React.FC<VoiceViewProps> = ({ onLeave }) => {
               ? "hover:bg-brand-green text-white bg-brand-green/20"
               : "hover:bg-brand-brick text-white bg-brand-brick"
           }`}
-          aria-label={deafened ? t("voice.headphonesOn") : t("voice.headphonesOff")}
+          aria-label={
+            deafened ? t("voice.headphonesOn") : t("voice.headphonesOff")
+          }
         >
           {deafened ? <IconHeadphoneOff /> : <IconHeadphonesOn />}
         </button>
