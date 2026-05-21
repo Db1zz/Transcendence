@@ -59,14 +59,22 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
     "friend" | "pending" | "not_friend"
   >("not_friend");
   const { logout, setUser, user: authenticatedUser } = useAuth();
-  const displayTitle = user.name || user.displayName || user.username || "Unknown User";
-  const displayHandle = user.username ? `@${user.username}` : `@${displayTitle.toLowerCase().replace(/\s/g, "")}`;
-  const displayPicture = user.picture || user.avatarUrl || "https://i.pinimg.com/1200x/c4/a4/36/c4a4365f7c98dc3b4b26fbad20da527d.jpg";
+  const displayTitle =
+    user.name || user.displayName || user.username || "Unknown User";
+  const displayHandle = user.username
+    ? `@${user.username}`
+    : `@${displayTitle.toLowerCase().replace(/\s/g, "")}`;
+  const displayPicture =
+    user.picture ||
+    user.avatarUrl ||
+    "https://i.pinimg.com/1200x/c4/a4/36/c4a4365f7c98dc3b4b26fbad20da527d.jpg";
   const isOwnProfile = authenticatedUser?.id === user.id;
   const canExpand = isOwnProfile;
   const showSettingsPanel = canExpand && isExpanded;
-  const isEditingProfile = isOwnProfile && showSettingsPanel && activeSettingsSection === "profile";
-  const isEditingLanguage = isOwnProfile && showSettingsPanel && activeSettingsSection === "language";
+  const isEditingProfile =
+    isOwnProfile && showSettingsPanel && activeSettingsSection === "profile";
+  const isEditingLanguage =
+    isOwnProfile && showSettingsPanel && activeSettingsSection === "language";
   const isEditingSettings = isEditingProfile || isEditingLanguage;
 
   useEffect(() => {
@@ -95,7 +103,7 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
     setActiveSettingsSection(!isExpanded ? "profile" : null);
     setSaveError("");
   };
-  
+
   const handleLogout = () => {
     logout();
     handleClose();
@@ -149,14 +157,17 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
       const updatedProfile = response.data;
       const updatedUser: User = {
         id: updatedProfile.id || user.id,
-        name: updatedProfile.displayName || updatedProfile.username || user.name,
+        name:
+          updatedProfile.displayName || updatedProfile.username || user.name,
         username: updatedProfile.username || user.username,
         email: updatedProfile.email || authenticatedUser?.email || "",
         picture: updatedProfile.picture || user.picture,
         status: authenticatedUser?.status || "online",
         about: updatedProfile.about || "",
         createdAt: updatedProfile.createdAt || user.createdAt,
-        role: (updatedProfile.role || authenticatedUser?.role || "USER") as "USER" | "ADMIN",
+        role: (updatedProfile.role || authenticatedUser?.role || "USER") as
+          | "USER"
+          | "ADMIN",
       };
 
       localStorage.setItem("user", JSON.stringify(updatedUser));

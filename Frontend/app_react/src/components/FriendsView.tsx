@@ -27,7 +27,10 @@ interface FriendsViewProps {
   statuses?: Record<string, "online" | "idle" | "dnd">;
 }
 
-export const FriendsView: React.FC<FriendsViewProps> = ({ onOpenChat, statuses }) => {
+export const FriendsView: React.FC<FriendsViewProps> = ({
+  onOpenChat,
+  statuses,
+}) => {
   const [activeTab, setActiveTab] = useState<FriendsTab>("online");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -46,7 +49,7 @@ export const FriendsView: React.FC<FriendsViewProps> = ({ onOpenChat, statuses }
   } = useFriends();
 
   const updatedFriends = useMemo<Friend[]>(() => {
-    if (!statuses ) {
+    if (!statuses) {
       return friends;
     }
 

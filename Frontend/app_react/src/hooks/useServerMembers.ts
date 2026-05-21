@@ -22,7 +22,9 @@ export const useServerMembers = (organizationId: string | null) => {
     if (!organizationId) return;
     setLoading(true);
     try {
-      const response = await api.get(`/organizations/${organizationId}/members`);
+      const response = await api.get(
+        `/organizations/${organizationId}/members`,
+      );
       setMembers(response.data);
     } catch (error) {
       console.error("Failed to fetch server members:", error);
@@ -34,8 +36,8 @@ export const useServerMembers = (organizationId: string | null) => {
   const updateMemberRoles = async (memberId: string, roleIds: string[]) => {
     try {
       await api.put(`/members/${memberId}/roles`, roleIds);
-      setMembers((prev) => 
-        prev.map(m => m.id === memberId ? { ...m, roles: roleIds } : m)
+      setMembers((prev) =>
+        prev.map((m) => (m.id === memberId ? { ...m, roles: roleIds } : m)),
       );
     } catch (error) {
       console.error("Failed to update member roles:", error);

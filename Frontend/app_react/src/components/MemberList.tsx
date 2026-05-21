@@ -38,14 +38,16 @@ export const MemberList: React.FC<MemberListProps> = ({ members }) => {
             {groups[group].map((m) => (
               <ProfileButton
                 key={m.id}
-                user={{
-                  id: m.id,
-                  name: m.name,
-                  username: m.name,
-                  displayName: m.name,
-                  picture: m.avatarUrl, 
-                  status: m.status,
-                } as any}
+                user={
+                  {
+                    id: m.id,
+                    name: m.name,
+                    username: m.name,
+                    displayName: m.name,
+                    picture: m.avatarUrl,
+                    status: m.status,
+                  } as any
+                }
                 variant="v2"
                 className="w-full !px-2 !py-1.5"
               />
