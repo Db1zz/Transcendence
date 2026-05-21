@@ -11,6 +11,7 @@ import {
   MicOff,
   Video,
   VideoOff,
+  Headphones, // Added for the "On" state
   HeadphoneOff,
   Phone,
 } from "lucide-react";
@@ -22,6 +23,7 @@ const IconMicOn = () => <Mic size={20} />;
 const IconMicOff = () => <MicOff size={20} />;
 const IconCamOn = () => <Video size={20} />;
 const IconCamOff = () => <VideoOff size={20} />;
+const IconHeadphonesOn = () => <Headphones size={20} />;
 const IconHeadphoneOff = () => <HeadphoneOff size={20} />;
 const IconPhoneOff = () => <Phone size={20} />;
 
@@ -31,6 +33,7 @@ interface VideoTileProps {
   displayName: string;
   isLocal?: boolean;
   isSelected?: boolean;
+  isDeafened?: boolean;
   onClick?: (peerId: string) => void;
   className?: string;
 }
@@ -41,6 +44,7 @@ const VideoTile: React.FC<VideoTileProps> = ({
   displayName,
   isLocal,
   isSelected,
+  isDeafened,
   onClick,
   className = "",
 }) => {
@@ -65,7 +69,7 @@ const VideoTile: React.FC<VideoTileProps> = ({
         ref={videoRef}
         playsInline
         autoPlay
-        muted={isLocal}
+        muted={isLocal || isDeafened}
         className="w-full h-full object-cover"
       />
       <div className="absolute bottom-2 left-2 bg-black/50 px-2 py-1 rounded text-white text-xs">
@@ -79,14 +83,35 @@ interface VoiceViewProps {
   onLeave?: () => void;
 }
 
-export const VoiceView: React.FC<VoiceViewProps> = ({onLeave}) => {
+export const VoiceView: React.FC<VoiceViewProps> = ({ onLeave }) => {
   const { t } = useTranslation();
   const { localStream, remoteStreams, leaveRoom } = useCall();
 
-  const audioEnabled = false;
-  const videoEnabled = false;
+  const [micEnabled, setMicEnabled] = useState(true);
+  const [camEnabled, setCamEnabled] = useState(false);
+  const [deafened, setDeafened] = useState(false);
 
   const [selectedPeerId, setSelectedPeerId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (localStream) {
+      localStream.getAudioTracks().forEach((track) => {
+        track.enabled = micEnabled;
+      });
+    }
+  }, [localStream, micEnabled]);
+
+  useEffect(() => {
+    if (localStream) {
+      localStream.getVideoTracks().forEach((track) => {
+        track.enabled = camEnabled;
+      });
+    }
+  }, [localStream, camEnabled]);
+
+  const toggleMic = () => setMicEnabled((prev) => !prev);
+  const toggleVideo = () => setCamEnabled((prev) => !prev);
+  const toggleAudio = () => setDeafened((prev) => !prev);
 
   const allStreams = useMemo(() => {
     const combined = new Map(remoteStreams);
@@ -108,9 +133,8 @@ export const VoiceView: React.FC<VoiceViewProps> = ({onLeave}) => {
     if (onLeave) {
       onLeave();
     }
-    
     leaveRoom();
-  }
+  };
 
   const resetSelection = useCallback(() => setSelectedPeerId(null), []);
 
@@ -118,32 +142,39 @@ export const VoiceView: React.FC<VoiceViewProps> = ({onLeave}) => {
     <div className="flex items-center gap-3">
       <div className="flex items-center gap-3 rounded-lg border border-brand-brick/70 bg-brand-beige/90 px-3 py-2 text-brand-green font-semibold shadow-sm transition-colors hover:bg-brand-peach hover:border-brand-green">
         <button
-          // onClick={toggleAudio}
+          onClick={toggleMic}
           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
-            audioEnabled
-              ? "hover:bg-brand-green text-white"
-              : "hover:bg-brand-brick text-white"
+            micEnabled
+              ? "hover:bg-brand-green text-white bg-brand-green/20"
+              : "hover:bg-brand-brick text-white bg-brand-brick"
           }`}
-          aria-label={audioEnabled ? t("voice.mute") : t("voice.unmute")}
+          aria-label={micEnabled ? t("voice.mute") : t("voice.unmute")}
         >
-          {audioEnabled ? <IconMicOn /> : <IconMicOff />}
+          {micEnabled ? <IconMicOn /> : <IconMicOff />}
         </button>
+        
         <button
-          className="w-10 h-10 rounded-lg bg-brand-brick hover:bg-gray-600 text-white flex items-center justify-center"
-          aria-label={t("voice.headphonesOff")}
-        >
-          <IconHeadphoneOff />
-        </button>
-        <button
-          // onClick={toggleVideo}
+          onClick={toggleAudio}
           className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
-            videoEnabled
-              ? "hover:bg-brand-green text-white"
-              : "hover:bg-brand-brick text-white"
+            !deafened
+              ? "hover:bg-brand-green text-white bg-brand-green/20"
+              : "hover:bg-brand-brick text-white bg-brand-brick"
           }`}
-          aria-label={videoEnabled ? t("voice.cameraOff") : t("voice.cameraOn")}
+          aria-label={deafened ? t("voice.headphonesOn") : t("voice.headphonesOff")}
         >
-          {videoEnabled ? <IconCamOn /> : <IconCamOff />}
+          {deafened ? <IconHeadphoneOff /> : <IconHeadphonesOn />}
+        </button>
+
+        <button
+          onClick={toggleVideo}
+          className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
+            camEnabled
+              ? "hover:bg-brand-green text-white bg-brand-green/20"
+              : "hover:bg-brand-brick text-white bg-brand-brick"
+          }`}
+          aria-label={camEnabled ? t("voice.cameraOff") : t("voice.cameraOn")}
+        >
+          {camEnabled ? <IconCamOn /> : <IconCamOff />}
         </button>
       </div>
       <div className="flex items-center rounded-lg border border-brand-brick/70 bg-red-700 px-3 py-2 shadow-sm hover:bg-red-800">
@@ -173,6 +204,7 @@ export const VoiceView: React.FC<VoiceViewProps> = ({onLeave}) => {
               : t("voice.user", { id: peerId.slice(0, 4) })
           }
           isLocal={peerId === "local"}
+          isDeafened={deafened}
           onClick={handleTileClick}
         />
       </div>
@@ -203,6 +235,7 @@ export const VoiceView: React.FC<VoiceViewProps> = ({onLeave}) => {
                 : t("voice.user", { id: selectedPeerId!.slice(0, 4) })
             }
             isLocal={selectedPeerId === "local"}
+            isDeafened={deafened}
             isSelected
             onClick={resetSelection}
             className="w-full h-full"
@@ -225,6 +258,7 @@ export const VoiceView: React.FC<VoiceViewProps> = ({onLeave}) => {
                         : t("voice.user", { id: peerId.slice(0, 4) })
                     }
                     isLocal={peerId === "local"}
+                    isDeafened={deafened}
                     onClick={handleTileClick}
                     className="w-full h-full"
                   />
