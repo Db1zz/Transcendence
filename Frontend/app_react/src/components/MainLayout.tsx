@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { FriendsView } from "./FriendsView";
 import { NavigationSidebar } from "./navigation/NavigationSideBar";
 import Chat from "./Chat";
@@ -21,9 +21,11 @@ import { useNotifications } from "../contexts/NotificationContext";
 import { useCall } from "../hooks/useCall";
 import { useOrganizationEvents } from "../hooks/useOrganizationEvents";
 import { useUserStatuses } from "../hooks/useUserStatuses";
-
 import { useServerMembers } from "../hooks/useServerMembers";
 import { useFriends } from "../hooks/useFriends";
+import MobileNavBar from "./MobileNavBar";
+import { ProfilePopup } from "./ProfilePopup";
+import { NotificationsPage } from "./NotificationsPage";
 
 const parseStompPayload = (data: any) => {
   if (data && typeof data === "object") {
@@ -61,21 +63,219 @@ interface MainLayoutProps {
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
-    const { t } = useTranslation();
-    const [activeView, setActiveView] = useState<"friends" | "chat" | "voice" | "server">("friends");
-    const [inServerVoice, setInServerVoice] = useState(false);
-    const { incomingCall, setIncomingCall } = useNotifications();
-    const { activeCall, joinOrCreateRoom, joinVoiceChannel } = useCall();
-    const [activeDmChannelId, setActiveDmChannelId] = useState<string | null>(null);
-    const [activeDmName, setActiveDmName] = useState<string>("");
-    const [activeServerId, setActiveServerId] = useState<string | null>(null);
-    const [activeServerName, setActiveServerName] = useState<string>("");
-    const [activeServerChannelId, setActiveServerChannelId] = useState<string | null>(null);
-    const [activeServerChannelName, setActiveServerChannelName] = useState<string>("");
-    const [serverCategories, setServerCategories] = useState<ChannelCategory[]>([]);
-    const { user, loading } = useAuth();
-    const callRedirectHandled = useRef(false);
-    const lastServerId = useRef<string | null>(null);
+  const { t } = useTranslation();
+  const { user, loading } = useAuth();
+  const { incomingCall, setIncomingCall } = useNotifications();
+  const { activeCall, joinOrCreateRoom, joinVoiceChannel } = useCall();
+  const { statuses } = useUserStatuses(user?.id ?? "");
+
+  const [activeView, setActiveView] = useState<
+    "friends" | "chat" | "voice" | "server" | "friendsList" | "notifications"
+  >("chat");
+  const [inServerVoice, setInServerVoice] = useState(false);
+
+  const [activeDmChannelId, setActiveDmChannelId] = useState<string | null>(null);
+  const [activeDmName, setActiveDmName] = useState<string>("");
+  const [activeDmUsername, setActiveDmUsername] = useState<string>("");
+
+  const [activeServerId, setActiveServerId] = useState<string | null>(null);
+  const [activeServerName, setActiveServerName] = useState<string>("");
+  const [activeServerChannelId, setActiveServerChannelId] = useState<string | null>(null);
+  const [activeServerChannelName, setActiveServerChannelName] = useState<string>("");
+  const [serverCategories, setServerCategories] = useState<ChannelCategory[]>([]);
+
+  const callRedirectHandled = useRef(false);
+  const activeServerIdRef = useRef<string | null>(null);
+  const lastServerId = useRef<string | null>(null);
+
+  const [isMobileProfileOpen, setIsMobileProfileOpen] = useState(false);
+  const [isDmProfileOpen, setIsDmProfileOpen] = useState(false);
+  const [dmProfileUser, setDmProfileUser] = useState<User | null>(null);
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(max-width: 767px)").matches;
+  });
+
+  const { members: rawServerMembers, fetchMembers } = useServerMembers(
+    activeView === "server" ? activeServerId : null,
+  );
+  const { friends: rawFriends } = useFriends();
+
+  const serverMembersMapped: Member[] = rawServerMembers.map((m) => ({
+    id: m.user.id,
+    name: m.user.displayName || m.user.username,
+    avatarUrl: m.user.picture,
+    status: String(
+      statuses[m.user.id] || m.user.status || "offline",
+    ).toLowerCase() as MemberStatus,
+    role: "Member",
+  }));
+
+  const activeFriendsMapped: Member[] = rawFriends
+    .filter((f) => f.isFriend === "friend")
+    .map((f) => ({
+      id: f.id,
+      name: f.name || f.username,
+      avatarUrl: f.picture,
+      status: String(
+        statuses[f.id] || f.status || "offline",
+      ).toLowerCase() as MemberStatus,
+    }));
+
+  useEffect(() => {
+    activeServerIdRef.current = activeServerId;
+  }, [activeServerId]);
+
+  const handleVoiceEvents = useCallback((...args: any[]) => {
+    const targetOrgId = args.length >= 2 ? args[0] : null;
+    const eventPayload = args.length >= 2 ? args[1] : args[0];
+
+    if (
+      targetOrgId &&
+      activeServerIdRef.current &&
+      String(targetOrgId) !== String(activeServerIdRef.current)
+    ) {
+      return;
+    }
+
+    const data = parseStompPayload(eventPayload);
+
+    if (!data || typeof data !== "object") return;
+
+    if (
+      data.organizationId &&
+      activeServerIdRef.current &&
+      String(data.organizationId) !== String(activeServerIdRef.current)
+    ) {
+      return;
+    }
+
+    if (data.type === "VOICE_STATE_UPDATE") {
+      setServerCategories((prevCategories) =>
+        prevCategories.map((cat) => {
+          if (cat.id !== "voice") return cat;
+
+          return {
+            ...cat,
+            channels: cat.channels.map((ch) => {
+              const updatedUsers = (ch.connectedUsers || []).filter(
+                (u) => String(u.id) !== String(data.userId),
+              );
+
+              if (
+                data.action === "JOIN" &&
+                String(ch.id) === String(data.channelId)
+              ) {
+                const fallbackName = `User (${String(data.userId).slice(0, 4)})`;
+
+                updatedUsers.push({
+                  id: String(data.userId),
+                  name: data.userName || fallbackName,
+                  avatar: data.userAvatar,
+                });
+              }
+
+              return { ...ch, connectedUsers: updatedUsers };
+            }),
+          };
+        }),
+      );
+    }
+  }, []);
+
+  const { requestSync, sendOrganizationAction } = useOrganizationEvents(
+    handleVoiceEvents,
+    (state: any) => {
+      console.log("Initial state received from sync:", state);
+
+      if (state && state.type === "SYNC_STATE" && state.channels) {
+        if (
+          activeServerIdRef.current &&
+          String(state.organizationId) !== String(activeServerIdRef.current)
+        ) {
+          return;
+        }
+
+        setServerCategories((prevCategories) =>
+          prevCategories.map((cat) => {
+            if (cat.id !== "voice") return cat;
+
+            const syncMap = new Map();
+            state.channels.forEach((ch: any) => {
+              syncMap.set(String(ch.channelId), ch.participants || []);
+            });
+
+            return {
+              ...cat,
+              channels: cat.channels.map((ch) => {
+                if (syncMap.has(String(ch.id))) {
+                  const rawUsers = syncMap.get(String(ch.id));
+                  const formattedUsers = rawUsers.map((u: any) => ({
+                    id: String(u.id),
+                    name: u.displayName,
+                    avatar: u.picture,
+                  }));
+                  return { ...ch, connectedUsers: formattedUsers };
+                }
+                return ch;
+              }),
+            };
+          }),
+        );
+      }
+    },
+  );
+
+  useEffect(() => {
+    if (!activeCall && user) {
+      setServerCategories((prev) =>
+        prev.map((cat) => {
+          if (cat.id !== "voice") return cat;
+          return {
+            ...cat,
+            channels: cat.channels.map((ch) => ({
+              ...ch,
+              connectedUsers: (ch.connectedUsers || []).filter(
+                (u) => u.id !== user?.id,
+              ),
+            })),
+          };
+        }),
+      );
+    }
+  }, [activeCall, user]);
+
+  const mapPublicUserToProfile = (profile: any): User => ({
+    id: profile?.id || "",
+    name: profile?.displayName || profile?.username || "",
+    username: profile?.username || "",
+    email: "",
+    picture: profile?.picture || "",
+    status: (profile?.status || "offline").toLowerCase() as User["status"],
+    about: profile?.about || "",
+    createdAt: profile?.createdAt || "",
+    role: profile?.role === "ADMIN" ? "ADMIN" : "USER",
+  });
+
+  const loadDmProfile = async (username: string, fallbackName?: string) => {
+    if (!username) return null;
+
+    const response = await api.get(
+      `/users/public/${encodeURIComponent(username)}`,
+    );
+    const userProfile = Array.isArray(response.data)
+      ? response.data[0]
+      : response.data;
+
+    if (!userProfile) return null;
+
+    const profileUser = mapPublicUserToProfile(userProfile);
+    setActiveDmName(profileUser.name || fallbackName || username);
+    setActiveDmUsername(profileUser.username || username);
+    setDmProfileUser(profileUser);
+
+    return profileUser;
+  };
 
   const fetchServerData = async (serverId: string) => {
     try {
@@ -95,10 +295,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           connectedUsers: c.connectedUsers || [],
         }));
 
-      setServerCategories([
-        { id: "text", name: "Text Channels", channels: textChannels },
-        { id: "voice", name: "Voice Channels", channels: voiceChannels },
-      ]);
       setServerCategories([
         { id: "text", name: "Text Channels", channels: textChannels },
         { id: "voice", name: "Voice Channels", channels: voiceChannels },
@@ -170,21 +366,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       if (activeView === "voice") setActiveView("friends");
     }
   }, [activeCall, activeView]);
-  useEffect(() => {
-    if (activeCall) {
-      if (!callRedirectHandled.current && activeView !== "server") {
-        setActiveView("voice");
-        callRedirectHandled.current = true;
-      }
-    } else {
-      callRedirectHandled.current = false;
-      setInServerVoice(false);
-      if (activeView === "voice") setActiveView("friends");
-    }
-  }, [activeCall, activeView]);
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let timer: ReturnType<typeof setTimeout>;
     if (incomingCall) {
       timer = setTimeout(() => {
         setIncomingCall(null);
@@ -271,23 +455,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     }
   };
 
-  const handleOpenDm = async (friend: any) => {
-    if (!user) return;
-    try {
-      const response = await api.post("/channels", {
-        name: null,
-        channelType: "TEXT",
-        organizationId: null,
-        memberIds: [user.id, friend.id],
-      });
-      setActiveDmChannelId(response.data.id);
-      setActiveDmName(friend.name);
-      handleViewChange("chat");
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
   const handleVoiceDisconnect = () => {
     let channelId = activeCall?.roomId;
     if (activeServerId && channelId && user) {
@@ -301,75 +468,41 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     }
   };
 
-  const renderMainContent = () => {
-    if (activeView === "server") {
-      if (inServerVoice) {
-        return <VoiceView onLeave={handleVoiceDisconnect} />;
-      }
-      if (activeServerChannelId) {
-        return (
-          <Chat
-            personName={`# ${activeServerChannelName}`}
-            userId={user?.id || ""}
-            channelId={activeServerChannelId}
-            hideHeader={true}
-          />
-        );
-      }
-      return (
-        <div className="flex h-full items-center justify-center text-brand-beige">
-          No text channels available.
-        </div>
-      );
-    }
-
-    if (activeView === "friends") {
-      return <FriendsView onOpenChat={handleOpenDm} statuses={statuses} />;
-    }
-
-    if (activeView === "voice") {
-      return <VoiceView />;
-    }
-
-    if (!activeDmChannelId) {
-      return (
-        <div className="flex h-full items-center justify-center text-brand-beige">
-          {t("home.selectFriendToChat")}
-        </div>
-      );
-    }
-
-    return (
-      <Chat
-        personName={activeDmName}
-        userId={user?.id || ""}
-        channelId={activeDmChannelId}
-      />
-    );
+  const handleOpenAddFriends = () => {
+    handleViewChange("friends");
   };
 
-  if (loading) return null;
-  const showMobileMessagesPage = activeView === "chat" && !activeDmChannelId;
-  const activeServerChannel = serverCategories.reduce<Channel | undefined>(
-    (foundChannel, category) => {
-      if (foundChannel) return foundChannel;
-      return category.channels.find(
-        (channel) => channel.id === activeServerChannelId,
-      );
-    },
-    undefined,
-  );
-  const showMobileServerChannel =
-    isMobile && activeView === "server" && Boolean(activeServerChannelId);
-  const showMobileServerChat = showMobileServerChannel && !inServerVoice;
-  const showMobileServerVoice = showMobileServerChannel && inServerVoice;
-  const showMobileServerPage =
-    isMobile && activeView === "server" && !showMobileServerChannel;
-  const showMobileFriendsPage = isMobile && activeView === "friendsList";
-  const showMobileNotificationsPage =
-    isMobile && activeView === "notifications";
-  const isFriendsView =
-    activeView === "friends" || activeView === "friendsList";
+  const handleOpenMobileProfile = () => {
+    setIsMobileProfileOpen(true);
+  };
+
+  const handleOpenDmProfile = async () => {
+    if (!activeDmUsername) return;
+
+    try {
+      const profileUser =
+        dmProfileUser && dmProfileUser.username === activeDmUsername
+          ? dmProfileUser
+          : await loadDmProfile(
+              activeDmUsername,
+              activeDmName || activeDmUsername,
+            );
+
+      if (!profileUser) return;
+
+      setIsDmProfileOpen(true);
+    } catch (error) {
+      console.error("Failed to open DM profile", error);
+    }
+  };
+
+  const handleMobileMainClick = () => {
+    setActiveDmChannelId(null);
+    setActiveDmName("");
+    setActiveDmUsername("");
+    setDmProfileUser(null);
+    handleViewChange("chat");
+  };
 
   const handleServerBack = () => {
     setActiveServerChannelId(null);
@@ -378,14 +511,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     localStorage.removeItem("activeServerChannelId");
     localStorage.removeItem("activeServerChannelName");
   };
-
-  const isServerCall =
-    activeCall &&
-    serverCategories.some(
-      (cat) =>
-        cat.id === "voice" &&
-        cat.channels.some((ch) => ch.id === activeCall.roomId),
-    );
 
   const handleMobileFriendsOpenChat = async (friend: {
     id: string;
@@ -421,132 +546,240 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     }
   };
 
-    return (
-        <div className="h-screen flex flex-col overflow-hidden relative">
-            {activeView === "server" ? (
-                <ServerHeader channelName={activeServerChannelName || "general"} />
-            ) : (
-                <HeaderBar type={activeView === "chat" ? "messages" : "friends"} />
-            )}
-            <div className="flex flex-1 min-h-0 overflow-hidden">
-                <div className="flex w-[72px] z-30 flex-col overflow-hidden">
-                    <NavigationSidebar
-                        onChatClick={() => handleViewChange("chat")}
-                        onFriendsClick={() => handleViewChange("friends")}
-                        onServerClick={handleServerClick}
-                    />
+  if (loading) return null;
+
+  const isServerCall =
+    activeCall &&
+    serverCategories.some(
+      (cat) =>
+        cat.id === "voice" &&
+        cat.channels.some((ch) => ch.id === activeCall.roomId),
+    );
+
+  const showMobileMessagesPage = activeView === "chat" && !activeDmChannelId;
+  const activeServerChannel = serverCategories.reduce<Channel | undefined>(
+    (foundChannel, category) => {
+      if (foundChannel) return foundChannel;
+      return category.channels.find(
+        (channel) => channel.id === activeServerChannelId,
+      );
+    },
+    undefined,
+  );
+  const showMobileServerChannel =
+    isMobile && activeView === "server" && Boolean(activeServerChannelId);
+  const showMobileServerChat = showMobileServerChannel && !inServerVoice;
+  const showMobileServerVoice = showMobileServerChannel && inServerVoice;
+  const showMobileServerPage =
+    isMobile && activeView === "server" && !showMobileServerChannel;
+  const showMobileFriendsPage = isMobile && activeView === "friendsList";
+  const showMobileNotificationsPage =
+    isMobile && activeView === "notifications";
+  const isFriendsView =
+    activeView === "friends" || activeView === "friendsList";
+
+  return (
+    <div className="min-h-dvh flex flex-col overflow-hidden relative">
+      {showMobileFriendsPage ? (
+        <HeaderBar type="friends" />
+      ) : showMobileNotificationsPage ? (
+        <HeaderBar type="notifications" />
+      ) : activeView === "server" && !showMobileServerChat ? (
+        <ServerHeader
+          channelName={activeServerName || activeServerChannelName || "general"}
+        />
+      ) : showMobileMessagesPage ? (
+        <HeaderBar type="messages" />
+      ) : activeView === "chat" ? (
+        <div className="hidden md:block">
+          <HeaderBar type="messages" />
+        </div>
+      ) : (
+        <HeaderBar type="friends" />
+      )}
+      <div className="flex flex-1 min-h-0 overflow-y-auto md:overflow-hidden flex-row">
+        <div
+          className={`${showMobileMessagesPage || showMobileServerPage ? "flex" : "hidden md:flex"} w-[72px] z-30 flex-col overflow-hidden flex-shrink-0`}
+        >
+          <NavigationSidebar
+            onChatClick={() => handleViewChange("chat")}
+            onFriendsClick={() => handleViewChange("friends")}
+            onServerClick={handleServerClick}
+          />
+        </div>
+        <main className="flex-1 flex flex-col p-0 pb-0 md:p-2 md:pb-0 overflow-hidden relative min-h-0">
+          <div className="absolute inset-0 bg-brand-green opacity-80 -z-10" />
+          {activeCall &&
+            activeView !== "voice" &&
+            !(activeView === "server" && inServerVoice) && (
+              <div className="mb-2 mr-2 flex items-center justify-between bg-brand-brick text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-pulse flex-shrink-0">
+                <div className="flex items-center gap-2">
+                  <Phone size={16} />
+                  <span className="text-sm font-medium">Voice call active</span>
                 </div>
-                <main className="flex-1 flex flex-col pt-2 pl-2 pr-0 md:p-2 overflow-hidden relative min-h-0">
-                    <div className="absolute inset-0 bg-brand-green opacity-80 -z-10"></div>
-                    {activeCall && activeView !== "voice" && !(activeView === "server" && inServerVoice) && (
-                        <div className="mb-2 mr-2 flex items-center justify-between bg-brand-brick text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-pulse flex-shrink-0">
-                            <div className="flex items-center gap-2">
-                                <Phone size={16} />
-                                <span className="text-sm font-medium">Voice call active</span>
-                            </div>
-                            <button
-                                onClick={() => {
-                                    if (inServerVoice || isServerCall) {
-                                        setInServerVoice(true);
-                                        if(lastServerId.current && activeServerId !== lastServerId.current) {
-                                            setActiveServerId(lastServerId.current);
-                                        }
-                                        handleViewChange("server");
-                                    } else {
-                                        handleViewChange("voice");
-                                    }
-                                }}
-                                className="flex items-center gap-1 text-xs bg-white/20 hover:bg-white/30 px-2 py-1 rounded transition-colors"
-                            >
-                                Return <ArrowUpRight size={14} />
-                            </button>
-                        </div>
-                    )}
-                    <div className="flex flex-1 flex-row gap-0 overflow-hidden">
-                        <div className="w-full md:w-1/5 flex-shrink-0 overflow-hidden relative flex flex-col">
-                            {activeView === "server" ? (
-                                <ServerLeftBar
-                                    serverId={activeServerId || ""}
-                                    serverName={activeServerName}
-                                    categories={serverCategories}
-                                    activeChannelId={activeServerChannelId || ""}
-                                    onSelectChannel={(c) => {
-                                        setActiveServerChannelId(c.id);
-                                        setActiveServerChannelName(c.name);
-                                        localStorage.setItem("activeServerChannelId", c.id);
-                                        localStorage.setItem("activeServerChannelName", c.name);
-                                        if (c.type === "voice") {
-                                            joinVoiceChannel(c.id);
-                                            setInServerVoice(true);
-                                        } else {
-                                            setInServerVoice(false);
-                                        }
-                                    }}
-                                />
-                            ) : (
-                                <LeftBar
-                                    onFriendsClick={() => handleViewChange("friends")}
-                                    onChatChannelClick={handleChatChannelClick}
-                                />
-                            )}
-                            {user && (
-                                <div className="mt-auto p-2 z-40">
-                                    <ProfileButton user={user} className="w-full" />
-                                </div>
-                            )}
-                        </div>
-                        <div className="hidden md:flex flex-1 min-h-0 overflow-hidden">
-                            <div className="flex-1 min-h-0">
-                                {activeView === "server" ? (
-                                    inServerVoice ? (
-                                        <VoiceView />
-                                    ) : activeServerChannelId ? (
-                                        <Chat
-                                            personName={`# ${activeServerChannelName}`}
-                                            userId={user?.id || ""}
-                                            channelId={activeServerChannelId}
-                                            hideHeader={true}
-                                        />
-                                    ) : (
-                                        <div className="flex h-full items-center justify-center text-brand-beige">
-                                            No text channels available.
-                                        </div>
-                                    )
-                                ) : activeView === "friends" ? (
-                                    <FriendsView onOpenChat={async (friend) => {
-                                        if (!user) return;
-                                        try {
-                                            const response = await api.post("/channels", {
-                                                name: null, channelType: "TEXT", organizationId: null, memberIds: [user.id, friend.id],
-                                            });
-                                            setActiveDmChannelId(response.data.id);
-                                            setActiveDmName(friend.name);
-                                            handleViewChange("chat");
-                                        } catch (e) { console.error(e); }
-                                    }} />
-                                ) : activeView === "voice" ? (
-                                    <VoiceView />
-                                ) : !activeDmChannelId ? (
-                                    <div className="flex h-full items-center justify-center text-brand-beige">
-                                        {t("home.selectFriendToChat")}
-                                    </div>
-                                ) : (
-                                    <Chat
-                                        personName={activeDmName}
-                                        userId={user?.id || ""}
-                                        channelId={activeDmChannelId}
-                                    />
-                                )}
-                            </div>
-                        </div>
-                        <div className="hidden lg:block w-1/5 flex-shrink-0 overflow-hidden">
-                            <RightBar>
-                                {activeView === "server" && <MemberList members={mockMembers} />}
-                            </RightBar>
-                        </div>
-                    </div>
-                </main>
+                <button
+                  onClick={() => {
+                    if (inServerVoice || isServerCall) {
+                      setInServerVoice(true);
+                      if (
+                        lastServerId.current &&
+                        activeServerId !== lastServerId.current
+                      ) {
+                        setActiveServerId(lastServerId.current);
+                      }
+                      handleViewChange("server");
+                    } else {
+                      handleViewChange("voice");
+                    }
+                  }}
+                  className="flex items-center gap-1 text-xs bg-white/20 hover:bg-white/30 px-2 py-1 rounded transition-colors"
+                >
+                  Return <ArrowUpRight size={14} />
+                </button>
+              </div>
+            )}
+          {showMobileFriendsPage ? (
+            <div className="flex h-full min-h-0 w-full md:hidden overflow-hidden pb-24">
+              <FriendsView onOpenChat={handleMobileFriendsOpenChat} statuses={statuses} />
             </div>
+          ) : showMobileNotificationsPage ? (
+            <div className="flex h-full min-h-0 w-full md:hidden overflow-hidden pb-24">
+              <NotificationsPage />
+            </div>
+          ) : showMobileServerChat ? (
+            <div className="flex h-full min-h-0 w-full md:hidden overflow-hidden pb-24">
+              <Chat
+                personName={`# ${activeServerChannelName}`}
+                userId={user?.id || ""}
+                channelId={activeServerChannelId || ""}
+                onBack={handleServerBack}
+              />
+            </div>
+          ) : showMobileServerVoice ? (
+            <div className="flex h-full min-h-0 w-full md:hidden overflow-hidden pb-24">
+              <VoiceView onLeave={handleVoiceDisconnect} />
+            </div>
+          ) : (
+            <>
+              <div className="flex flex-1 flex-col gap-0 overflow-hidden md:flex-row md:gap-0">
+                <div
+                  className={`${showMobileMessagesPage || showMobileServerPage ? "flex" : activeView === "chat" && !activeDmChannelId ? "flex" : "hidden md:flex"} flex-1 w-full md:flex-none md:w-1/5 md:flex-shrink-0 overflow-hidden relative flex-col h-full max-h-none`}
+                >
+                  {activeView === "server" ? (
+                    <ServerLeftBar
+                      serverId={activeServerId || ""}
+                      serverName={activeServerName}
+                      categories={serverCategories}
+                      activeChannelId={activeServerChannelId || ""}
+                      onSelectChannel={handleChannelSelect}
+                    />
+                  ) : (
+                    <LeftBar
+                      onFriendsClick={() => handleViewChange("friends")}
+                      onChatChannelClick={handleChatChannelClick}
+                      onAddFriendsClick={handleOpenAddFriends}
+                    />
+                  )}
+                  {user && (
+                    <div className="hidden md:block absolute bottom-0 left-0 right-0 p-2 z-40 pointer-events-none">
+                      <ProfileButton
+                        user={user}
+                        className="w-full pointer-events-auto"
+                      />
+                    </div>
+                  )}
+                </div>
+                <div
+                  className={`${showMobileMessagesPage ? "hidden md:flex" : "flex"} flex-1 min-h-0 overflow-hidden`}
+                >
+                  <div className="flex-1 min-h-0">
+                    {activeView === "server" ? (
+                      inServerVoice ? (
+                        <VoiceView onLeave={handleVoiceDisconnect} />
+                      ) : activeServerChannelId ? (
+                        <Chat
+                          personName={`# ${activeServerChannelName}`}
+                          userId={user?.id || ""}
+                          channelId={activeServerChannelId}
+                          hideHeader={true}
+                        />
+                      ) : null
+                    ) : isFriendsView ? (
+                      <div className="block w-full h-full">
+                        <FriendsView
+                          statuses={statuses}
+                          onOpenChat={async (friend) => {
+                            if (!user) return;
+                            try {
+                              const response = await api.post("/channels", {
+                                name: null,
+                                channelType: "TEXT",
+                                organizationId: null,
+                                memberIds: [user.id, friend.id],
+                              });
+                              setActiveDmChannelId(response.data.id);
+                              setActiveDmName(friend.name);
+                              setActiveDmUsername(friend.username);
+                              setDmProfileUser({
+                                id: friend.id,
+                                name: friend.name,
+                                username: friend.username,
+                                email: "",
+                                picture: friend.picture || "",
+                                status: "online",
+                                about: "",
+                                createdAt: "",
+                                role: "USER",
+                              });
+                              handleViewChange("chat");
+                            } catch (error) {
+                              console.error(error);
+                            }
+                          }}
+                        />
+                      </div>
+                    ) : activeView === "voice" ? (
+                      <VoiceView onLeave={handleVoiceDisconnect} />
+                    ) : !activeDmChannelId ? (
+                      <div className="flex h-full items-center justify-center text-brand-beige">
+                        {t("home.selectFriendToChat")}
+                      </div>
+                    ) : (
+                      <Chat
+                        personName={activeDmName}
+                        userId={user?.id || ""}
+                        channelId={activeDmChannelId}
+                        onPersonNameClick={handleOpenDmProfile}
+                        onBack={() => handleViewChange("friends")}
+                      />
+                    )}
+                  </div>
+                </div>
+                <div className="hidden lg:block w-1/5 flex-shrink-0 overflow-hidden">
+                  <RightBar>
+                    {activeView === "server" && (
+                      <div className="flex flex-col h-full w-full">
+                        <MemberList members={serverMembersMapped} />
+                      </div>
+                    )}
+                    {isFriendsView && (
+                      <div className="flex flex-col h-full w-full">
+                        {activeFriendsMapped.length === 0 ? (
+                          <p className="text-brand-beige/70 text-sm mt-4 text-center italic">
+                            No friends online.
+                          </p>
+                        ) : (
+                          <MemberList members={activeFriendsMapped} />
+                        )}
+                      </div>
+                    )}
+                  </RightBar>
+                </div>
+              </div>
+            </>
+          )}
+        </main>
+      </div>
 
       {incomingCall && (
         <IncomingCallNotification
