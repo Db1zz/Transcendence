@@ -1,11 +1,10 @@
 package com.anteiku.backend.delegate;
 
 import com.anteiku.backend.api.OrganizationsApi;
-import com.anteiku.backend.model.CreateOrganizationDto;
-import com.anteiku.backend.model.CreateOrganizationResponseDto;
-import com.anteiku.backend.model.OrganizationDto;
-import com.anteiku.backend.model.ServerChannelDto;
+import com.anteiku.backend.model.*;
+import com.anteiku.backend.service.OrganizationMemberService;
 import com.anteiku.backend.service.OrganizationService;
+import com.anteiku.backend.service.RoleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +20,8 @@ import java.util.UUID;
 public class OrganizationsApiDelegate implements OrganizationsApi {
 
     private final OrganizationService organizationService;
+    private final RoleService roleService;
+    private final OrganizationMemberService organizationMemberService;
 
     @Override
     public ResponseEntity<CreateOrganizationResponseDto> createOrganization(CreateOrganizationDto dto) {
@@ -47,5 +48,15 @@ public class OrganizationsApiDelegate implements OrganizationsApi {
     @Override
     public ResponseEntity<com.anteiku.backend.model.InviteDto> createInvite(UUID id) {
         return ResponseEntity.status(HttpStatus.CREATED).body(organizationService.createInvite(id));
+    }
+
+    @Override
+    public ResponseEntity<List<CreateRoleResponseDto>> getOrganizationRoles(UUID id) {
+        return ResponseEntity.ok(roleService.getOrganizationRoles(id));
+    }
+
+    @Override
+    public ResponseEntity<List<ServerMemberDto>> getOrganizationMembers(UUID id) {
+        return ResponseEntity.ok(organizationMemberService.getOrganizationMembers(id));
     }
 }

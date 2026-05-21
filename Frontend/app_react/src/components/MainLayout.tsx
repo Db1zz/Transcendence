@@ -13,18 +13,15 @@ import { useAuth } from "../contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import { ServerLeftBar, ChannelCategory } from "./ServerLeftBar";
 import { ServerHeader } from "./ServerHeader";
-import { MemberList, Member } from "./MemberList";
+import { MemberList, Member, MemberStatus } from "./MemberList";
 import api from "../utils/api";
 import { IncomingCallNotification } from "./IncomingCallNotification";
 import { ArrowUpRight, Phone } from "lucide-react";
 import { useNotifications } from "../contexts/NotificationContext";
 import { useCall } from "../hooks/useCall";
 
-const mockMembers: Member[] = [
-  { id: "1", name: "Kaneki", status: "online", role: "Admin" },
-  { id: "2", name: "Touka", status: "idle", role: "Staff" },
-  { id: "3", name: "Hide", status: "offline" },
-];
+import { useServerMembers } from "../hooks/useServerMembers";
+import { useFriends } from "../hooks/useFriends";
 
 interface MainLayoutProps {
   children?: React.ReactNode;
@@ -32,29 +29,40 @@ interface MainLayoutProps {
 
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const { t } = useTranslation();
-  const [activeView, setActiveView] = useState<
-    "friends" | "chat" | "voice" | "server"
-  >("friends");
+  const [activeView, setActiveView] = useState<"friends" | "chat" | "voice" | "server">("friends");
   const [inServerVoice, setInServerVoice] = useState(false);
   const { incomingCall, setIncomingCall } = useNotifications();
   const { activeCall, joinOrCreateRoom, joinVoiceChannel } = useCall();
-  const [activeDmChannelId, setActiveDmChannelId] = useState<string | null>(
-    null,
-  );
+  const [activeDmChannelId, setActiveDmChannelId] = useState<string | null>(null);
   const [activeDmName, setActiveDmName] = useState<string>("");
   const [activeServerId, setActiveServerId] = useState<string | null>(null);
   const [activeServerName, setActiveServerName] = useState<string>("");
-  const [activeServerChannelId, setActiveServerChannelId] = useState<
-    string | null
-  >(null);
-  const [activeServerChannelName, setActiveServerChannelName] =
-    useState<string>("");
-  const [serverCategories, setServerCategories] = useState<ChannelCategory[]>(
-    [],
-  );
+  const [activeServerChannelId, setActiveServerChannelId] = useState<string | null>(null);
+  const [activeServerChannelName, setActiveServerChannelName] = useState<string>("");
+  const [serverCategories, setServerCategories] = useState<ChannelCategory[]>([]);
   const { user, loading } = useAuth();
   const callRedirectHandled = useRef(false);
   const lastServerId = useRef<string | null>(null);
+
+  const { members: rawServerMembers, fetchMembers } = useServerMembers(activeView === "server" ? activeServerId : null);
+  const { friends: rawFriends } = useFriends();
+
+  const serverMembersMapped: Member[] = rawServerMembers.map(m => ({
+    id: m.user.id,
+    name: m.user.displayName || m.user.username,
+    avatarUrl: m.user.picture,
+    status: (m.user.status?.toLowerCase() as MemberStatus) || "offline",
+    role: "Member"
+  }));
+
+  const activeFriendsMapped: Member[] = rawFriends
+    .filter(f => f.isFriend === "friend")
+    .map(f => ({
+      id: f.id,
+      name: f.name || f.username,
+      avatarUrl: f.picture,
+      status: (f.status?.toLowerCase() as MemberStatus) || "offline",
+    }));
 
   const fetchServerData = async (serverId: string) => {
     try {
@@ -97,11 +105,17 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     const savedServerName = localStorage.getItem("activeServerName");
     if (savedView === "server" && savedServerId) {
       setActiveServerId(savedServerId);
-      lastServerId.current = savedServerId; // Update ref
+      lastServerId.current = savedServerId;
       setActiveServerName(savedServerName || "");
       fetchServerData(savedServerId);
     }
   }, []);
+  
+  useEffect(() => {
+    if (activeView === "server" && activeServerId) {
+      fetchMembers();
+    }
+  }, [activeServerId, activeView, fetchMembers]);
 
   useEffect(() => {
     if (activeCall) {
@@ -292,14 +306,30 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             <div className="hidden lg:block w-1/5 flex-shrink-0 overflow-hidden">
               <RightBar>
                 {activeView === "server" && (
-                  <MemberList members={mockMembers} />
+                  <div className="flex flex-col h-full">
+                    <h3 className="text-brand-beige font-ananias text-sm border-b border-brand-green/30 pb-2 mb-2 uppercase">
+                      Server Members
+                    </h3>
+                    <MemberList members={serverMembersMapped} />
+                  </div>
+                )}
+                {activeView === "friends" && (
+                  <div className="flex flex-col h-full">
+                    <h3 className="text-brand-beige font-ananias text-sm border-b border-brand-green/30 pb-2 mb-2 uppercase">
+                      Active Friends
+                    </h3>
+                    {activeFriendsMapped.length === 0 ? (
+                      <p className="text-brand-beige/70 text-sm mt-4 text-center italic">No friends online.</p>
+                    ) : (
+                      <MemberList members={activeFriendsMapped} />
+                    )}
+                  </div>
                 )}
               </RightBar>
             </div>
           </div>
         </main>
       </div>
-
       {incomingCall && (
         <IncomingCallNotification
           event={incomingCall}

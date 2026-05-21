@@ -32,7 +32,7 @@ public class RoleService {
 
     public CreateRoleResponseDto createNewRole(CreateRoleDto createRoleDto) {
         UUID currentUserId = SecurityUtils.getCurrentUserId();
-        UUID orgId = UUID.fromString(createRoleDto.getName());
+        UUID orgId = createRoleDto.getOrganizationId();
 
         permissionService.verifyPermissions(orgId, currentUserId, PermissionFlags.MANAGE_ROLES);
 
