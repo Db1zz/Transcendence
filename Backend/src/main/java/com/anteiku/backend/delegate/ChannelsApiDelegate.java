@@ -3,6 +3,8 @@ package com.anteiku.backend.delegate;
 import com.anteiku.backend.api.ChannelsApi;
 import com.anteiku.backend.model.CreateChannelDto;
 import com.anteiku.backend.model.CreateChannelResponseDto;
+import com.anteiku.backend.model.ServerChannelDto;
+import com.anteiku.backend.model.UpdateChannelDto;
 import com.anteiku.backend.service.ChannelService;
 import com.anteiku.backend.service.ChatService;
 import lombok.RequiredArgsConstructor;
@@ -55,5 +57,10 @@ public class ChannelsApiDelegate implements ChannelsApi {
     public ResponseEntity<Void> deleteChannel(UUID channelId) {
         channelService.deleteChannel(channelId);
         return ResponseEntity.status(204).body(null);
+    }
+
+    @Override
+    public ResponseEntity<ServerChannelDto> updateChannel(UUID id, UpdateChannelDto updateChannelDto) {
+        return ResponseEntity.ok(channelService.updateChannel(id, updateChannelDto));
     }
 }

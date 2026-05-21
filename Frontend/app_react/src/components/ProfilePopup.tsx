@@ -16,7 +16,7 @@ import SettingsButton from "./SettingsButton";
 import api from "../utils/api";
 
 interface ProfilePopupProps {
-  user: User;
+  user: User | any; // Changed to 'any' temporarily to accept the mapped Member object safely
   friendshipStatus?: "friend" | "pending" | "blocked";
   canAcceptPending?: boolean;
   isOpen: boolean;
@@ -67,9 +67,17 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
     "friend" | "pending" | "not_friend"
   >("not_friend");
   const { logout, setUser, user: authenticatedUser } = useAuth();
+  const displayTitle =
+    user.name || user.displayName || user.username || "Unknown User";
+  const displayHandle = user.username
+    ? `@${user.username}`
+    : `@${displayTitle.toLowerCase().replace(/\s/g, "")}`;
+  const displayPicture =
+    user.picture ||
+    user.avatarUrl ||
+    "https://i.pinimg.com/1200x/c4/a4/36/c4a4365f7c98dc3b4b26fbad20da527d.jpg";
   const isOwnProfile = authenticatedUser?.id === user.id;
   const canExpand = isOwnProfile;
-  //const isExpandedView = true;
   const showSettingsPanel = canExpand && isExpanded;
   const isEditingProfile =
     isOwnProfile && showSettingsPanel && activeSettingsSection === "profile";
@@ -138,6 +146,7 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
     setMobileSettingsView("menu");
     setSaveError("");
   };
+
   const handleLogout = () => {
     logout();
     handleClose();
@@ -349,6 +358,10 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
               text={t("settings.myProfile")}
             />
             <SettingsButton
+              onClick={() => setActiveSettingsSection("profile")}
+              text={t("settings.voiceAndVideo")}
+            />
+            <SettingsButton
               onClick={() => setActiveSettingsSection("language")}
               text={t("settings.language")}
             />
@@ -411,9 +424,9 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
               <div className="relative px-4 md:px-6 shrink-0">
                 <div className="absolute border-4 border-brand-beige bg-gray-300 rounded-full transition-all duration-300 shadow-sm group -top-12 md:-top-16 w-[88px] h-[88px] md:w-[120px] md:h-[120px]">
                   <img
-                    src={user.picture}
-                    alt={user.name}
-                    className="w-full h-full object-cover rounded-full"
+                    src={displayPicture}
+                    alt={displayTitle}
+                    className="w-full h-full object-cover rounded-full bg-white"
                   />
                   <div
                     className={`
@@ -455,10 +468,10 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
               text-2xl md:text-3xl
             `}
                   >
-                    {user.name}
+                    {displayTitle}
                   </h3>
                   <p className="text-sm font-roboto text-gray-500 mt-1">
-                    {user.name.toLowerCase().replace(/\s/g, "")}
+                    {displayHandle}
                   </p>
                 </div>
 
@@ -471,9 +484,9 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
               <ProfileEditForm
                 initialValues={{
                   username: user.username || "",
-                  displayName: user.name || user.username || "",
+                  displayName: displayTitle,
                   about: user.about || "",
-                  picture: user.picture || "",
+                  picture: displayPicture,
                 }}
                 isSaving={isSavingProfile}
                 errorMessage={saveError}

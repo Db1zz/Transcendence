@@ -24,14 +24,18 @@ export interface Friend {
 
 interface FriendsViewProps {
   onOpenChat?: (friend: Friend) => void;
+  statuses?: Record<string, "online" | "idle" | "dnd">;
 }
 
-export const FriendsView: React.FC<FriendsViewProps> = ({ onOpenChat }) => {
+export const FriendsView: React.FC<FriendsViewProps> = ({
+  onOpenChat,
+  statuses,
+}) => {
   const [activeTab, setActiveTab] = useState<FriendsTab>("online");
   const [searchQuery, setSearchQuery] = useState("");
 
   const { user } = useAuth();
-  const { statuses } = useUserStatuses(user?.id ?? "");
+  // const { statuses } = useUserStatuses(user?.id ?? "");
   const { joinOrCreateRoom } = useCall();
 
   const {
@@ -45,6 +49,10 @@ export const FriendsView: React.FC<FriendsViewProps> = ({ onOpenChat }) => {
   } = useFriends();
 
   const updatedFriends = useMemo<Friend[]>(() => {
+    if (!statuses) {
+      return friends;
+    }
+
     return friends.map((friend) => {
       return {
         ...friend,

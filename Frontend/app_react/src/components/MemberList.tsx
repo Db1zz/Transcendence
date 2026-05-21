@@ -31,18 +31,23 @@ export const MemberList: React.FC<MemberListProps> = ({ members }) => {
     <div className="flex-1 overflow-y-auto scrollbar-hide space-y-5 px-1 mt-2">
       {orderedKeys.map((group) => (
         <div key={group}>
-          <h3 className="mb-2 px-2 text-xs font-ananias font-bold uppercase tracking-wider text-gray-800/70">
+          <h3 className="mb-2 px-2 text-xs font-ananias font-bold uppercase tracking-wider text-brand-beige/70">
             {group} — {groups[group].length}
           </h3>
           <div className="space-y-1">
             {groups[group].map((m) => (
               <ProfileButton
                 key={m.id}
-                user={{
-                  ...m,
-                  picture:
-                    "https://i.pinimg.com/1200x/c4/a4/36/c4a4365f7c98dc3b4b26fbad20da527d.jpg",
-                }}
+                user={
+                  {
+                    id: m.id,
+                    name: m.name,
+                    username: m.name,
+                    displayName: m.name,
+                    picture: m.avatarUrl,
+                    status: m.status,
+                  } as any
+                }
                 variant="v2"
                 className="w-full !px-2 !py-1.5"
               />

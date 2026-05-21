@@ -35,6 +35,10 @@ export class WebRtcSession {
         audio: true,
         video: true,
       });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: true,
+      });
       this.localStream = stream;
       this.callbacks.onLocalStream?.(stream);
 
@@ -42,7 +46,6 @@ export class WebRtcSession {
       this.signalingServerSocket.onmessage = (msg) =>
         this.onMessageCallback(msg);
 
-      // Handle socket errors or unexpected closures
       this.signalingServerSocket.onclose = () => this.destroy();
     } catch (err) {
       console.error("Failed to acquire media or connect to signaling:", err);
@@ -52,17 +55,14 @@ export class WebRtcSession {
   public destroy() {
     console.log("Destroying WebRtc session and cleaning hardware...");
 
-    // 1. Close signaling socket
     if (this.signalingServerSocket) {
       this.signalingServerSocket.close();
       this.signalingServerSocket = null;
     }
 
-    // 2. Stop all camera/mic tracks
     this.localStream?.getTracks().forEach((track) => track.stop());
     this.localStream = null;
 
-    // 3. Close and clear all peer connections
     this.peers.forEach((pc, peerId) => {
       pc.close();
       this.callbacks.onRemoteStreamDelete?.(peerId);
@@ -107,7 +107,6 @@ export class WebRtcSession {
   private async handleOfferEvent(from: string, sdp: RTCSessionDescriptionInit) {
     const pc = this.createPeerConnection(from);
 
-    // IMPORTANT: must await setRemoteDescription before creating answer
     await pc.setRemoteDescription(new RTCSessionDescription(sdp));
     const answer = await pc.createAnswer();
     await pc.setLocalDescription(answer);
