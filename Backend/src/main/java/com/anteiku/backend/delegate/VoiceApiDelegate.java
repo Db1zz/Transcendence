@@ -3,7 +3,7 @@ package com.anteiku.backend.delegate;
 import com.anteiku.backend.api.VoiceApi;
 import com.anteiku.backend.model.JoinOrCreateVoiceRoomDto;
 import com.anteiku.backend.model.JoinOrCreateVoiceRoomResponseDto;
-import com.anteiku.backend.service.VoiceService;
+import com.anteiku.backend.webrtc.service.VoiceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

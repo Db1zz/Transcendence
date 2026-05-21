@@ -4,6 +4,7 @@ import com.anteiku.backend.entity.*;
 import com.anteiku.backend.exception.AccessDeniedException;
 import com.anteiku.backend.exception.ConflictException;
 import com.anteiku.backend.exception.ResourceNotFoundException;
+import com.anteiku.backend.mapper.ChannelMapper;
 import com.anteiku.backend.model.*;
 import com.anteiku.backend.repository.*;
 import com.anteiku.backend.util.PermissionFlags;
@@ -35,6 +36,7 @@ public class OrganizationService {
     private final ChannelRepository channelRepository;
     private final OrganizationInviteRepository organizationInviteRepository;
     private final RoleRepository roleRepository;
+    private final ChannelMapper channelMapper;
 
     public CreateOrganizationResponseDto createOrganization(CreateOrganizationDto dto) {
         UUID currentUserId = SecurityUtils.getCurrentUserId();
@@ -250,5 +252,10 @@ public class OrganizationService {
     public void cleanupExpiredInvites() {
         log.info("Running scheduled cleanup of invite codes in db...");
         organizationInviteRepository.deleteByExpiresAtBefore(Instant.now());
+    }
+
+    public List<ServerChannelDto> getOrganizationVoiceChannels(UUID organizationId) {
+        List<ChannelEntity> channels = channelRepository.findByOrganization_IdAndType(organizationId, ChannelType.VOICE);
+        return channels.stream().map(channelMapper::toDto).toList();
     }
 }

@@ -1128,12 +1128,6 @@ components:
         roomId:
           type: string
           format: uuid
-        callerId:
-          $ref: '#/components/schemas/UserId'
-        invitedUsers:
-          type: array
-          items:
-            $ref: '#/components/schemas/UserId'
 
     JoinOrCreateVoiceRoomResponseDto:
       type: object

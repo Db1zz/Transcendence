@@ -1,11 +1,13 @@
-package com.anteiku.backend.service;
+package com.anteiku.backend.stomp.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+@Slf4j
 @Service
-public class UserStatusService {
+public class UserStatusRegistryService {
     // userId/userIds
     private final HashMap<UUID, Set<UUID>> subscribedUsers = new HashMap<>();
     public void subscribe(UUID userId, Set<UUID> friendIds) {
@@ -14,6 +16,7 @@ public class UserStatusService {
 
     public void unsubscribe(UUID userId) {
         subscribedUsers.remove(userId);
+        log.info("User {} unsubscribed from receiving any statuses.", userId);
     }
 
     public boolean isOnline(UUID userId) {
