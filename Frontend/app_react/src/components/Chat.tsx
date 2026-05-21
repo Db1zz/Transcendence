@@ -150,7 +150,7 @@ const Chat: React.FC<ChatProps> = ({
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="border-t border-gray-300 p-3 sm:p-4 bg-brand-green">
+      <div className="p-3 sm:p-4 bg-brand-green">
         <div className="flex flex-col sm:flex-row gap-2">
           <textarea
             value={inputValue}
