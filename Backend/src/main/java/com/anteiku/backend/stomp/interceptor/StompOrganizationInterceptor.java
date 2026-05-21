@@ -18,7 +18,7 @@ import java.util.UUID;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class WebSocketOrganizationInterceptor implements ChannelInterceptor {
+public class StompOrganizationInterceptor implements ChannelInterceptor {
     private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
     private final OrganizationMemberService organizationMemberService;
 
@@ -31,8 +31,10 @@ public class WebSocketOrganizationInterceptor implements ChannelInterceptor {
 
         StompCommand command = accessor.getCommand();
         String destination = accessor.getDestination();
-        if (StompCommand.SEND.equals(command) && destination.startsWith("/topic/")) {
-            throw new IllegalArgumentException("Clients cannot send directly to topics. Send to /app instead.");
+
+        if (StompCommand.SEND.equals(command) && destination != null && destination.startsWith("/topic/")) {
+            log.warn("Blocked direct client send to topic: {}", destination);
+            return null;
         }
 
         if (StompCommand.SUBSCRIBE.equals(command) || StompCommand.SEND.equals(command)) {
@@ -40,21 +42,30 @@ public class WebSocketOrganizationInterceptor implements ChannelInterceptor {
                 return message;
             }
 
-            boolean isOrgTopic = PATH_MATCHER.match("/topic/organization/*", destination);
-            boolean isOrgApp = PATH_MATCHER.match("/app/organization/*", destination);
+            boolean isOrgTopic = PATH_MATCHER.match("/topic/organization/**", destination);
+            boolean isOrgApp = PATH_MATCHER.match("/app/organization/**", destination);
             if (!isOrgTopic && !isOrgApp) {
                 return message;
+            }
+
+            if (!(accessor.getUser() instanceof UsernamePasswordAuthenticationToken)) {
+                log.error("WS Security Violation: Unauthenticated access attempt to {}", destination);
+                return null;
             }
 
             UsernamePasswordAuthenticationToken authToken = (UsernamePasswordAuthenticationToken) accessor.getUser();
 
             UUID organizationId = extractOrganizationId(destination);
+            if (organizationId == null) {
+                return null;
+            }
+
             UUID userId = (UUID) authToken.getPrincipal();
 
             boolean isMember = organizationMemberService.isUserMemberOfOrganization(userId, organizationId);
             if (!isMember) {
                 log.warn("WS Security Violation: User [{}] denied access to Organization [{}]", userId, organizationId);
-                throw new IllegalArgumentException("Unauthorized: You are not a member of this organization server");
+                return null;
             }
 
             log.debug("WS Access Approved: User [{}] for destination [{}]", userId, destination);
@@ -64,13 +75,15 @@ public class WebSocketOrganizationInterceptor implements ChannelInterceptor {
     }
 
     private UUID extractOrganizationId(String destination) {
-        String[] split = destination.split("/");
         try {
-            // /topic/organization/123 < 3
+            String[] split = destination.split("/");
+            if (split.length < 4) {
+                return null;
+            }
             return UUID.fromString(split[3]);
         } catch (Exception e) {
             log.error("Failed to parse organization UUID from destination: {}", destination);
-            throw new IllegalArgumentException("Invalid destination format");
+            return null;
         }
     }
 }

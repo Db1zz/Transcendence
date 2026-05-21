@@ -1,8 +1,8 @@
 package com.anteiku.backend.stomp.config;
 
 import com.anteiku.backend.constant.TokenNames;
-import com.anteiku.backend.stomp.interceptor.WebSocketAuthInterceptor;
-import com.anteiku.backend.stomp.interceptor.WebSocketOrganizationInterceptor;
+import com.anteiku.backend.stomp.interceptor.StompAuthInterceptor;
+import com.anteiku.backend.stomp.interceptor.StompOrganizationInterceptor;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -27,8 +27,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Order(Ordered.HIGHEST_PRECEDENCE + 99)
 public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
-    private final WebSocketAuthInterceptor authInterceptor;
-    private final WebSocketOrganizationInterceptor organizationInterceptor;
+    private final StompAuthInterceptor authInterceptor;
+    private final StompOrganizationInterceptor organizationInterceptor;
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
@@ -64,7 +64,7 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         registry.setApplicationDestinationPrefixes("/app");
-        registry.enableSimpleBroker("/topic");
+        registry.enableSimpleBroker("/topic", "/queue");
     }
 
     @Override
@@ -72,6 +72,6 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registration.interceptors(
                 authInterceptor,
                 organizationInterceptor
-                );
+        );
     }
 }

@@ -1,7 +1,7 @@
 import { useEffect, useCallback, useRef } from "react";
 import { useSocket } from "../contexts/SocketContext";
 import { useServers } from "./useServers";
-import { StompSubscription, Message } from "@stomp/stompjs";
+import { StompSubscription } from "@stomp/stompjs";
 
 export const useOrganizationEvents = (
     onEventReceived?: (orgId: string, event: any) => void,
@@ -10,48 +10,74 @@ export const useOrganizationEvents = (
     const { isConnected, subscribe, send } = useSocket();
     const { servers } = useServers();
     
-    const subscriptionsRef = useRef<StompSubscription[]>([]);
+    const onEventReceivedRef = useRef(onEventReceived);
+    const onInitialStateReceivedRef = useRef(onInitialStateReceived);
 
     useEffect(() => {
-        if (!isConnected || !servers || servers.length === 0) {
+        onEventReceivedRef.current = onEventReceived;
+        onInitialStateReceivedRef.current = onInitialStateReceived;
+    }, [onEventReceived, onInitialStateReceived]);
+
+    const shouldSubscribe = !!onEventReceived || !!onInitialStateReceived;
+
+    useEffect(() => {
+        if (!shouldSubscribe || !isConnected || !servers || servers.length === 0) {
             return;
         }
+
+        const activeSubscriptions: StompSubscription[] = [];
+        const subscribedDestinations = new Set<string>();
 
         for (const server of servers) {
             const destination = `/topic/organization/${server.id}`;
             
-            const sub = subscribe(destination, (message: Message) => {
-                try {
-                    const event = JSON.parse(message.body);
-
-                    if (onEventReceived) {
-                        onEventReceived(server.id, event);
+            if (subscribedDestinations.has(destination)) continue;
+            subscribedDestinations.add(destination);
+            
+            const sub = subscribe(destination, (payload: any) => {
+                let event = payload;
+                if (typeof event === "string") {
+                    try {
+                        event = JSON.parse(event.replace(/\0/g, '').trim());
+                    } catch (err) {
+                        console.error(`Failed to nested-parse event for org ${server.id}`, err);
                     }
-                } catch (error) {
-                    console.error(`Failed to parse event for org ${server.id}`, error);
+                }
+
+                if (onEventReceivedRef.current) {
+                    onEventReceivedRef.current(server.id, event);
                 }
             });
 
-            if (sub) subscriptionsRef.current.push(sub);
+            if (sub) activeSubscriptions.push(sub);
         }
 
-        const initialSyncSub = subscribe("/user/queue/initial-state", (message: Message) => {
-            try {
-                const state = JSON.parse(message.body);
-                if (onInitialStateReceived) {
-                    onInitialStateReceived(state);
+        const initialSyncSub = subscribe("/user/queue/sync", (payload: any) => {
+            let state = payload;
+            if (typeof state === "string") {
+                try {
+                    state = JSON.parse(state.replace(/\0/g, '').trim());
+                } catch (err) {
+                    console.error("Failed to parse initial state sync string", err);
                 }
-            } catch (error) {
-                console.error("Failed to parse initial state sync", error);
+            }
+            if (onInitialStateReceivedRef.current) {
+                onInitialStateReceivedRef.current(state);
             }
         });
 
-        if (initialSyncSub) subscriptionsRef.current.push(initialSyncSub);
+        if (initialSyncSub) activeSubscriptions.push(initialSyncSub);
+        
         return () => {
-            subscriptionsRef.current.forEach(sub => sub.unsubscribe());
-            subscriptionsRef.current = [];
+            activeSubscriptions.forEach(sub => {
+                try {
+                    sub.unsubscribe();
+                } catch (e) {
+                    console.warn("STOMP target was already unsubscribed or disconnected", e);
+                }
+            });
         };
-    }, [servers, isConnected, subscribe, onEventReceived, onInitialStateReceived]);
+    }, [servers, isConnected, subscribe, shouldSubscribe]);
 
     const sendOrganizationAction = useCallback((orgId: string, action: string, payload: any) => {
         if (!isConnected) {
@@ -59,11 +85,27 @@ export const useOrganizationEvents = (
             return;
         }
         const destination = `/app/organization/${orgId}/${action}`;
-        
-        send(destination, JSON.stringify(payload));
+        send(destination, payload); 
+    }, [isConnected, send]);
+
+    const sendToOrganization = useCallback((orgId: string, payload: any) => {
+        if (!isConnected) {
+            console.warn("Cannot send action, socket is not connected.");
+            return;
+        }
+        const destination = `/app/organization/${orgId}`;
+        send(destination, payload); 
+    }, [isConnected, send]);
+
+    const requestSync = useCallback((orgId: string) => {
+        if (!isConnected) return;
+        const destination = `/app/organization/${orgId}/sync`;
+        send(destination, {});
     }, [isConnected, send]);
 
     return {
-        sendOrganizationAction
+        sendToOrganization,
+        sendOrganizationAction,
+        requestSync
     };
 };

@@ -75,7 +75,11 @@ const VideoTile: React.FC<VideoTileProps> = ({
   );
 };
 
-export const VoiceView: React.FC = () => {
+interface VoiceViewProps {
+  onLeave?: () => void;
+}
+
+export const VoiceView: React.FC<VoiceViewProps> = ({onLeave}) => {
   const { t } = useTranslation();
   const { localStream, remoteStreams, leaveRoom } = useCall();
 
@@ -99,6 +103,14 @@ export const VoiceView: React.FC = () => {
   const handleTileClick = useCallback((peerId: string) => {
     setSelectedPeerId((prev) => (prev === peerId ? null : peerId));
   }, []);
+
+  const handleLeaveClick = () => {
+    if (onLeave) {
+      onLeave();
+    }
+    
+    leaveRoom();
+  }
 
   const resetSelection = useCallback(() => setSelectedPeerId(null), []);
 
@@ -136,7 +148,7 @@ export const VoiceView: React.FC = () => {
       </div>
       <div className="flex items-center rounded-lg border border-brand-brick/70 bg-red-700 px-3 py-2 shadow-sm hover:bg-red-800">
         <button
-          onClick={leaveRoom}
+          onClick={handleLeaveClick}
           className="w-10 h-10 text-white flex items-center justify-center"
           aria-label={t("voice.endCall")}
         >

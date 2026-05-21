@@ -12,11 +12,11 @@ class SocketService {
             }
 
             this.client = new Client({
-                brokerURL: "http://localhost:8080/ws", // TODO
+                brokerURL: "http://localhost:8080/ws",
                 heartbeatIncoming: 10000,
                 heartbeatOutgoing: 10000,
 
-                reconnectDelay: 5000,
+                reconnectDelay: 2000,
 
                 debug: (str: string) => {
                     console.log(new Date().toISOString() + ' [STOMP]: ' + str);

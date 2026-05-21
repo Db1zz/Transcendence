@@ -11,35 +11,22 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
 public class VoiceService {
     private final NotificationService notificationService;
     private final UserService userService;
-    private HashMap<UUID, List<UserPublicDto>> roomSessions = new HashMap<>();
 
-    private UUID createVoiceRoom(UserPublicDto userPublicDto) {
-        UUID newRoomId = UUID.randomUUID();
-
-        List<UserPublicDto> participants = new ArrayList<>();
-        participants.add(userPublicDto);
-
-        roomSessions.put(newRoomId, participants);
-        return newRoomId;
-    }
-
-    private List<UserPublicDto> getReferencedRoomParticipants(UUID roomId) {
-        List<UserPublicDto> participants = roomSessions.get(roomId);
-        if (participants == null) {
-            throw new ResourceNotFoundException("Room with id " + roomId + " not found");
-        }
-
-        return participants;
-    }
+    private final Map<UUID, Map<UUID, UserPublicDto>> roomSessions = new ConcurrentHashMap<>();
 
     public List<UserPublicDto> getRoomParticipants(UUID roomId) {
-        return Collections.unmodifiableList(roomSessions.get(roomId));
+        Map<UUID, UserPublicDto> participants = roomSessions.get(roomId);
+        if (participants == null) {
+            return Collections.emptyList();
+        }
+        return new ArrayList<>(participants.values());
     }
 
     public void inviteUsersToVoiceRoom(UUID roomId, List<UUID> userIds) {
@@ -58,18 +45,27 @@ public class VoiceService {
         UserPublicDto userPublicDto = userService.getUserById(userId);
         JoinOrCreateVoiceRoomResponseDto response = new JoinOrCreateVoiceRoomResponseDto();
 
-        if (dto.getRoomId() == null) {
-            UUID newRoomId = createVoiceRoom(userPublicDto);
-            response.setRoomId(newRoomId);
-        } else {
-            UUID roomId = dto.getRoomId();
-
-            List<UserPublicDto> participants = getReferencedRoomParticipants(roomId);
-            participants.add(userPublicDto);
-
-            response.setRoomId(roomId);
+        UUID roomId = dto.getRoomId();
+        if (roomId == null) {
+            roomId = UUID.randomUUID();
         }
 
+        Map<UUID, UserPublicDto> participants = roomSessions.computeIfAbsent(roomId, k -> new ConcurrentHashMap<>());
+        participants.put(userId, userPublicDto);
+
+        response.setRoomId(roomId);
         return response;
+    }
+
+    public void removeUserFromVoiceRoom(UUID roomId, UUID userId) {
+        Map<UUID, UserPublicDto> participants = roomSessions.get(roomId);
+
+        if (participants != null) {
+            participants.remove(userId);
+
+            if (participants.isEmpty()) {
+                roomSessions.remove(roomId);
+            }
+        }
     }
 }

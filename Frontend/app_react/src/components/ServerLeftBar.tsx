@@ -4,7 +4,7 @@ import bgLSideBar from "../img/bg_l_sidebar.png";
 import api from "../utils/api";
 import { useCall } from "../hooks/useCall";
 import { useAuth } from "../contexts/AuthContext";
-import { useOrganizationEvents } from "../hooks/useOrganizationEvents"; // Import your STOMP hook
+import { useOrganizationEvents } from "../hooks/useOrganizationEvents";
 
 export type ChannelType = "text" | "voice";
 
@@ -44,7 +44,7 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
   onSelectChannel,
 }) => {
   const { user } = useAuth();
-  const { sendOrganizationAction } = useOrganizationEvents();
+  const { sendToOrganization, sendOrganizationAction } = useOrganizationEvents();
   const { activeCall, leaveRoom, joinVoiceChannel } = useCall();
 
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
@@ -73,11 +73,13 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
         await joinVoiceChannel(ch.id);
         
         if (user) {
-          sendOrganizationAction(serverId, "voice/join", {
-            type: "VOICE_STATE_UPDATE",
-            userId: user.id,
-            channelId: ch.id,
-            action: "JOIN"
+          sendToOrganization(serverId, {
+              type: "VOICE_STATE_UPDATE",
+              userId: user.id,
+              userName: user.name,
+              userAvatar: user.picture,
+              channelId: ch.id,
+              action: "JOIN"
           });
         }
       } catch (error) {
@@ -89,15 +91,16 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
   };
 
   const handleDisconnect = () => {
-    leaveRoom();
-    
-    if (user) {
-      sendOrganizationAction(serverId, "voice/leave", {
+    let channelId = activeCall?.roomId;
+    if (channelId && user) {
+      sendOrganizationAction(serverId, `voice/${channelId}/leave`, {
         type: "VOICE_STATE_UPDATE",
         userId: user.id,
+        userName: user.name,
         channelId: null,
         action: "LEAVE"
       });
+      leaveRoom();
     }
   };
 
@@ -187,10 +190,10 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
                                       <img src={u.avatar} alt={u.name} className="w-6 h-6 rounded-full border border-gray-800 object-cover" />
                                     ) : (
                                       <div className="w-6 h-6 rounded-full bg-brand-green flex items-center justify-center text-xs text-brand-beige font-bold border border-gray-800">
-                                        {u.name.charAt(0).toUpperCase()}
+                                        {u.name ? u.name.charAt(0).toUpperCase() : "?"}
                                       </div>
                                     )}
-                                    <span className="text-sm text-gray-800 font-medium truncate">{u.name}</span>
+                                    <span className="text-sm text-gray-800 font-medium truncate">{u.name || "User"}</span>
                                   </div>
                                 ))}
                               </div>
