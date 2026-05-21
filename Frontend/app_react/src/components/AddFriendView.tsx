@@ -32,18 +32,18 @@ export const AddFriendView: React.FC<AddFriendViewProps> = ({
   const isValid = name.trim().length > 0;
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h2 className="font-ananias font-bold text-xl text-gray-800 uppercase mb-2">
+    <div className="p-4 pb-6 sm:p-6">
+      <div className="mb-5 sm:mb-6">
+        <h2 className="font-ananias font-bold text-lg sm:text-xl text-gray-800 uppercase mb-2">
           {t("friends.addView.title")}
         </h2>
         <p className="font-roboto text-sm text-muted-foreground">
           {t("friends.addView.subtitle")}
         </p>
       </div>
-      <div className="mb-8">
+      <div className="mb-6 sm:mb-8">
         <div
-          className={`flex items-center gap-2 p-1 bg-brand-green border-2 rounded-lg shadow-sharp-sm transition-all duration-150
+          className={`flex flex-col sm:flex-row sm:items-center gap-2 p-1 bg-brand-green border-2 rounded-lg shadow-sharp-sm transition-all duration-150
                     ${status === "success" ? "border-green-600 ring-1 ring-green-600" : status === "error" ? "border-red-500 ring-1 ring-red-500" : "border-gray-800 focus-within:ring-2 focus-within:ring-brand-brick"}
                 `}
         >
@@ -53,7 +53,7 @@ export const AddFriendView: React.FC<AddFriendViewProps> = ({
             onChange={(e) => setName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSubmit}
             placeholder={t("friends.addView.placeholder")}
-            className="flex-1 px-4 py-3 bg-transparent font-roboto text-gray-800 placeholder:text-gray-600 focus:outline-none"
+            className="w-full flex-1 px-4 py-3 bg-transparent font-roboto text-gray-800 placeholder:text-gray-600 focus:outline-none"
           />
           <Button
             onClick={handleSubmit}
@@ -62,7 +62,7 @@ export const AddFriendView: React.FC<AddFriendViewProps> = ({
                 ? "bg-brand-brick"
                 : "bg-brand-brick hover:bg-brand-peach hover:text-brand-brick cursor-not-allowed shadow-none p-4 hover:-translate-y-[2px]"
             }
-            className={`m-2 mb-3 !px-6 !py-3 !text-sm whitespace-nowrap flex items-center gap-2`}
+            className={`m-0 mb-2 mr-2 w-[calc(100%-0.5rem)] sm:w-auto !px-3 sm:!px-6 !py-3 !text-sm whitespace-nowrap flex items-center justify-center gap-2 self-end sm:self-auto`}
           >
             <UserPlus className="w-4 h-4" />
             <span>{t("friends.addView.sendRequest")}</span>

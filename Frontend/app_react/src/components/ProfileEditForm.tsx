@@ -70,16 +70,16 @@ export const ProfileEditForm = ({
 
   return (
     <form
-      className="flex h-full min-h-0 flex-col gap-4 overflow-y-auto pr-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+      className="flex h-full min-h-0 flex-col gap-4 overflow-y-auto pr-0 md:pr-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
       style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       onSubmit={handleSubmit}
     >
       <div>
-        <div className="flex items-center gap-4 rounded-lg border-2 border-gray-800 bg-brand-beige p-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 rounded-lg border-2 border-gray-800 bg-brand-beige p-3">
           <img
             src={values.picture}
             alt="Profile"
-            className="h-16 w-16 rounded-full border-2 border-gray-800 object-cover"
+            className="h-16 w-16 rounded-full border-2 border-gray-800 object-cover shrink-0"
           />
           <div className="flex-1">
             <input
@@ -151,7 +151,7 @@ export const ProfileEditForm = ({
           {t("profileEdit.aboutMe")}
         </label>
         <textarea
-          className={`${inputClassName} min-h-[120px] resize-none`}
+          className={`${inputClassName} min-h-[110px] md:min-h-[120px] resize-none`}
           value={values.about}
           onChange={(event) =>
             setValues((current: ProfileEditValues) => ({

@@ -7,7 +7,7 @@ interface ServerHeaderProps {
 
 export const ServerHeader: React.FC<ServerHeaderProps> = ({ channelName }) => {
   return (
-    <header className="w-full h-[50px] shrink-0 bg-brand-green flex items-center justify-between px-4 border-b border-brand-peach z-50">
+    <header className="w-full h-[50px] shrink-0 bg-brand-green hidden md:flex items-center justify-between px-4 border-b border-brand-peach z-50">
       <div className="flex items-center gap-2 text-brand-beige w-1/3">
         <Hash className="h-5 w-5 opacity-80" />
         <h1 className="font-ananias font-bold text-lg truncate">

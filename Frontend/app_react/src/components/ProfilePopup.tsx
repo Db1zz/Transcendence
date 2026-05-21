@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { User, useAuth } from "../contexts/AuthContext";
 import { StatusColors } from "./ProfileButton";
 import { Button } from "./Button";
+import BackButton from "./BackButton";
 import { ProfileEditForm } from "./ProfileEditForm";
 import {
   LanguageEditForm,
@@ -52,6 +53,13 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
   >(null);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(max-width: 767px)").matches;
+  });
+  const [mobileSettingsView, setMobileSettingsView] = useState<
+    "menu" | "profile" | "language"
+  >("menu");
   const [selectedLanguage, setSelectedLanguage] = useState<LanguageOption>(
     normalizeLanguageOption(localStorage.getItem("preferredLanguage")),
   );
@@ -78,6 +86,16 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
   const isEditingSettings = isEditingProfile || isEditingLanguage;
 
   useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 767px)");
+    const updateIsMobile = () => setIsMobile(mediaQuery.matches);
+
+    updateIsMobile();
+    mediaQuery.addEventListener("change", updateIsMobile);
+
+    return () => mediaQuery.removeEventListener("change", updateIsMobile);
+  }, []);
+
+  useEffect(() => {
     if (friendshipStatus === "friend") {
       setFriendState("friend");
       return;
@@ -94,13 +112,38 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
   const handleClose = () => {
     setIsExpanded(false);
     setActiveSettingsSection(null);
+    setMobileSettingsView("menu");
     setSaveError("");
     onClose();
   };
 
   const toggleSettings = () => {
-    setIsExpanded(!isExpanded);
-    setActiveSettingsSection(!isExpanded ? "profile" : null);
+    if (isMobile) {
+      setIsExpanded(true);
+      setMobileSettingsView("menu");
+      setActiveSettingsSection(null);
+    } else {
+      setIsExpanded(!isExpanded);
+      setActiveSettingsSection(!isExpanded ? "profile" : null);
+    }
+    setSaveError("");
+  };
+
+  const openMobileProfile = () => {
+    setActiveSettingsSection("profile");
+    setMobileSettingsView("profile");
+    setSaveError("");
+  };
+
+  const openMobileLanguage = () => {
+    setActiveSettingsSection("language");
+    setMobileSettingsView("language");
+    setSaveError("");
+  };
+
+  const goBackToMobileMenu = () => {
+    setActiveSettingsSection(null);
+    setMobileSettingsView("menu");
     setSaveError("");
   };
 
@@ -199,23 +242,114 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
     return pictureUrl;
   };
 
+  if (isMobile && showSettingsPanel) {
+    return ReactDOM.createPortal(
+      <div className="fixed inset-0 z-[9999] flex items-stretch justify-stretch font-roboto">
+        <div
+          className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+          onClick={handleClose}
+        />
+        <div className="fixed inset-0 w-full h-[100dvh] bg-brand-beige border-2 border-gray-800 overflow-hidden flex flex-col shadow-sharp">
+          {mobileSettingsView === "menu" ? (
+            <div className="flex flex-col h-full min-h-0">
+              <div className="flex items-center justify-between gap-3 border-b-2 border-gray-800 bg-brand-green/60 p-4 shrink-0">
+                <h4 className="font-ananias text-sm font-bold text-gray-800 uppercase">
+                  {t("settings.title")}
+                </h4>
+                <Button
+                  onClick={handleClose}
+                  color="bg-brand-beige"
+                  className="!p-1.5 !min-w-0 border-2 text-gray-800 hover:bg-brand-brick hover:text-brand-beige"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-3">
+                <SettingsButton
+                  onClick={openMobileProfile}
+                  text={t("settings.myProfile")}
+                />
+                <SettingsButton
+                  onClick={openMobileLanguage}
+                  text={t("settings.language")}
+                />
+                <Button
+                  onClick={handleLogout}
+                  className="w-full !px-3 !py-2 text-sm"
+                >
+                  {t("common.logout")}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col h-full min-h-0">
+              <div className="flex items-center justify-between gap-3 border-b-2 border-gray-800 bg-brand-green/60 p-4 shrink-0">
+                <div className="flex items-center gap-3 min-w-0">
+                  <BackButton onClick={goBackToMobileMenu} />
+                  <h4 className="font-ananias text-sm font-bold text-gray-800 uppercase truncate">
+                    {mobileSettingsView === "profile"
+                      ? t("settings.myProfile")
+                      : t("settings.language")}
+                  </h4>
+                </div>
+                <Button
+                  onClick={handleClose}
+                  color="bg-brand-beige"
+                  className="!p-1.5 !min-w-0 border-2 text-gray-800 hover:bg-brand-brick hover:text-brand-beige"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="flex-1 min-h-0 overflow-hidden p-4">
+                {mobileSettingsView === "profile" ? (
+                  <ProfileEditForm
+                    initialValues={{
+                      username: user.username || "",
+                      displayName: user.name || user.username || "",
+                      about: user.about || "",
+                      picture: user.picture || "",
+                    }}
+                    isSaving={isSavingProfile}
+                    errorMessage={saveError}
+                    onUploadPicture={handleUploadPicture}
+                    onSave={handleSaveProfile}
+                  />
+                ) : (
+                  <LanguageEditForm
+                    initialLanguage={selectedLanguage}
+                    onSaved={(language) => {
+                      setSelectedLanguage(language);
+                      handleClose();
+                    }}
+                  />
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>,
+      document.body,
+    );
+  }
+
   return ReactDOM.createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center font-roboto">
+    <div className="fixed inset-0 z-[9999] flex items-stretch justify-stretch md:items-center md:justify-center font-roboto">
       <div
         className="absolute inset-0 bg-black/40 backdrop-blur-sm"
         onClick={handleClose}
       />
       <div
         className={`
-          fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
-          bg-brand-beige border-2 border-gray-800 rounded-xl overflow-hidden
-          duration-300 ease-out flex
-          animate-slide-up
-          ${showSettingsPanel ? "w-[900px] h-[700px] shadow-sharp" : "w-[500px] h-[550px] shadow-sharp"}
+          fixed inset-0 md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2
+          w-full h-[100dvh] md:w-[500px] md:h-[550px]
+          bg-brand-beige border-2 border-gray-800 rounded-none md:rounded-xl overflow-hidden
+          duration-300 ease-out flex flex-col md:flex-row
+						${isMobile ? "" : "animate-slide-up"}
+						${showSettingsPanel ? "md:w-[900px] md:h-[700px] shadow-sharp" : "shadow-sharp"}
         `}
       >
         {showSettingsPanel && (
-          <div className="w-[240px] border-r-2 border-gray-800 bg-brand-green/60 p-5 shrink-0 flex flex-col">
+          <div className="hidden md:flex w-[240px] border-r-2 border-gray-800 bg-brand-green/60 p-5 shrink-0 flex-col">
             <h4 className="font-ananias text-sm font-bold text-gray-800 uppercase">
               {t("settings.title")}
             </h4>
@@ -242,9 +376,41 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
         )}
 
         <div className="flex flex-col h-full min-h-0 flex-1 min-w-0">
+          {showSettingsPanel && (
+            <div className="md:hidden border-b-2 border-gray-800 bg-brand-green/60 p-4 shrink-0 flex flex-col gap-3">
+              <div className="flex items-center justify-between gap-3">
+                <h4 className="font-ananias text-sm font-bold text-gray-800 uppercase">
+                  {t("settings.title")}
+                </h4>
+                <Button
+                  onClick={handleClose}
+                  color="bg-brand-beige"
+                  className="!p-1.5 !min-w-0 border-2 text-gray-800 hover:bg-brand-brick hover:text-brand-beige"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="grid grid-cols-1 gap-2">
+                <SettingsButton
+                  onClick={() => setActiveSettingsSection("profile")}
+                  text={t("settings.myProfile")}
+                />
+                <SettingsButton
+                  onClick={() => setActiveSettingsSection("language")}
+                  text={t("settings.language")}
+                />
+              </div>
+              <Button
+                onClick={handleLogout}
+                className="w-full !px-3 !py-2 text-sm"
+              >
+                {t("common.logout")}
+              </Button>
+            </div>
+          )}
           {!isEditingSettings && (
             <>
-              <div className="w-full bg-brand-brick relative transition-all duration-300 shrink-0 h-[140px]">
+              <div className="w-full bg-brand-brick relative transition-all duration-300 shrink-0 h-[110px] md:h-[140px]">
                 <div className="absolute top-2 right-3 flex gap-2">
                   <Button
                     onClick={handleClose}
@@ -255,8 +421,8 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
                   </Button>
                 </div>
               </div>
-              <div className="relative px-6 shrink-0">
-                <div className="absolute border-4 border-brand-beige bg-gray-300 rounded-full transition-all duration-300 shadow-sm group -top-16 w-[120px] h-[120px]">
+              <div className="relative px-4 md:px-6 shrink-0">
+                <div className="absolute border-4 border-brand-beige bg-gray-300 rounded-full transition-all duration-300 shadow-sm group -top-12 md:-top-16 w-[88px] h-[88px] md:w-[120px] md:h-[120px]">
                   <img
                     src={displayPicture}
                     alt={displayTitle}
@@ -271,7 +437,7 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
                   />
                 </div>
                 {user.role === "ADMIN" && (
-                  <div className="absolute flex items-center gap-1 px-2 py-0.5 bg-brand-green text-white rounded-md text-xs font-ananias border border-gray-800 shadow-[2px_2px_0px_rgba(0,0,0,1)] top-4 right-6">
+                  <div className="absolute flex items-center gap-1 px-2 py-0.5 bg-brand-green text-white rounded-md text-xs font-ananias border border-gray-800 shadow-[2px_2px_0px_rgba(0,0,0,1)] top-3 right-4 md:top-4 md:right-6">
                     <Shield className="w-3 h-3" />
                     {t("common.admin")}
                   </div>
@@ -280,10 +446,10 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
             </>
           )}
           <div
-            className={`relative px-6 pb-6 flex flex-col h-full min-h-0 text-left ${isEditingSettings ? "pt-16" : "pt-20"}`}
+            className={`relative px-4 md:px-6 pb-4 md:pb-6 flex flex-col h-full min-h-0 text-left overflow-y-auto ${isEditingSettings ? "pt-14 md:pt-16" : "pt-16 md:pt-20"}`}
           >
             {isEditingSettings && (
-              <div className="absolute top-4 right-4 z-10 flex gap-2">
+              <div className="hidden md:flex absolute top-4 right-4 z-10 gap-2">
                 <Button
                   onClick={handleClose}
                   color="bg-brand-beige"
@@ -299,7 +465,7 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
                   <h3
                     className={`
               font-ananias font-bold text-gray-800 leading-none
-              text-3xl
+              text-2xl md:text-3xl
             `}
                   >
                     {displayTitle}
@@ -371,7 +537,7 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
                     </Button>
                   )}
                   {!isOwnProfile && (
-                    <div className="grid grid-cols-2 gap-3 mt-6 w-full">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6 w-full">
                       <Button
                         text={friendActionText}
                         onClick={handleFriendAction}

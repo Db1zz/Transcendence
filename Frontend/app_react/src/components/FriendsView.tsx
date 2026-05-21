@@ -105,7 +105,7 @@ export const FriendsView: React.FC<FriendsViewProps> = ({
   );
 
   return (
-    <div className="flex flex-col h-full bg-brand-beige border border-brand-green">
+    <div className="flex flex-col h-full min-h-0 w-full bg-brand-beige border-0 md:border md:border-brand-green">
       <FriendsHeader
         activeTab={activeTab}
         onTabChange={(tab) => {

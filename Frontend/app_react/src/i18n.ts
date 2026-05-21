@@ -96,7 +96,7 @@ const resources = {
         },
       },
       profileEdit: {
-        uploadFromComputer: "upload from computer",
+        uploadFromComputer: "upload from my device",
         uploading: "uploading...",
         pictureHint: "picture is set automatically after upload.",
         username: "username",
@@ -110,7 +110,7 @@ const resources = {
       },
       friends: {
         title: "Friends",
-        addFriend: "Add Friend",
+        addFriend: "add friend",
         tabs: {
           online: "Online",
           all: "All",
@@ -130,7 +130,7 @@ const resources = {
         loadingChats: "loading chats...",
         noChats: "no chats yet",
         addView: {
-          title: "Add Friend",
+          title: "add friend",
           subtitle: "you can add friends with their 'names'.",
           placeholder: "enter a name",
           sendRequest: "send request",
@@ -269,7 +269,7 @@ const resources = {
         },
       },
       profileEdit: {
-        uploadFromComputer: "загрузить с компьютера",
+        uploadFromComputer: "загрузить с устройства",
         uploading: "загрузка...",
         pictureHint: "фото автоматически установится после загрузки.",
         username: "имя пользователя",
@@ -443,7 +443,7 @@ const resources = {
         },
       },
       profileEdit: {
-        uploadFromComputer: "vom computer hochladen",
+        uploadFromComputer: "vom Gerät hochladen",
         uploading: "hochladen...",
         pictureHint: "bild wird nach dem hochladen automatisch gesetzt.",
         username: "benutzername",

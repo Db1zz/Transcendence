@@ -294,6 +294,19 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
               Share this code with others so they can join your server. It
               expires in 1 day.
             </p>
+            <button
+              onClick={() => setInviteModalOpen(false)}
+              className="absolute top-4 right-4 text-brand-green hover:text-brand-brick"
+            >
+              <X size={20} />
+            </button>
+            <h3 className="text-lg font-bold text-brand-green mb-2">
+              Invite friends to {serverName}
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Share this code with others so they can join your server. It
+              expires in 1 day.
+            </p>
             <div className="flex items-center gap-2 bg-white border border-gray-300 rounded p-2">
               <input
                 type="text"
