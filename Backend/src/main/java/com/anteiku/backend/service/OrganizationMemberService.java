@@ -75,12 +75,16 @@ public class OrganizationMemberService {
         return organizationMemberRepository.existsByUserIdAndOrganizationId(memberId, organizationId);
     }
 
-    public List<ServerMemberDto> getOrganizationMembers(UUID organizationId) {
-        UUID currentUserId = SecurityUtils.getCurrentUserId();
-        permissionService.calculatePermissions(organizationId, currentUserId);
+    public List<ServerMemberDto> getOrganizationMembers(UUID memberId, UUID organizationId) {
+        permissionService.calculatePermissions(organizationId, memberId);
         return organizationMemberRepository.findByOrganizationId(organizationId).stream()
                 .map(this::mapToMemberDto)
                 .collect(Collectors.toList());
+    }
+
+    public List<ServerMemberDto> getOrganizationMembers(UUID organizationId) {
+        UUID currentUserId = SecurityUtils.getCurrentUserId();
+        return getOrganizationMembers(currentUserId, organizationId);
     }
 
     public void updateMemberRoles(UUID memberId, List<UUID> roleIds) {

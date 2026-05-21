@@ -101,10 +101,8 @@ public class OrganizationService {
         return createOrganizationResponseDto;
     }
 
-    public List<OrganizationDto> getMyOrganizations() {
-        UUID currentUserId = SecurityUtils.getCurrentUserId();
-
-        return organizationRepository.findOrganizationsByUserId(currentUserId).stream()
+    public List<OrganizationDto> getUserOrganizations(UUID userId) {
+        return organizationRepository.findOrganizationsByUserId(userId).stream()
                 .map(org -> {
                     OrganizationDto dto = new OrganizationDto();
                     dto.setId(org.getId());
@@ -114,6 +112,11 @@ public class OrganizationService {
                     return dto;
                 })
                 .collect(Collectors.toList());
+    }
+
+    public List<OrganizationDto> getMyOrganizations() {
+        UUID currentUserId = SecurityUtils.getCurrentUserId();
+        return getUserOrganizations(currentUserId);
     }
 
     public List<ServerChannelDto> getOrganizationChannels(UUID organizationId) {
