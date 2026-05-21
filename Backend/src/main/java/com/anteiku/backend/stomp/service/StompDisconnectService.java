@@ -16,7 +16,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class StompDisconnectService {
-    private List<ClientDisconnectHandler> disconnectHandlers = new ArrayList<>();
+    private final List<ClientDisconnectHandler> disconnectHandlers = new ArrayList<>();
     private final OrganizationDisconnectEventHandler organizationDisconnectEventHandler;
     private final StatusDisconnectEventHandler statusDisconnectEventHandler;
 

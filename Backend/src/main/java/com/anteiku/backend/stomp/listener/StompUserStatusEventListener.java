@@ -1,9 +1,11 @@
 package com.anteiku.backend.stomp.listener;
 
 import com.anteiku.backend.stomp.facade.UserStatusSubscriptionFacade;
+import com.anteiku.backend.stomp.util.ExtractSessionIdAndUserIdFromEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
+import org.springframework.data.util.Pair;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Component;
@@ -29,20 +31,9 @@ public class StompUserStatusEventListener {
             return;
         }
 
-        Principal user = accessor.getUser();
-        if (!(user instanceof UsernamePasswordAuthenticationToken authToken)) {
-            log.warn("STOMP subscribe ignored: user is missing or invalid for destination {}", destination);
-            return;
-        }
+        Pair<String, UUID> ids = ExtractSessionIdAndUserIdFromEvent.extract(event);
 
-        Object principal = authToken.getPrincipal();
-        if (!(principal instanceof UUID userId)) {
-            log.warn("STOMP subscribe ignored: principal is not UUID for destination {}", destination);
-            return;
-        }
-
-        log.info("User fully subscribed to statuses topic: userId={}, destination={}", userId, destination);
-
-        userStatusSubscriptionFacade.handleSubscribe(userId);
+        log.info("User fully subscribed to statuses topic: userId={}, destination={}", ids.getSecond(), destination);
+        userStatusSubscriptionFacade.handleSubscribe(ids.getSecond());
     }
 }

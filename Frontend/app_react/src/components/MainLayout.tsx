@@ -20,6 +20,7 @@ import { ArrowUpRight, Phone } from "lucide-react";
 import { useNotifications } from "../contexts/NotificationContext";
 import { useCall } from "../hooks/useCall";
 import { useOrganizationEvents } from "../hooks/useOrganizationEvents";
+import { useUserStatuses } from "../hooks/useUserStatuses";
 
 const mockMembers: Member[] = [
     { id: "1", name: "Kaneki", status: "online", role: "Admin" },
@@ -64,6 +65,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     const { user, loading } = useAuth();
     const { incomingCall, setIncomingCall } = useNotifications();
     const { activeCall, joinOrCreateRoom, joinVoiceChannel } = useCall();
+    const { statuses } = useUserStatuses(user?.id ?? "");
 
     const [activeView, setActiveView] = useState<"friends" | "chat" | "voice" | "server">("friends");
     const [inServerVoice, setInServerVoice] = useState(false);
@@ -371,7 +373,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         }
 
         if (activeView === "friends") {
-            return <FriendsView onOpenChat={handleOpenDm} />;
+            return <FriendsView onOpenChat={ handleOpenDm } statuses={ statuses } />;
         }
 
         if (activeView === "voice") {
