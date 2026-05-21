@@ -310,6 +310,8 @@ paths:
           required: true
           schema:
             $ref: '#/components/schemas/OrganizationId'
+      security:
+        - bearerAuth: [ ]
       responses:
         200:
           description: "List of members"

@@ -15,7 +15,7 @@ import SettingsButton from "./SettingsButton";
 import api from "../utils/api";
 
 interface ProfilePopupProps {
-  user: User;
+  user: User | any; // Changed to 'any' temporarily to accept the mapped Member object safely
   friendshipStatus?: "friend" | "pending" | "blocked";
   canAcceptPending?: boolean;
   isOpen: boolean;
@@ -59,14 +59,14 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
     "friend" | "pending" | "not_friend"
   >("not_friend");
   const { logout, setUser, user: authenticatedUser } = useAuth();
+  const displayTitle = user.name || user.displayName || user.username || "Unknown User";
+  const displayHandle = user.username ? `@${user.username}` : `@${displayTitle.toLowerCase().replace(/\s/g, "")}`;
+  const displayPicture = user.picture || user.avatarUrl || "https://i.pinimg.com/1200x/c4/a4/36/c4a4365f7c98dc3b4b26fbad20da527d.jpg";
   const isOwnProfile = authenticatedUser?.id === user.id;
   const canExpand = isOwnProfile;
-  //const isExpandedView = true;
   const showSettingsPanel = canExpand && isExpanded;
-  const isEditingProfile =
-    isOwnProfile && showSettingsPanel && activeSettingsSection === "profile";
-  const isEditingLanguage =
-    isOwnProfile && showSettingsPanel && activeSettingsSection === "language";
+  const isEditingProfile = isOwnProfile && showSettingsPanel && activeSettingsSection === "profile";
+  const isEditingLanguage = isOwnProfile && showSettingsPanel && activeSettingsSection === "language";
   const isEditingSettings = isEditingProfile || isEditingLanguage;
 
   useEffect(() => {
@@ -95,6 +95,7 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
     setActiveSettingsSection(!isExpanded ? "profile" : null);
     setSaveError("");
   };
+  
   const handleLogout = () => {
     logout();
     handleClose();
@@ -148,17 +149,14 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
       const updatedProfile = response.data;
       const updatedUser: User = {
         id: updatedProfile.id || user.id,
-        name:
-          updatedProfile.displayName || updatedProfile.username || user.name,
+        name: updatedProfile.displayName || updatedProfile.username || user.name,
         username: updatedProfile.username || user.username,
         email: updatedProfile.email || authenticatedUser?.email || "",
         picture: updatedProfile.picture || user.picture,
         status: authenticatedUser?.status || "online",
         about: updatedProfile.about || "",
         createdAt: updatedProfile.createdAt || user.createdAt,
-        role: (updatedProfile.role || authenticatedUser?.role || "USER") as
-          | "USER"
-          | "ADMIN",
+        role: (updatedProfile.role || authenticatedUser?.role || "USER") as "USER" | "ADMIN",
       };
 
       localStorage.setItem("user", JSON.stringify(updatedUser));
@@ -202,7 +200,7 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
           bg-brand-beige border-2 border-gray-800 rounded-xl overflow-hidden
           duration-300 ease-out flex
           animate-slide-up
-					${showSettingsPanel ? "w-[900px] h-[700px] shadow-sharp" : "w-[500px] h-[550px] shadow-sharp"}
+          ${showSettingsPanel ? "w-[900px] h-[700px] shadow-sharp" : "w-[500px] h-[550px] shadow-sharp"}
         `}
       >
         {showSettingsPanel && (
@@ -214,7 +212,6 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
               onClick={() => setActiveSettingsSection("profile")}
               text={t("settings.myProfile")}
             />
-            {/* TODO: create voice and video editform for the settings. later */}
             <SettingsButton
               onClick={() => setActiveSettingsSection("profile")}
               text={t("settings.voiceAndVideo")}
@@ -250,9 +247,9 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
               <div className="relative px-6 shrink-0">
                 <div className="absolute border-4 border-brand-beige bg-gray-300 rounded-full transition-all duration-300 shadow-sm group -top-16 w-[120px] h-[120px]">
                   <img
-                    src={user.picture}
-                    alt={user.name}
-                    className="w-full h-full object-cover rounded-full"
+                    src={displayPicture}
+                    alt={displayTitle}
+                    className="w-full h-full object-cover rounded-full bg-white"
                   />
                   <div
                     className={`
@@ -294,10 +291,10 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
               text-3xl
             `}
                   >
-                    {user.name}
+                    {displayTitle}
                   </h3>
                   <p className="text-sm font-roboto text-gray-500 mt-1">
-                    {user.name.toLowerCase().replace(/\s/g, "")}
+                    {displayHandle}
                   </p>
                 </div>
 
@@ -310,9 +307,9 @@ export const ProfilePopup: React.FC<ProfilePopupProps> = ({
               <ProfileEditForm
                 initialValues={{
                   username: user.username || "",
-                  displayName: user.name || user.username || "",
+                  displayName: displayTitle,
                   about: user.about || "",
-                  picture: user.picture || "",
+                  picture: displayPicture,
                 }}
                 isSaving={isSavingProfile}
                 errorMessage={saveError}

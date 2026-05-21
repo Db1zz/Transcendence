@@ -1,6 +1,7 @@
 package com.anteiku.backend.repository;
 
 import com.anteiku.backend.entity.ChannelEntity;
+import com.anteiku.backend.entity.ChannelType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

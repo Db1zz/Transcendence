@@ -26,7 +26,7 @@ public class PermissionService {
             return PermissionFlags.ADMINISTRATOR;
         }
 
-        OrganizationMemberEntity member =  organizationMemberRepository.findById(userId)
+        OrganizationMemberEntity member =  organizationMemberRepository.findByOrganizationIdAndUserId(organizationId, userId)
                 .orElseThrow(() -> new AccessDeniedException("You are not a member of this organization"));
 
         long totalPermissions = 0L;

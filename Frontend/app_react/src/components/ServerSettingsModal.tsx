@@ -20,29 +20,36 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<"overview" | "roles" | "members">("overview");
   const { roles, fetchRoles, createRole, updateRole, deleteRole } = useRoles(serverId);
-  const { togglePermission, hasPermission } = usePermissions(); 
+  
+  const { togglePermission, hasPermission } = usePermissions();
+  const { user } = useAuth();
+  const { members, fetchMembers, updateMemberRoles } = useServerMembers(serverId);
+
   const [newRoleName, setNewRoleName] = useState("");
   const [newRolePermissions, setNewRolePermissions] = useState<number>(0);
   const [editingRoleId, setEditingRoleId] = useState<string | null>(null);
   const [editRoleName, setEditRoleName] = useState("");
   const [editRolePermissions, setEditRolePermissions] = useState<number>(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const { members, fetchMembers, updateMemberRoles } = useServerMembers(serverId);
-  const { user } = useAuth();
+
   useEffect(() => {
     if (isOpen) {
-      setActiveTab("overview");
+      setActiveTab("overview"); 
       fetchRoles();
       fetchMembers();
       setErrorMessage(null);
     }
   }, [isOpen, fetchRoles, fetchMembers]);
+
   const myMemberProfile = members.find(m => m.user.id === user?.id);
+  
   const myTotalPermissions = myMemberProfile?.roles.reduce((acc, roleId) => {
     const role = roles.find(r => r.id === roleId);
     return acc | (role ? role.permissions : 0);
   }, 0) || 0;
+
   const canManageRoles = hasPermission(myTotalPermissions, PERMISSION_FLAGS.MANAGE_ROLES);
+
   const handleCreateRole = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newRoleName.trim()) return;
@@ -93,21 +100,20 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
             <Info size={18} /> Overview
           </button>
           {canManageRoles && (
-            <>
-              <button onClick={() => setActiveTab("roles")} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-bold text-sm transition-all ${activeTab === "roles" ? "bg-brand-green text-brand-beige shadow-sm" : "text-gray-600 hover:bg-[#d3c5bd]/40 hover:text-gray-900"}`}>
-                <Shield size={18} /> Roles
-              </button>
-              <button onClick={() => setActiveTab("members")} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-bold text-sm transition-all ${activeTab === "members" ? "bg-brand-green text-brand-beige shadow-sm" : "text-gray-600 hover:bg-[#d3c5bd]/40 hover:text-gray-900"}`}>
-                <Users size={18} /> Members
-              </button>
-            </>
+            <button onClick={() => setActiveTab("roles")} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-bold text-sm transition-all ${activeTab === "roles" ? "bg-brand-green text-brand-beige shadow-sm" : "text-gray-600 hover:bg-[#d3c5bd]/40 hover:text-gray-900"}`}>
+              <Shield size={18} /> Roles
+            </button>
           )}
+          <button onClick={() => setActiveTab("members")} className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-bold text-sm transition-all ${activeTab === "members" ? "bg-brand-green text-brand-beige shadow-sm" : "text-gray-600 hover:bg-[#d3c5bd]/40 hover:text-gray-900"}`}>
+            <Users size={18} /> Members
+          </button>
         </div>
         <div className="flex-1 flex flex-col relative bg-[#f2ece9]">
           <button onClick={onClose} className="absolute top-6 right-6 text-gray-400 hover:text-brand-brick hover:bg-white p-2 rounded-full transition-all shadow-sm">
             <X size={20} />
           </button>
           <div className="p-8 h-full overflow-y-auto scrollbar-hide">
+            
             {errorMessage && (
               <div className="mb-6 flex items-center gap-3 bg-red-50 border-l-4 border-red-500 text-red-700 px-4 py-3 rounded shadow-sm relative animate-in slide-in-from-top-2">
                 <AlertCircle size={20} className="shrink-0" />
@@ -117,12 +123,15 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
                 </button>
               </div>
             )}
+
             {activeTab === "overview" && (
               <div className="animate-in fade-in">
                 <h2 className="text-3xl font-extrabold text-brand-green mb-6">Server Overview</h2>
                 <p className="text-gray-600 text-lg">Settings for {serverName} will go here.</p>
               </div>
             )}
+
+            {/* ROLES TAB */}
             {activeTab === "roles" && canManageRoles && (
               <div className="flex flex-col h-full animate-in fade-in">
                 <h2 className="text-3xl font-extrabold text-brand-green mb-6">Server Roles</h2>
@@ -253,7 +262,7 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
                 </div>
               </div>
             )}
-            {activeTab === "members" && canManageRoles && (
+            {activeTab === "members" && (
               <div className="flex flex-col h-full animate-in fade-in">
                 <h2 className="text-3xl font-extrabold text-brand-green mb-6">Server Members</h2>
                 <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden flex-1 flex flex-col">
@@ -282,34 +291,39 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
                             return (
                               <span key={role.id} className="flex items-center gap-1 px-2.5 py-1 bg-brand-green/10 text-brand-green border border-brand-green/20 rounded text-xs font-bold">
                                 {role.name}
-                                <button 
-                                  onClick={() => updateMemberRoles(member.id, member.roles.filter(id => id !== role.id))}
-                                  className="hover:text-brand-brick ml-1"
-                                >
-                                  <X size={12} />
-                                </button>
+                                {canManageRoles && (
+                                  <button 
+                                    onClick={() => updateMemberRoles(member.id, member.roles.filter(id => id !== role.id))}
+                                    className="hover:text-brand-brick ml-1"
+                                  >
+                                    <X size={12} />
+                                  </button>
+                                )}
                               </span>
                             );
                           })}
-                          <div className="relative inline-block">
-                            <select 
-                              className="appearance-none bg-gray-100 hover:bg-gray-200 text-gray-600 border border-gray-200 rounded text-xs font-bold px-3 py-1 pr-6 cursor-pointer focus:outline-none transition-colors"
-                              value=""
-                              onChange={(e) => {
-                                if (e.target.value) {
-                                  updateMemberRoles(member.id, [...member.roles, e.target.value]);
-                                }
-                              }}
-                            >
-                              <option value="" disabled>+ Add Role</option>
-                              {roles.filter(r => !member.roles.includes(r.id)).map(role => (
-                                <option key={role.id} value={role.id}>{role.name}</option>
-                              ))}
-                            </select>
-                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1 text-gray-500">
-                              <Plus size={12} />
+                          {canManageRoles && (
+                            <div className="relative inline-block">
+                              <select 
+                                className="appearance-none bg-gray-100 hover:bg-gray-200 text-gray-600 border border-gray-200 rounded text-xs font-bold px-3 py-1 pr-6 cursor-pointer focus:outline-none transition-colors"
+                                value=""
+                                onChange={(e) => {
+                                  if (e.target.value) {
+                                    updateMemberRoles(member.id, [...member.roles, e.target.value]);
+                                  }
+                                }}
+                              >
+                                <option value="" disabled>+ Add Role</option>
+                                {roles.filter(r => !member.roles.includes(r.id)).map(role => (
+                                  <option key={role.id} value={role.id}>{role.name}</option>
+                                ))}
+                              </select>
+                              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1 text-gray-500">
+                                <Plus size={12} />
+                              </div>
                             </div>
-                          </div>
+                          )}
+
                         </div>
                       </div>
                     ))}

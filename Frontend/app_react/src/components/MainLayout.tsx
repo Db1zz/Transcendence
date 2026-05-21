@@ -21,6 +21,7 @@ import { useNotifications } from "../contexts/NotificationContext";
 import { useCall } from "../hooks/useCall";
 import { useOrganizationEvents } from "../hooks/useOrganizationEvents";
 import { useUserStatuses } from "../hooks/useUserStatuses";
+
 import { useServerMembers } from "../hooks/useServerMembers";
 import { useFriends } from "../hooks/useFriends";
 
@@ -64,16 +65,16 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
     const [activeView, setActiveView] = useState<"friends" | "chat" | "voice" | "server">("friends");
     const [inServerVoice, setInServerVoice] = useState(false);
-
+    
     const [activeDmChannelId, setActiveDmChannelId] = useState<string | null>(null);
     const [activeDmName, setActiveDmName] = useState<string>("");
-
+    
     const [activeServerId, setActiveServerId] = useState<string | null>(null);
     const [activeServerName, setActiveServerName] = useState<string>("");
     const [activeServerChannelId, setActiveServerChannelId] = useState<string | null>(null);
     const [activeServerChannelName, setActiveServerChannelName] = useState<string>("");
     const [serverCategories, setServerCategories] = useState<ChannelCategory[]>([]);
-
+    
     const callRedirectHandled = useRef(false);
     const activeServerIdRef = useRef<string | null>(null);
     const lastServerId = useRef<string | null>(null);
@@ -85,7 +86,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         id: m.user.id,
         name: m.user.displayName || m.user.username,
         avatarUrl: m.user.picture,
-        status: (statuses[m.user.id] as MemberStatus) || (m.user.status?.toLowerCase() as MemberStatus) || "offline",
+        status: String(statuses[m.user.id] || m.user.status || "offline").toLowerCase() as MemberStatus,
         role: "Member"
     }));
 
@@ -95,7 +96,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             id: f.id,
             name: f.name || f.username,
             avatarUrl: f.picture,
-            status: (statuses[f.id] as MemberStatus) || (f.status?.toLowerCase() as MemberStatus) || "offline",
+            status: String(statuses[f.id] || f.status || "offline").toLowerCase() as MemberStatus,
         }));
 
     useEffect(() => {
@@ -107,7 +108,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         const eventPayload = args.length >= 2 ? args[1] : args[0];
 
         if (targetOrgId && activeServerIdRef.current && String(targetOrgId) !== String(activeServerIdRef.current)) {
-            return;
+            return; 
         }
 
         const data = parseStompPayload(eventPayload);
@@ -131,8 +132,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                             );
 
                             if (data.action === "JOIN" && String(ch.id) === String(data.channelId)) {
-                                const fallbackName = `User (${String(data.userId).slice(0, 4)})`;
-
+                                const fallbackName = `User (${String(data.userId).slice(0, 4)})`; 
+                                
                                 updatedUsers.push({
                                     id: String(data.userId),
                                     name: data.userName || fallbackName,
@@ -152,7 +153,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         handleVoiceEvents,
         (state: any) => {
             console.log("Initial state received from sync:", state);
-
+            
             if (state && state.type === "SYNC_STATE" && state.channels) {
                 if (activeServerIdRef.current && String(state.organizationId) !== String(activeServerIdRef.current)) {
                     return;
@@ -207,16 +208,16 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         try {
             const response = await api.get(`/organizations/${serverId}/channels`);
             const channels = response.data;
-
+            
             const textChannels = channels
                 .filter((c: any) => c.type === "TEXT")
                 .map((c: any) => ({ id: c.id, name: c.name, type: "text" }));
-
+            
             const voiceChannels = channels
                 .filter((c: any) => c.type === "VOICE")
-                .map((c: any) => ({
-                    id: c.id,
-                    name: c.name,
+                .map((c: any) => ({ 
+                    id: c.id, 
+                    name: c.name, 
                     type: "voice",
                     connectedUsers: c.connectedUsers || []
                 }));
@@ -242,10 +243,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     useEffect(() => {
         const savedView = localStorage.getItem("activeView") as any;
         if (savedView) setActiveView(savedView);
-
+        
         const savedServerId = localStorage.getItem("activeServerId");
         const savedServerName = localStorage.getItem("activeServerName");
-
+        
         if (savedView === "server" && savedServerId) {
             setActiveServerId(savedServerId);
             activeServerIdRef.current = savedServerId;
@@ -312,7 +313,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         setActiveServerChannelName(c.name);
         localStorage.setItem("activeServerChannelId", c.id);
         localStorage.setItem("activeServerChannelName", c.name);
-
+        
         if (c.type === "voice") {
             joinVoiceChannel(c.id);
             setInServerVoice(true);
@@ -341,16 +342,16 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         if (!user) return;
         try {
             const response = await api.post("/channels", {
-                name: null,
-                channelType: "TEXT",
-                organizationId: null,
+                name: null, 
+                channelType: "TEXT", 
+                organizationId: null, 
                 memberIds: [user.id, friend.id],
             });
             setActiveDmChannelId(response.data.id);
             setActiveDmName(friend.name);
             handleViewChange("chat");
-        } catch (e) {
-            console.error(e);
+        } catch (e) { 
+            console.error(e); 
         }
     };
 
@@ -371,7 +372,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         if (activeView === "server") {
             if (inServerVoice) {
                 return (
-                    <VoiceView
+                    <VoiceView 
                         onLeave={handleVoiceDisconnect}
                     />);
             }
@@ -419,7 +420,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
     if (loading) return null;
 
-    const isServerCall = activeCall && serverCategories.some(cat =>
+    const isServerCall = activeCall && serverCategories.some(cat => 
         cat.id === "voice" && cat.channels.some(ch => ch.id === activeCall.roomId)
     );
 
@@ -491,21 +492,16 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                                 {renderMainContent()}
                             </div>
                         </div>
+                        
                         <div className="hidden lg:block w-1/5 flex-shrink-0 overflow-hidden">
                             <RightBar>
                                 {activeView === "server" && (
-                                    <div className="flex flex-col h-full">
-                                        <h3 className="text-brand-beige font-ananias text-sm border-b border-brand-green/30 pb-2 mb-2 uppercase">
-                                            Server Members
-                                        </h3>
+                                    <div className="flex flex-col h-full w-full">
                                         <MemberList members={serverMembersMapped} />
                                     </div>
                                 )}
                                 {activeView === "friends" && (
-                                    <div className="flex flex-col h-full">
-                                        <h3 className="text-brand-beige font-ananias text-sm border-b border-brand-green/30 pb-2 mb-2 uppercase">
-                                            Active Friends
-                                        </h3>
+                                    <div className="flex flex-col h-full w-full">
                                         {activeFriendsMapped.length === 0 ? (
                                             <p className="text-brand-beige/70 text-sm mt-4 text-center italic">No friends online.</p>
                                         ) : (
