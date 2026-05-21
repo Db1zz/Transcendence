@@ -2,19 +2,20 @@ import { useAuth } from "../contexts/AuthContext";
 import { useCallContext } from "../contexts/CallContext";
 
 export const useCall = () => {
-  const { initiateCall, endCall, activeCall, localStream, remoteStreams } = useCallContext();
+  const { initiateCall, endCall, activeCall, localStream, remoteStreams } =
+    useCallContext();
   const { user } = useAuth();
 
   const joinOrCreateRoom = async (calleeId: string) => {
     try {
-      const response = await fetch('http://localhost:8080/api/voice/join', {
+      const response = await fetch("http://localhost:8080/api/voice/join", {
         method: "POST",
         credentials: "include",
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           callerId: user?.id,
-          invitedUsers: [calleeId]
-        })
+          invitedUsers: [calleeId],
+        }),
       });
 
       if (!response.ok) throw new Error("Failed to join room");
@@ -33,15 +34,15 @@ export const useCall = () => {
 
   const joinVoiceChannel = async (channelId: string) => {
     try {
-      const response = await fetch('http://localhost:8080/api/voice/join', {
+      const response = await fetch("http://localhost:8080/api/voice/join", {
         method: "POST",
         credentials: "include",
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           callerId: user?.id,
           roomId: channelId,
-          invitedUsers: []
-        })
+          invitedUsers: [],
+        }),
       });
 
       if (!response.ok) throw new Error("Failed to join voice channel");
@@ -63,6 +64,6 @@ export const useCall = () => {
     leaveRoom: endCall,
     activeCall,
     localStream,
-    remoteStreams
+    remoteStreams,
   };
 };

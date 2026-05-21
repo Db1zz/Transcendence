@@ -32,7 +32,9 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <CallContext.Provider value={{ activeCall, localStream, remoteStreams, initiateCall, endCall }}>
+    <CallContext.Provider
+      value={{ activeCall, localStream, remoteStreams, initiateCall, endCall }}
+    >
       {children}
       <div className="hidden">
         {Array.from(remoteStreams.entries()).map(([peerId, stream]) => (
@@ -53,6 +55,7 @@ const RemoteAudio = ({ stream }: { stream: MediaStream }) => {
 
 export const useCallContext = () => {
   const context = useContext(CallContext);
-  if (!context) throw new Error("useCallContext must be used within CallProvider");
+  if (!context)
+    throw new Error("useCallContext must be used within CallProvider");
   return context;
 };

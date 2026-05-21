@@ -1,5 +1,17 @@
 import React, { useState, useRef, useEffect } from "react";
-import { ChevronDown, ChevronRight, Hash, Volume2, Plus, UserPlus, Settings, X, Copy, Check, PhoneOff } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  Hash,
+  Volume2,
+  Plus,
+  UserPlus,
+  Settings,
+  X,
+  Copy,
+  Check,
+  PhoneOff,
+} from "lucide-react";
 import bgLSideBar from "../img/bg_l_sidebar.png";
 import api from "../utils/api";
 import { useCall } from "../hooks/useCall";
@@ -12,18 +24,18 @@ export interface ConnectedUser {
   avatar?: string;
 }
 
-export interface Channel { 
-  id: string; 
-  name: string; 
-  type: ChannelType; 
-  unread?: boolean; 
+export interface Channel {
+  id: string;
+  name: string;
+  type: ChannelType;
+  unread?: boolean;
   connectedUsers?: ConnectedUser[];
 }
 
-export interface ChannelCategory { 
-  id: string; 
-  name: string; 
-  channels: Channel[]; 
+export interface ChannelCategory {
+  id: string;
+  name: string;
+  channels: Channel[];
 }
 
 interface ServerLeftBarProps {
@@ -43,10 +55,10 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
 }) => {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const toggle = (id: string) => setCollapsed((c) => ({ ...c, [id]: !c[id] }));
-  
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  
+
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [inviteCode, setInviteCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -87,20 +99,27 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
   return (
     <>
       <div className="flex-1 rounded-tl-lg border border-brand-green relative flex flex-col min-h-0">
-        <div className="absolute inset-0 bg-cover bg-center rounded-tl-lg" style={{ backgroundImage: `url(${bgLSideBar})` }} />
+        <div
+          className="absolute inset-0 bg-cover bg-center rounded-tl-lg"
+          style={{ backgroundImage: `url(${bgLSideBar})` }}
+        />
         <div className="absolute inset-0 bg-brand-peach opacity-90 rounded-tl-lg" />
         <div className="relative z-10 flex flex-col h-full">
           <div className="relative" ref={menuRef}>
-            <button 
+            <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="w-full flex h-12 shrink-0 items-center justify-between border-b-2 border-gray-800 bg-brand-brick px-4 text-brand-beige shadow-sm hover:bg-brand-brick/90 transition-colors"
             >
-              <h2 className="truncate font-ananias text-base font-bold uppercase">{serverName}</h2>
-              <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isMenuOpen ? "rotate-180" : ""}`} />
+              <h2 className="truncate font-ananias text-base font-bold uppercase">
+                {serverName}
+              </h2>
+              <ChevronDown
+                className={`h-4 w-4 transition-transform duration-200 ${isMenuOpen ? "rotate-180" : ""}`}
+              />
             </button>
             {isMenuOpen && (
               <div className="absolute top-12 left-2 right-2 bg-brand-beige border-2 border-brand-green rounded-md shadow-xl py-2 z-50 animate-in fade-in slide-in-from-top-2">
-                <button 
+                <button
                   onClick={handleGenerateInvite}
                   className="w-full flex items-center justify-between px-3 py-2 text-sm font-bold text-brand-green hover:bg-brand-green hover:text-brand-beige transition-colors"
                 >
@@ -108,7 +127,7 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
                   <UserPlus className="h-4 w-4" />
                 </button>
                 <div className="mx-2 my-1 border-b border-brand-green/20" />
-                <button 
+                <button
                   disabled
                   className="w-full flex items-center justify-between px-3 py-2 text-sm font-bold text-gray-500 hover:bg-gray-200 transition-colors cursor-not-allowed opacity-70"
                 >
@@ -123,8 +142,15 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
               const isCollapsed = collapsed[cat.id];
               return (
                 <div key={cat.id}>
-                  <button onClick={() => toggle(cat.id)} className="group flex w-full items-center gap-1 px-1 py-1 text-xs font-ananias font-bold uppercase tracking-wider text-gray-800/70 hover:text-gray-900">
-                    {isCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                  <button
+                    onClick={() => toggle(cat.id)}
+                    className="group flex w-full items-center gap-1 px-1 py-1 text-xs font-ananias font-bold uppercase tracking-wider text-gray-800/70 hover:text-gray-900"
+                  >
+                    {isCollapsed ? (
+                      <ChevronRight className="h-3 w-3" />
+                    ) : (
+                      <ChevronDown className="h-3 w-3" />
+                    )}
                     <span className="flex-1 text-left">{cat.name}</span>
                     <Plus className="h-3.5 w-3.5 opacity-0 transition-opacity group-hover:opacity-100" />
                   </button>
@@ -135,27 +161,40 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
                         const Icon = ch.type === "voice" ? Volume2 : Hash;
                         return (
                           <div key={ch.id} className="flex flex-col">
-                            <button onClick={() => onSelectChannel(ch)} className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm font-roboto font-medium transition-colors border-2 ${isActive ? "bg-brand-green border-gray-800 text-brand-beige shadow-sharp-xs" : "border-transparent text-gray-800 hover:bg-brand-green/30"}`}>
+                            <button
+                              onClick={() => onSelectChannel(ch)}
+                              className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm font-roboto font-medium transition-colors border-2 ${isActive ? "bg-brand-green border-gray-800 text-brand-beige shadow-sharp-xs" : "border-transparent text-gray-800 hover:bg-brand-green/30"}`}
+                            >
                               <Icon className="h-4 w-4 shrink-0" />
                               <span className="truncate">{ch.name}</span>
                             </button>
-                            {ch.type === "voice" && ch.connectedUsers && ch.connectedUsers.length > 0 && (
-                              <div className="flex flex-col mt-1 mb-1 pl-6 space-y-1">
-                                {ch.connectedUsers.map(u => (
-                                  <div key={u.id} className="flex items-center gap-2 px-2 py-1 rounded-md hover:bg-white/30 cursor-pointer transition-colors">
-                                    {u.avatar ? (
-                                      <img src={u.avatar} alt={u.name} className="w-6 h-6 rounded-full border border-gray-800 object-cover" />
-                                    ) : (
-                                      <div className="w-6 h-6 rounded-full bg-brand-green flex items-center justify-center text-xs text-brand-beige font-bold border border-gray-800">
-                                        {u.name.charAt(0).toUpperCase()}
-                                      </div>
-                                    )}
-                                    <span className="text-sm text-gray-800 font-medium truncate">{u.name}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-
+                            {ch.type === "voice" &&
+                              ch.connectedUsers &&
+                              ch.connectedUsers.length > 0 && (
+                                <div className="flex flex-col mt-1 mb-1 pl-6 space-y-1">
+                                  {ch.connectedUsers.map((u) => (
+                                    <div
+                                      key={u.id}
+                                      className="flex items-center gap-2 px-2 py-1 rounded-md hover:bg-white/30 cursor-pointer transition-colors"
+                                    >
+                                      {u.avatar ? (
+                                        <img
+                                          src={u.avatar}
+                                          alt={u.name}
+                                          className="w-6 h-6 rounded-full border border-gray-800 object-cover"
+                                        />
+                                      ) : (
+                                        <div className="w-6 h-6 rounded-full bg-brand-green flex items-center justify-center text-xs text-brand-beige font-bold border border-gray-800">
+                                          {u.name.charAt(0).toUpperCase()}
+                                        </div>
+                                      )}
+                                      <span className="text-sm text-gray-800 font-medium truncate">
+                                        {u.name}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
                           </div>
                         );
                       })}
@@ -170,7 +209,8 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
               <div className="flex items-center justify-between">
                 <div className="flex flex-col min-w-0">
                   <div className="flex items-center gap-1 text-brand-beige font-bold text-xs uppercase tracking-wider">
-                    <Volume2 size={14} className="animate-pulse" /> Voice Connected
+                    <Volume2 size={14} className="animate-pulse" /> Voice
+                    Connected
                   </div>
                   <div className="text-xs text-brand-beige/80 truncate font-medium">
                     {serverName}
@@ -191,16 +231,39 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
       {inviteModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
           <div className="bg-brand-beige rounded-lg shadow-xl w-full max-w-sm overflow-hidden border-2 border-brand-green p-6 relative">
-            <button onClick={() => setInviteModalOpen(false)} className="absolute top-4 right-4 text-brand-green hover:text-brand-brick"><X size={20} /></button>
-            <h3 className="text-lg font-bold text-brand-green mb-2">Invite friends to {serverName}</h3>
-            <p className="text-sm text-gray-600 mb-4">Share this code with others so they can join your server. It expires in 1 day.</p>
+            <button
+              onClick={() => setInviteModalOpen(false)}
+              className="absolute top-4 right-4 text-brand-green hover:text-brand-brick"
+            >
+              <X size={20} />
+            </button>
+            <h3 className="text-lg font-bold text-brand-green mb-2">
+              Invite friends to {serverName}
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Share this code with others so they can join your server. It
+              expires in 1 day.
+            </p>
             <div className="flex items-center gap-2 bg-white border border-gray-300 rounded p-2">
-              <input type="text" readOnly value={inviteCode || "Generating..."} className="flex-1 bg-transparent text-gray-800 font-mono font-bold focus:outline-none" />
-              <button onClick={copyToClipboard} disabled={!inviteCode} className="bg-brand-green text-brand-beige p-2 rounded hover:bg-brand-brick transition-colors disabled:opacity-50">
+              <input
+                type="text"
+                readOnly
+                value={inviteCode || "Generating..."}
+                className="flex-1 bg-transparent text-gray-800 font-mono font-bold focus:outline-none"
+              />
+              <button
+                onClick={copyToClipboard}
+                disabled={!inviteCode}
+                className="bg-brand-green text-brand-beige p-2 rounded hover:bg-brand-brick transition-colors disabled:opacity-50"
+              >
                 {copied ? <Check size={18} /> : <Copy size={18} />}
               </button>
             </div>
-            {copied && <p className="text-xs text-brand-green mt-2 font-bold text-right">Copied!</p>}
+            {copied && (
+              <p className="text-xs text-brand-green mt-2 font-bold text-right">
+                Copied!
+              </p>
+            )}
           </div>
         </div>
       )}
