@@ -74,15 +74,22 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   >("chat");
   const [inServerVoice, setInServerVoice] = useState(false);
 
-  const [activeDmChannelId, setActiveDmChannelId] = useState<string | null>(null);
+  const [activeDmChannelId, setActiveDmChannelId] = useState<string | null>(
+    null,
+  );
   const [activeDmName, setActiveDmName] = useState<string>("");
   const [activeDmUsername, setActiveDmUsername] = useState<string>("");
 
   const [activeServerId, setActiveServerId] = useState<string | null>(null);
   const [activeServerName, setActiveServerName] = useState<string>("");
-  const [activeServerChannelId, setActiveServerChannelId] = useState<string | null>(null);
-  const [activeServerChannelName, setActiveServerChannelName] = useState<string>("");
-  const [serverCategories, setServerCategories] = useState<ChannelCategory[]>([]);
+  const [activeServerChannelId, setActiveServerChannelId] = useState<
+    string | null
+  >(null);
+  const [activeServerChannelName, setActiveServerChannelName] =
+    useState<string>("");
+  const [serverCategories, setServerCategories] = useState<ChannelCategory[]>(
+    [],
+  );
 
   const callRedirectHandled = useRef(false);
   const activeServerIdRef = useRef<string | null>(null);
@@ -640,7 +647,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             )}
           {showMobileFriendsPage ? (
             <div className="flex h-full min-h-0 w-full md:hidden overflow-hidden pb-24">
-              <FriendsView onOpenChat={handleMobileFriendsOpenChat} statuses={statuses} />
+              <FriendsView
+                onOpenChat={handleMobileFriendsOpenChat}
+                statuses={statuses}
+              />
             </div>
           ) : showMobileNotificationsPage ? (
             <div className="flex h-full min-h-0 w-full md:hidden overflow-hidden pb-24">
