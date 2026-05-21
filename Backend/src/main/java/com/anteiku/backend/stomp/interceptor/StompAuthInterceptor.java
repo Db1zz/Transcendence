@@ -24,7 +24,7 @@ import java.util.Map;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class WebSocketAuthInterceptor implements ChannelInterceptor {
+public class StompAuthInterceptor implements ChannelInterceptor {
     private final StompSessionService stompSessionService;
     private final JwtService jwtService;
     private final UserSessionsService sessionService;

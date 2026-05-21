@@ -13,7 +13,6 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
 
 import java.io.IOException;
-import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
@@ -39,7 +38,7 @@ public class SocketHandler extends TextWebSocketHandler {
         }
 
         synchronized (receiver) {
-            receiver.sendMessage(new TextMessage(root.toString())); // TODO try/catch block
+            receiver.sendMessage(new TextMessage(root.toString()));
         }
     }
 
@@ -81,7 +80,7 @@ public class SocketHandler extends TextWebSocketHandler {
 
         TextMessage textMessage = new TextMessage(jsonMessage);
 
-        synchronized (sessions){
+        synchronized (sessions) {
             sessions.remove(session.getId());
         }
 

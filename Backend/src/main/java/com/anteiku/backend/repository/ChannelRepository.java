@@ -1,6 +1,7 @@
 package com.anteiku.backend.repository;
 
 import com.anteiku.backend.entity.ChannelEntity;
+import com.anteiku.backend.entity.ChannelType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -38,4 +39,6 @@ public interface ChannelRepository extends JpaRepository<ChannelEntity, UUID> {
             "AND cm1.user.id = :userA AND cm2.user.id = :userB")
     UUID findPrivateChannel(@Param("userA") UUID userA, @Param("userB") UUID userB);
     List<ChannelEntity> findByOrganizationId(UUID organizationId);
+
+    List<ChannelEntity> findByOrganization_IdAndType(UUID organizationId, ChannelType type);
 }

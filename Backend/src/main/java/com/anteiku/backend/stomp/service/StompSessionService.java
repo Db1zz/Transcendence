@@ -15,8 +15,8 @@ public class StompSessionService {
         sessions.put(sessionId, userId);
     }
 
-    public void removeSession(String sessionId) {
-        sessions.remove(sessionId);
+    public UUID removeSession(String sessionId) {
+        return sessions.remove(sessionId);
     }
 
     public boolean hasSession(String sessionId) {
