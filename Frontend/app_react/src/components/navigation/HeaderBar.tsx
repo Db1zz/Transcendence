@@ -1,8 +1,8 @@
 import React from "react";
-import { MessageSquare, Contact } from "lucide-react";
+import { MessageSquare, Contact, Bell } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-type PageType = "friends" | "messages" | "server";
+type PageType = "friends" | "messages" | "server" | "notifications";
 
 interface HeaderBarProps {
   type?: PageType;
@@ -17,6 +17,8 @@ const getIcon = (type: PageType) => {
       return <MessageSquare size={20} className="text-brand-beige" />;
     case "server":
       return null;
+    case "notifications":
+      return <Bell size={20} className="text-brand-beige" />;
     default:
       return <MessageSquare size={20} className="text-brand-beige" />;
   }
@@ -33,7 +35,9 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
       ? t("header.friends")
       : type === "messages"
         ? t("header.messages")
-        : t("header.server");
+        : type === "notifications"
+          ? t("header.notifications", "notifications")
+          : t("header.server");
 
   return (
     <div className="w-full h-[30px] bg-brand-green flex items-center justify-center sticky top-0 z-50 border-b border-brand-peach gap-3">

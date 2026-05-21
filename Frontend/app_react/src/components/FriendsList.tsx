@@ -57,21 +57,21 @@ export const FriendsList: React.FC<FriendsListProps> = ({
   const { t } = useTranslation();
 
   return (
-    <div className="flex flex-col h-full p-6">
-      <div className="relative mb-6">
+    <div className="flex flex-col h-full min-h-0 p-4 sm:p-6">
+      <div className="relative mb-4 sm:mb-6">
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder={t("friends.searchPlaceholder")}
-          className="w-full px-4 py-3 pl-11 bg-brand-green border-2 border-gray-800 rounded-lg font-roboto text-gray-800 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-brick shadow-sharp-xs transition-all duration-150"
+          className="w-full px-4 py-2.5 sm:py-3 pl-11 bg-brand-green border-2 border-gray-800 rounded-lg font-roboto text-gray-800 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-brand-brick shadow-sharp-xs transition-all duration-150"
         />
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
       </div>
-      <h3 className="font-ananias text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 px-1">
+      <h3 className="font-ananias text-[11px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 sm:mb-4 px-1">
         {getTabTitle(activeTab, friends.length, t)}
       </h3>
-      <div className="flex-1 overflow-y-auto space-y-3 pr-1">
+      <div className="flex-1 min-h-0 overflow-y-auto space-y-2.5 sm:space-y-3 pr-0 sm:pr-1">
         {friends.length > 0 ? (
           friends.map((friend, index) => (
             <div
@@ -138,7 +138,7 @@ export const FriendsList: React.FC<FriendsListProps> = ({
             </div>
           ))
         ) : (
-          <div className="flex flex-col items-center justify-center h-64 text-center">
+          <div className="flex flex-col items-center justify-center h-56 sm:h-64 text-center px-4">
             <div className="w-20 h-20 rounded-full bg-brand-beige border-2 border-gray-800 flex items-center justify-center mb-4 shadow-sharp-sm">
               <Users className="w-10 h-10 text-brand-brick" />
             </div>

@@ -9,11 +9,19 @@ import {
 import { useAuth } from "./AuthContext";
 import { NotifyClient } from "../services/notifications/client";
 import { NotificationToast } from "../components/NotificationToast";
+import { BackendNotification } from "../services/notifications/types";
+
+type StoredNotification = BackendNotification & {
+  payload: unknown;
+};
 
 type NotificationContextType = {
   getUnreadCount: (id: string) => number;
   markAsRead: (id: string) => void;
   latestToast: any | null;
+  notifications: StoredNotification[];
+  dismissNotification: (id: string) => Promise<void>;
+  dismissNotifications: (ids: string[]) => Promise<void>;
   setActiveTarget: (id: string | null) => void;
   setIncomingCall: (call: any | null) => void;
   incomingCall: any | null;
@@ -35,6 +43,7 @@ export function NotificationProvider({
   const [unreadIds, setUnreadIds] = useState<Record<string, string[]>>({});
   const [latestToast, setLatestToast] = useState<any | null>(null);
   const [incomingCall, setIncomingCall] = useState<any | null>(null);
+  const [notifications, setNotifications] = useState<StoredNotification[]>([]);
 
   const activeTargetRef = useRef<string | null>(null);
   const tokenRef = useRef<string | null>(null);
@@ -43,6 +52,27 @@ export function NotificationProvider({
     if (!user?.id) return undefined;
     return new NotifyClient(notifyServerAddr);
   }, [notifyServerAddr, user?.id]);
+
+  const parsePayload = (payload: unknown) => {
+    if (typeof payload !== "string") return payload;
+
+    try {
+      return JSON.parse(payload);
+    } catch (error) {
+      console.error("Failed to parse notification payload", error);
+      return payload;
+    }
+  };
+
+  const normalizeNotification = (
+    item: BackendNotification,
+  ): StoredNotification => ({
+    ...item,
+    payload: parsePayload(item.payload),
+  });
+
+  const isMessageNotification = (item: Pick<BackendNotification, "etype">) =>
+    item.etype === "MESSAGE_CREATED";
 
   const getTargetId = (item: any) => {
     try {
@@ -76,6 +106,9 @@ export function NotificationProvider({
 
       const offlineData = await client.fetchOfflineNotifications(token);
       const historicalIds: Record<string, string[]> = {};
+      const storedNotifications = offlineData
+        .filter((item) => !isMessageNotification(item))
+        .map((item) => normalizeNotification(item));
 
       offlineData.forEach((item) => {
         const targetId = getTargetId(item);
@@ -86,14 +119,31 @@ export function NotificationProvider({
       });
 
       setUnreadIds(historicalIds);
+      setNotifications(storedNotifications);
     };
 
     client.onMessageReceived = (event: any) => {
-      const targetId = getTargetId(event);
-      if (!targetId) return;
+      const normalizedEvent = normalizeNotification(event);
+
+      if (!isMessageNotification(event)) {
+        setNotifications((prev) => {
+          if (prev.some((item) => item.id === event.id)) {
+            return prev;
+          }
+
+          return [normalizedEvent, ...prev];
+        });
+      }
 
       if (event.etype === "JOIN_CALL_CREATED") {
         setIncomingCall(event);
+        return;
+      }
+
+      const targetId = getTargetId(event);
+      if (!targetId) return;
+
+      if (!isMessageNotification(event)) {
         return;
       }
 
@@ -156,12 +206,35 @@ export function NotificationProvider({
     }
   };
 
+  const dismissNotifications = async (ids: string[]) => {
+    const uniqueIds = Array.from(new Set(ids)).filter(Boolean);
+
+    if (uniqueIds.length === 0) {
+      return;
+    }
+
+    setNotifications((prev) =>
+      prev.filter((item) => !uniqueIds.includes(item.id)),
+    );
+
+    if (tokenRef.current) {
+      await client?.markNotificationsAsRead(tokenRef.current, uniqueIds);
+    }
+  };
+
+  const dismissNotification = async (id: string) => {
+    await dismissNotifications([id]);
+  };
+
   return (
     <NotificationContext.Provider
       value={{
         getUnreadCount,
         markAsRead,
         latestToast,
+        notifications,
+        dismissNotification,
+        dismissNotifications,
         setActiveTarget,
         setIncomingCall,
         incomingCall,
@@ -181,7 +254,7 @@ export function NotificationProvider({
   );
 }
 
-export const useNotifications = () => {
+export const useNotifications = (): NotificationContextType => {
   const context = useContext(NotificationContext);
   if (!context)
     throw new Error(
