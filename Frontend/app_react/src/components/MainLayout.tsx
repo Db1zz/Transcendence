@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import { Friend, FriendsView } from "./FriendsView";
 import { NavigationSidebar } from "./navigation/NavigationSideBar";
 import Chat from "./Chat";
@@ -24,6 +30,7 @@ import { useUserStatuses } from "../hooks/useUserStatuses";
 
 import { useServerMembers } from "../hooks/useServerMembers";
 import { useFriends } from "../hooks/useFriends";
+import type { VoiceParticipant } from "./VoiceView";
 
 const parseStompPayload = (data: any) => {
   if (data && typeof data === "object") {
@@ -117,6 +124,48 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         statuses[f.id] || f.status || "offline",
       ).toLowerCase() as MemberStatus,
     }));
+
+  const localVoiceParticipant = useMemo<VoiceParticipant | null>(() => {
+    if (!user) return null;
+
+    return {
+      id: user.id,
+      name: user.name,
+      picture: user.picture,
+    };
+  }, [user]);
+
+  const voiceParticipants = useMemo<VoiceParticipant[]>(() => {
+    const merged = new Map<string, VoiceParticipant>();
+
+    if (user) {
+      const localParticipant = {
+        id: user.id,
+        name: user.name,
+        picture: user.picture,
+      };
+      merged.set(user.id, localParticipant);
+      merged.set("local", localParticipant);
+    }
+
+    rawServerMembers.forEach((member) => {
+      merged.set(member.user.id, {
+        id: member.user.id,
+        name: member.user.displayName || member.user.username,
+        picture: member.user.picture,
+      });
+    });
+
+    rawFriends.forEach((friend) => {
+      merged.set(friend.id, {
+        id: friend.id,
+        name: friend.name || friend.username,
+        picture: friend.picture,
+      });
+    });
+
+    return Array.from(merged.values());
+  }, [rawFriends, rawServerMembers, user]);
 
   useEffect(() => {
     activeServerIdRef.current = activeServerId;
@@ -423,7 +472,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const renderMainContent = () => {
     if (activeView === "server") {
       if (inServerVoice) {
-        return <VoiceView onLeave={handleVoiceDisconnect} />;
+        return (
+          <VoiceView
+            onLeave={handleVoiceDisconnect}
+            participants={voiceParticipants}
+            localParticipant={localVoiceParticipant}
+          />
+        );
       }
       if (activeServerChannelId) {
         return (
@@ -447,7 +502,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     }
 
     if (activeView === "voice") {
-      return <VoiceView />;
+      return (
+        <VoiceView
+          participants={voiceParticipants}
+          localParticipant={localVoiceParticipant}
+        />
+      );
     }
 
     if (!activeDmChannelId) {

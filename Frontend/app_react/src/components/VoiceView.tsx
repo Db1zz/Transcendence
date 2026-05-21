@@ -19,6 +19,29 @@ import {
 import { useTranslation } from "react-i18next";
 import { useCall } from "../hooks/useCall";
 
+export interface VoiceParticipant {
+  id: string;
+  name: string;
+  picture?: string;
+}
+
+const FALLBACK_COLORS = [
+  "bg-brand-beige",
+  "bg-brand-peach",
+  "bg-brand-brick",
+] as const;
+
+const getSeededIndex = (seed: string, length: number) => {
+  let hash = 0;
+  for (let index = 0; index < seed.length; index += 1) {
+    hash = (hash * 31 + seed.charCodeAt(index)) >>> 0;
+  }
+  return hash % length;
+};
+
+const getFallbackColor = (peerId: string) =>
+  FALLBACK_COLORS[getSeededIndex(peerId, FALLBACK_COLORS.length)];
+
 const IconMicOn = () => <Mic size={20} />;
 const IconMicOff = () => <MicOff size={20} />;
 const IconCamOn = () => <Video size={20} />;
@@ -31,6 +54,8 @@ interface VideoTileProps {
   peerId: string;
   stream: MediaStream;
   displayName: string;
+  avatarUrl?: string;
+  showVideo?: boolean;
   isLocal?: boolean;
   isSelected?: boolean;
   isDeafened?: boolean;
@@ -42,6 +67,8 @@ const VideoTile: React.FC<VideoTileProps> = ({
   peerId,
   stream,
   displayName,
+  avatarUrl,
+  showVideo,
   isLocal,
   isSelected,
   isDeafened,
@@ -49,29 +76,59 @@ const VideoTile: React.FC<VideoTileProps> = ({
   className = "",
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const hasActiveVideo =
+    showVideo ??
+    (stream.getVideoTracks().length > 0 &&
+      stream
+        .getVideoTracks()
+        .some((track) => track.readyState === "live" && track.enabled));
+  const fallbackColor = getFallbackColor(peerId);
 
   useEffect(() => {
     if (videoRef.current && videoRef.current.srcObject !== stream) {
       videoRef.current.srcObject = stream;
     }
-  }, [stream]);
+    if (videoRef.current && hasActiveVideo) {
+      videoRef.current.play().catch(() => {});
+    }
+  }, [stream, hasActiveVideo]);
 
   return (
     <div
-      className={`relative aspect-video bg- rounded-xl overflow-hidden shadow-lg border-2 transition-all cursor-pointer ${
+      className={`relative aspect-video rounded-xl overflow-hidden shadow-lg border-2 transition-all cursor-pointer ${fallbackColor} ${
         isSelected
           ? "border-brand-peach"
           : "border-transparent hover:border-brand-brick"
       } ${className}`}
       onClick={() => onClick?.(peerId)}
     >
-      <video
-        ref={videoRef}
-        playsInline
-        autoPlay
-        muted={isLocal || isDeafened}
-        className="w-full h-full object-cover"
-      />
+      {hasActiveVideo ? (
+        <video
+          ref={videoRef}
+          playsInline
+          autoPlay
+          muted={isLocal || isDeafened}
+          className="w-full h-full object-cover"
+        />
+      ) : (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="relative flex h-full w-full items-center justify-center p-4">
+            <div className="relative flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border-4 border-brand-beige bg-brand-beige shadow-sm sm:h-32 sm:w-32 md:h-36 md:w-36">
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt={displayName}
+                  className="h-full w-full rounded-full object-cover bg-white"
+                />
+              ) : (
+                <span className="font-ananias text-3xl font-bold text-brand-brick sm:text-4xl">
+                  {displayName.charAt(0).toUpperCase() || "?"}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
       <div className="absolute bottom-2 left-2 bg-black/50 px-2 py-1 rounded text-white text-xs">
         {displayName}
       </div>
@@ -81,9 +138,15 @@ const VideoTile: React.FC<VideoTileProps> = ({
 
 interface VoiceViewProps {
   onLeave?: () => void;
+  participants?: VoiceParticipant[];
+  localParticipant?: VoiceParticipant | null;
 }
 
-export const VoiceView: React.FC<VoiceViewProps> = ({ onLeave }) => {
+export const VoiceView: React.FC<VoiceViewProps> = ({
+  onLeave,
+  participants = [],
+  localParticipant = null,
+}) => {
   const { t } = useTranslation();
   const { localStream, remoteStreams, leaveRoom } = useCall();
 
@@ -92,6 +155,12 @@ export const VoiceView: React.FC<VoiceViewProps> = ({ onLeave }) => {
   const [deafened, setDeafened] = useState(false);
 
   const [selectedPeerId, setSelectedPeerId] = useState<string | null>(null);
+
+  const participantMap = useMemo(() => {
+    return new Map(
+      participants.map((participant) => [participant.id, participant]),
+    );
+  }, [participants]);
 
   useEffect(() => {
     if (localStream) {
@@ -137,6 +206,35 @@ export const VoiceView: React.FC<VoiceViewProps> = ({ onLeave }) => {
   };
 
   const resetSelection = useCallback(() => setSelectedPeerId(null), []);
+
+  const renderTile = (
+    peerId: string,
+    stream: MediaStream,
+    className = "",
+    selected = false,
+  ) => {
+    const participant =
+      peerId === "local" ? localParticipant : participantMap.get(peerId);
+    const displayName =
+      peerId === "local"
+        ? t("voice.you")
+        : participant?.name || t("voice.user", { id: peerId.slice(0, 4) });
+
+    return (
+      <VideoTile
+        peerId={peerId}
+        stream={stream}
+        displayName={displayName}
+        avatarUrl={participant?.picture}
+        showVideo={peerId !== "local" || camEnabled}
+        isLocal={peerId === "local"}
+        isDeafened={deafened}
+        isSelected={selected}
+        onClick={selected ? resetSelection : handleTileClick}
+        className={className}
+      />
+    );
+  };
 
   const renderControls = () => (
     <div className="flex items-center gap-3">
@@ -197,18 +295,7 @@ export const VoiceView: React.FC<VoiceViewProps> = ({ onLeave }) => {
         key={peerId}
         className="w-full sm:w-64 md:w-72 lg:w-80 flex-shrink-0"
       >
-        <VideoTile
-          peerId={peerId}
-          stream={stream}
-          displayName={
-            peerId === "local"
-              ? t("voice.you")
-              : t("voice.user", { id: peerId.slice(0, 4) })
-          }
-          isLocal={peerId === "local"}
-          isDeafened={deafened}
-          onClick={handleTileClick}
-        />
+        {renderTile(peerId, stream)}
       </div>
     ));
 
@@ -228,20 +315,7 @@ export const VoiceView: React.FC<VoiceViewProps> = ({ onLeave }) => {
     return (
       <div className="flex flex-col w-full h-full gap-2">
         <div className="flex-1 min-h-0">
-          <VideoTile
-            peerId={selectedPeerId!}
-            stream={mainStream}
-            displayName={
-              selectedPeerId === "local"
-                ? t("voice.you")
-                : t("voice.user", { id: selectedPeerId!.slice(0, 4) })
-            }
-            isLocal={selectedPeerId === "local"}
-            isDeafened={deafened}
-            isSelected
-            onClick={resetSelection}
-            className="w-full h-full"
-          />
+          {renderTile(selectedPeerId!, mainStream, "w-full h-full", true)}
         </div>
         {otherTiles.length > 0 && (
           <div className="h-24 sm:h-28 md:h-32 flex-shrink-0 w-full overflow-x-auto">
@@ -251,19 +325,7 @@ export const VoiceView: React.FC<VoiceViewProps> = ({ onLeave }) => {
                   key={peerId}
                   className="h-full w-32 sm:w-36 md:w-40 flex-shrink-0"
                 >
-                  <VideoTile
-                    peerId={peerId}
-                    stream={stream}
-                    displayName={
-                      peerId === "local"
-                        ? t("voice.you")
-                        : t("voice.user", { id: peerId.slice(0, 4) })
-                    }
-                    isLocal={peerId === "local"}
-                    isDeafened={deafened}
-                    onClick={handleTileClick}
-                    className="w-full h-full"
-                  />
+                  {renderTile(peerId, stream, "w-full h-full")}
                 </div>
               ))}
             </div>
