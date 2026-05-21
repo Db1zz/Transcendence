@@ -102,7 +102,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     name: m.user.displayName || m.user.username,
     avatarUrl: m.user.picture,
     status: String(
-      statuses[m.user.id] || m.user.status || "offline",
+      statuses[m.user.id] || "offline",
     ).toLowerCase() as MemberStatus,
     role: "Member",
   }));
@@ -114,7 +114,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       name: f.name || f.username,
       avatarUrl: f.picture,
       status: String(
-        statuses[f.id] || f.status || "offline",
+        statuses[f.id] || "offline",
       ).toLowerCase() as MemberStatus,
     }));
 
