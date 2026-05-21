@@ -76,7 +76,7 @@ const Chat: React.FC<ChatProps> = ({
 	};
 
 	return (
-		<div className="flex flex-col h-full min-h-0 bg-brand-green">
+		<div className="flex flex-col h-full min-h-0 w-full bg-brand-green">
 			{!hideHeader && (
 				<div className="bg-brand-peach border-y border-brand-green text-white p-3 sm:p-4 shadow-md">
 					<div className="flex items-start gap-3">

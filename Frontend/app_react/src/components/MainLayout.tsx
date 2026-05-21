@@ -11,7 +11,7 @@ import RightBar from "./navigation/RightBar";
 import { VoiceView } from "./VoiceView";
 import { useAuth } from "../contexts/AuthContext";
 import { useTranslation } from "react-i18next";
-import { ServerLeftBar, ChannelCategory } from "./ServerLeftBar";
+import { ServerLeftBar, ChannelCategory, Channel } from "./ServerLeftBar";
 import { ServerHeader } from "./ServerHeader";
 import { MemberList, Member } from "./MemberList";
 import api from "../utils/api";
@@ -68,12 +68,15 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 			]);
 
 			const savedChannelId = localStorage.getItem("activeServerChannelId");
-			if (savedChannelId && textChannels.some((c: any) => c.id === savedChannelId)) {
+			if (!isMobile && savedChannelId && textChannels.some((c: any) => c.id === savedChannelId)) {
 				setActiveServerChannelId(savedChannelId);
 				setActiveServerChannelName(localStorage.getItem("activeServerChannelName") || "");
-			} else if (textChannels.length > 0) {
+			} else if (!isMobile && textChannels.length > 0) {
 				setActiveServerChannelId(textChannels[0].id);
 				setActiveServerChannelName(textChannels[0].name);
+			} else {
+				setActiveServerChannelId(null);
+				setActiveServerChannelName("");
 			}
 		} catch (error) {
 			console.error("Failed to fetch server channels", error);
@@ -166,9 +169,25 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
 	if (loading) return null;
 	const showMobileMessagesPage = activeView === "chat" && !activeDmChannelId;
+	const activeServerChannel = serverCategories.reduce<Channel | undefined>((foundChannel, category) => {
+		if (foundChannel) return foundChannel;
+		return category.channels.find((channel) => channel.id === activeServerChannelId);
+	}, undefined);
+	const showMobileServerChannel = isMobile && activeView === "server" && Boolean(activeServerChannelId);
+	const showMobileServerChat = showMobileServerChannel && !inServerVoice;
+	const showMobileServerVoice = showMobileServerChannel && inServerVoice;
+	const showMobileServerPage = isMobile && activeView === "server" && !showMobileServerChannel;
 	const showMobileFriendsPage = isMobile && activeView === "friendsList";
 	const showMobileNotificationsPage = isMobile && activeView === "notifications";
 	const isFriendsView = activeView === "friends" || activeView === "friendsList";
+
+	const handleServerBack = () => {
+		setActiveServerChannelId(null);
+		setActiveServerChannelName("");
+		setInServerVoice(false);
+		localStorage.removeItem("activeServerChannelId");
+		localStorage.removeItem("activeServerChannelName");
+	};
 
 	const isServerCall = activeCall && serverCategories.some(
 		(cat) => cat.id === "voice" && cat.channels.some((ch) => ch.id === activeCall.roomId),
@@ -197,8 +216,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 				<HeaderBar type="friends" />
 			) : showMobileNotificationsPage ? (
 				<HeaderBar type="notifications" />
-			) : activeView === "server" ? (
-				<ServerHeader channelName={activeServerChannelName || "general"} />
+			) : activeView === "server" && !showMobileServerChat ? (
+				<ServerHeader channelName={activeServerName || activeServerChannelName || "general"} />
 			) : showMobileMessagesPage ? (
 				<HeaderBar type="messages" />
 			) : activeView === "chat" ? (
@@ -209,7 +228,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 				<HeaderBar type="friends" />
 			)}
 			<div className="flex flex-1 min-h-0 overflow-y-auto md:overflow-hidden flex-row">
-				<div className={`${showMobileMessagesPage ? "flex" : "hidden md:flex"} w-[72px] z-30 flex-col overflow-hidden flex-shrink-0`}>
+				<div className={`${showMobileMessagesPage || showMobileServerPage ? "flex" : "hidden md:flex"} w-[72px] z-30 flex-col overflow-hidden flex-shrink-0`}>
 					<NavigationSidebar
 						onChatClick={() => handleViewChange("chat")}
 						onFriendsClick={() => handleViewChange("friends")}
@@ -250,10 +269,23 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 						<div className="flex h-full min-h-0 w-full md:hidden overflow-hidden pb-24">
 							<NotificationsPage />
 						</div>
+					) : showMobileServerChat ? (
+						<div className="flex h-full min-h-0 w-full md:hidden overflow-hidden pb-24">
+							<Chat
+								personName={`# ${activeServerChannelName}`}
+								userId={user?.id || ""}
+								channelId={activeServerChannelId || ""}
+								onBack={handleServerBack}
+							/>
+						</div>
+					) : showMobileServerVoice ? (
+						<div className="flex h-full min-h-0 w-full md:hidden overflow-hidden pb-24">
+							<VoiceView />
+						</div>
 					) : (
 						<>
 							<div className="flex flex-1 flex-col gap-0 overflow-hidden md:flex-row md:gap-0">
-								<div className={`${showMobileMessagesPage ? "flex" : activeView === "chat" && !activeDmChannelId ? "flex" : "hidden md:flex"} flex-1 w-full md:flex-none md:w-1/5 md:flex-shrink-0 overflow-hidden relative flex-col h-full max-h-none`}>
+								<div className={`${showMobileMessagesPage || showMobileServerPage ? "flex" : activeView === "chat" && !activeDmChannelId ? "flex" : "hidden md:flex"} flex-1 w-full md:flex-none md:w-1/5 md:flex-shrink-0 overflow-hidden relative flex-col h-full max-h-none`}>
 									{activeView === "server" ? (
 										<ServerLeftBar
 											serverId={activeServerId || ""}
@@ -298,11 +330,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 													channelId={activeServerChannelId}
 													hideHeader={true}
 												/>
-											) : (
-												<div className="flex h-full items-center justify-center text-brand-beige">
-													No text channels available.
-												</div>
-											)
+											) : null
 										) : isFriendsView ? (
 											<div className="block w-full h-full">
 												<FriendsView
