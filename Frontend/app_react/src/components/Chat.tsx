@@ -10,6 +10,7 @@ interface ChatProps {
   channelId: string;
   onSendMessage?: (message: string) => void;
   onBack?: () => void;
+  onPersonNameClick?: () => void;
   hideHeader?: boolean;
 }
 
@@ -19,6 +20,7 @@ const Chat: React.FC<ChatProps> = ({
   channelId,
   onSendMessage,
   onBack,
+  onPersonNameClick,
   hideHeader = false,
 }) => {
   const { t } = useTranslation();
@@ -84,9 +86,19 @@ const Chat: React.FC<ChatProps> = ({
               <BackButton onClick={onBack} className="md:hidden mt-0.5" />
             )}
             <div className="min-w-0 flex-1">
-              <h2 className="text-lg sm:text-xl font-bold truncate">
-                {personName}
-              </h2>
+              {onPersonNameClick ? (
+                <button
+                  type="button"
+                  onClick={onPersonNameClick}
+                  className="text-left text-lg sm:text-xl font-bold truncate hover:underline focus:outline-none focus:underline"
+                >
+                  {personName}
+                </button>
+              ) : (
+                <h2 className="text-lg sm:text-xl font-bold truncate">
+                  {personName}
+                </h2>
+              )}
               <p
                 className={`text-sm ${connected ? "text-green-100" : "text-red-100"}`}
               >

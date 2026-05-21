@@ -9,7 +9,7 @@ import { HeaderBar } from "./navigation/HeaderBar";
 import { LeftBar } from "./navigation/LeftBar";
 import RightBar from "./navigation/RightBar";
 import { VoiceView } from "./VoiceView";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth, type User } from "../contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import { ServerLeftBar, ChannelCategory, Channel } from "./ServerLeftBar";
 import { ServerHeader } from "./ServerHeader";
@@ -45,6 +45,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     null,
   );
   const [activeDmName, setActiveDmName] = useState<string>("");
+  const [activeDmUsername, setActiveDmUsername] = useState<string>("");
   const [activeServerId, setActiveServerId] = useState<string | null>(null);
   const [activeServerName, setActiveServerName] = useState<string>("");
   const [activeServerChannelId, setActiveServerChannelId] = useState<
@@ -59,10 +60,44 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const callRedirectHandled = useRef(false);
   const lastServerId = useRef<string | null>(null);
   const [isMobileProfileOpen, setIsMobileProfileOpen] = useState(false);
+  const [isDmProfileOpen, setIsDmProfileOpen] = useState(false);
+  const [dmProfileUser, setDmProfileUser] = useState<User | null>(null);
   const [isMobile, setIsMobile] = useState(() => {
     if (typeof window === "undefined") return false;
     return window.matchMedia("(max-width: 767px)").matches;
   });
+
+  const mapPublicUserToProfile = (profile: any): User => ({
+    id: profile?.id || "",
+    name: profile?.displayName || profile?.username || "",
+    username: profile?.username || "",
+    email: "",
+    picture: profile?.picture || "",
+    status: (profile?.status || "offline").toLowerCase() as User["status"],
+    about: profile?.about || "",
+    createdAt: profile?.createdAt || "",
+    role: profile?.role === "ADMIN" ? "ADMIN" : "USER",
+  });
+
+  const loadDmProfile = async (username: string, fallbackName?: string) => {
+    if (!username) return null;
+
+    const response = await api.get(
+      `/users/public/${encodeURIComponent(username)}`,
+    );
+    const userProfile = Array.isArray(response.data)
+      ? response.data[0]
+      : response.data;
+
+    if (!userProfile) return null;
+
+    const profileUser = mapPublicUserToProfile(userProfile);
+    setActiveDmName(profileUser.name || fallbackName || username);
+    setActiveDmUsername(profileUser.username || username);
+    setDmProfileUser(profileUser);
+
+    return profileUser;
+  };
 
   const fetchServerData = async (serverId: string) => {
     try {
@@ -139,7 +174,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   }, [activeCall, activeView]);
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let timer: ReturnType<typeof setTimeout>;
     if (incomingCall) {
       timer = setTimeout(() => {
         setIncomingCall(null);
@@ -160,6 +195,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       | "notifications",
   ) => {
     setIsMobileProfileOpen(false);
+    setIsDmProfileOpen(false);
     setActiveView(view);
     localStorage.setItem("activeView", view);
   };
@@ -167,7 +203,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const handleChatChannelClick = (channelId: string, userName: string) => {
     setActiveDmChannelId(channelId);
     setActiveDmName(userName);
+    setActiveDmUsername(userName);
+    setDmProfileUser(null);
     handleViewChange("chat");
+    void loadDmProfile(userName, userName).catch((error) => {
+      console.error("Failed to load DM profile", error);
+    });
   };
 
   const handleServerClick = async (serverId: string, serverName: string) => {
@@ -188,9 +229,31 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     setIsMobileProfileOpen(true);
   };
 
+  const handleOpenDmProfile = async () => {
+    if (!activeDmUsername) return;
+
+    try {
+      const profileUser =
+        dmProfileUser && dmProfileUser.username === activeDmUsername
+          ? dmProfileUser
+          : await loadDmProfile(
+              activeDmUsername,
+              activeDmName || activeDmUsername,
+            );
+
+      if (!profileUser) return;
+
+      setIsDmProfileOpen(true);
+    } catch (error) {
+      console.error("Failed to open DM profile", error);
+    }
+  };
+
   const handleMobileMainClick = () => {
     setActiveDmChannelId(null);
     setActiveDmName("");
+    setActiveDmUsername("");
+    setDmProfileUser(null);
     handleViewChange("chat");
   };
 
@@ -236,6 +299,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const handleMobileFriendsOpenChat = async (friend: {
     id: string;
     name: string;
+    username: string;
+    picture?: string;
   }) => {
     if (!user) return;
     try {
@@ -247,6 +312,18 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       });
       setActiveDmChannelId(response.data.id);
       setActiveDmName(friend.name);
+      setActiveDmUsername(friend.username);
+      setDmProfileUser({
+        id: friend.id,
+        name: friend.name,
+        username: friend.username,
+        email: "",
+        picture: friend.picture || "",
+        status: "online",
+        about: "",
+        createdAt: "",
+        role: "USER",
+      });
       handleViewChange("chat");
     } catch (error) {
       console.error(error);
@@ -404,6 +481,18 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                               });
                               setActiveDmChannelId(response.data.id);
                               setActiveDmName(friend.name);
+                              setActiveDmUsername(friend.username);
+                              setDmProfileUser({
+                                id: friend.id,
+                                name: friend.name,
+                                username: friend.username,
+                                email: "",
+                                picture: friend.picture || "",
+                                status: "online",
+                                about: "",
+                                createdAt: "",
+                                role: "USER",
+                              });
                               handleViewChange("chat");
                             } catch (error) {
                               console.error(error);
@@ -422,6 +511,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                         personName={activeDmName}
                         userId={user?.id || ""}
                         channelId={activeDmChannelId}
+                        onPersonNameClick={handleOpenDmProfile}
                         onBack={() => handleViewChange("friends")}
                       />
                     )}
@@ -465,6 +555,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           user={user}
           isOpen={isMobileProfileOpen}
           onClose={() => setIsMobileProfileOpen(false)}
+        />
+      )}
+
+      {dmProfileUser && (
+        <ProfilePopup
+          user={dmProfileUser}
+          isOpen={isDmProfileOpen}
+          onClose={() => setIsDmProfileOpen(false)}
         />
       )}
     </div>
