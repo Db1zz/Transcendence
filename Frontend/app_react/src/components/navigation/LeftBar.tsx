@@ -1,6 +1,6 @@
 import React from "react";
 import bgLSideBar from "../../img/bg_l_sidebar.png";
-import { Contact, MessageSquare } from "lucide-react";
+import { Contact, MessageSquare, UserPlus } from "lucide-react";
 import { NotificationBadge } from "../NotificationBadge";
 import { useNotifications } from "../../contexts/NotificationContext";
 import { useTranslation } from "react-i18next";
@@ -9,11 +9,13 @@ import { useChatChannels } from "../../hooks/useChatChannels";
 interface LeftBarProps {
   onFriendsClick?: () => void;
   onChatChannelClick?: (channelId: string, userName: string) => void;
+  onAddFriendsClick?: () => void;
 }
 
 export const LeftBar: React.FC<LeftBarProps> = ({
   onFriendsClick,
   onChatChannelClick,
+  onAddFriendsClick,
 }) => {
   const { getUnreadCount, setActiveTarget } = useNotifications();
 
@@ -27,23 +29,35 @@ export const LeftBar: React.FC<LeftBarProps> = ({
   const { chatChannels, loading, error } = useChatChannels();
 
   return (
-    <div className="h-full rounded-l-lg p-4 border border-brand-green relative overflow-hidden flex flex-col">
+    <div className="h-full rounded-none md:rounded-l-lg p-4 border border-brand-green md:border-brand-green border-x-0 md:border-x relative overflow-hidden flex flex-col">
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: `url(${bgLSideBar})` }}
       />
       <div className="absolute inset-0 bg-brand-peach opacity-90" />
       <div className="relative z-10 flex flex-col gap-4 h-full">
-        <button
-          type="button"
-          onClick={handleFriendsClick}
-          className="w-full flex items-center gap-3 rounded-lg border border-brand-green/70 bg-brand-beige/90 px-3 py-2 text-brand-green font-semibold shadow-sm transition-colors hover:bg-brand-peach hover:border-brand-green"
-        >
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-brand-peach/60">
-            <Contact size={18} className="text-brand-green" />
-          </span>
-          <span className="text-left">{t("friends.friendsList")}</span>
-        </button>
+        <div className="hidden md:flex md:flex-col gap-2 md:gap-3">
+          <button
+            type="button"
+            onClick={handleFriendsClick}
+            className="w-full flex items-center gap-3 rounded-lg border border-brand-green/70 bg-brand-beige/90 px-3 py-2 text-brand-green font-semibold shadow-sm transition-colors hover:bg-brand-peach hover:border-brand-green"
+          >
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-brand-peach/60">
+              <Contact size={18} className="text-brand-green" />
+            </span>
+            <span className="text-left">{t("friends.friendsList")}</span>
+          </button>
+          <button
+            type="button"
+            onClick={onAddFriendsClick}
+            className="w-full flex items-center gap-3 rounded-lg border border-brand-green/70 bg-brand-brick/90 px-3 py-2 text-brand-beige font-semibold shadow-sm transition-colors hover:bg-brand-brick hover:border-brand-green md:hidden"
+          >
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-brand-beige/20">
+              <UserPlus size={18} className="text-brand-beige" />
+            </span>
+            <span className="text-left">{t("friends.addFriend")}</span>
+          </button>
+        </div>
 
         <div className="flex-1 flex flex-col min-h-0">
           <div className="flex items-center gap-2 mb-3 px-1">

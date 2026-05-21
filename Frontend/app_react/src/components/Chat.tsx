@@ -2,12 +2,15 @@ import React, { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "./Button";
 import { useChat } from "../hooks/useChat";
+import BackButton from "./BackButton";
 
 interface ChatProps {
   personName: string;
   userId: string;
   channelId: string;
   onSendMessage?: (message: string) => void;
+  onBack?: () => void;
+  onPersonNameClick?: () => void;
   hideHeader?: boolean;
 }
 
@@ -16,6 +19,8 @@ const Chat: React.FC<ChatProps> = ({
   userId,
   channelId,
   onSendMessage,
+  onBack,
+  onPersonNameClick,
   hideHeader = false,
 }) => {
   const { t } = useTranslation();
@@ -73,15 +78,34 @@ const Chat: React.FC<ChatProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full min-h-0 bg-brand-green">
+    <div className="flex flex-col h-full min-h-0 w-full bg-brand-green">
       {!hideHeader && (
-        <div className="bg-brand-peach border-y border-brand-green text-white p-4 shadow-md">
-          <h2 className="text-xl font-bold">{personName}</h2>
-          <p
-            className={`text-sm ${connected ? "text-green-100" : "text-red-100"}`}
-          >
-            {connected ? t("chat.connected") : t("chat.connecting")}
-          </p>
+        <div className="bg-brand-peach border-y border-brand-green text-white p-3 sm:p-4 shadow-md">
+          <div className="flex items-start gap-3">
+            {onBack && (
+              <BackButton onClick={onBack} className="md:hidden mt-0.5" />
+            )}
+            <div className="min-w-0 flex-1">
+              {onPersonNameClick ? (
+                <button
+                  type="button"
+                  onClick={onPersonNameClick}
+                  className="text-left text-lg sm:text-xl font-bold truncate hover:underline focus:outline-none focus:underline"
+                >
+                  {personName}
+                </button>
+              ) : (
+                <h2 className="text-lg sm:text-xl font-bold truncate">
+                  {personName}
+                </h2>
+              )}
+              <p
+                className={`text-sm ${connected ? "text-green-100" : "text-red-100"}`}
+              >
+                {connected ? t("chat.connected") : t("chat.connecting")}
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
@@ -104,7 +128,7 @@ const Chat: React.FC<ChatProps> = ({
             }`}
           >
             <div
-              className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+              className={`max-w-[85%] sm:max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                 message.senderId === userId
                   ? "bg-brand-beige text-gray-600 rounded-br-none"
                   : "bg-brand-peach text-white rounded-bl-none"
@@ -126,19 +150,19 @@ const Chat: React.FC<ChatProps> = ({
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="border-t border-gray-300 p-4 bg-brand-green">
-        <div className="flex gap-2">
+      <div className="p-3 sm:p-4 bg-brand-green">
+        <div className="flex flex-col sm:flex-row gap-2">
           <textarea
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder={t("chat.inputPlaceholder")}
-            className="bg-brand-beige flex-1 p-3 border border-brand-peach rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick resize-none max-h-24"
+            className="bg-brand-beige flex-1 p-3 border border-brand-peach rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-brick resize-none max-h-28 min-h-11"
             rows={1}
           />
           <Button
             onClick={handleSendMessage}
-            className="mb-1.5 bg-brand-peach text-brand-brick"
+            className="bg-brand-peach text-brand-brick w-full sm:w-auto sm:self-end"
           >
             {t("chat.send")}
           </Button>

@@ -56,7 +56,7 @@ export const LanguageEditForm = ({
 
   return (
     <form
-      className="flex h-full min-h-0 flex-col gap-4 overflow-y-auto pr-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+      className="flex h-full min-h-0 flex-col gap-4 overflow-y-auto pr-0 md:pr-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
       style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       onSubmit={handleSubmit}
     >
