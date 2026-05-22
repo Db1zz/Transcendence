@@ -63,9 +63,11 @@ public class RoleService {
     }
 
     public void deleteRole(UUID roleId) {
+        UUID currentUserId = SecurityUtils.getCurrentUserId();
         RoleEntity roleEntity = roleRepository.findById(roleId)
                 .orElseThrow(() -> new ResourceNotFoundException("Role with id '" + roleId + "' was not found"));
-
+        UUID organizationId = roleEntity.getOrganization().getId();
+        permissionService.verifyPermissions(organizationId, currentUserId, PermissionFlags.MANAGE_ROLES);
         roleRepository.delete(roleEntity);
     }
 

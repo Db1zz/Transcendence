@@ -1,22 +1,28 @@
 package com.anteiku.backend.serviceTests;
 
-import com.anteiku.backend.entity.ChannelEntity;
-import com.anteiku.backend.entity.ChannelType;
+import com.anteiku.backend.entity.*;
+import com.anteiku.backend.exception.ConflictException;
 import com.anteiku.backend.exception.ResourceNotFoundException;
 import com.anteiku.backend.model.CreateChannelDto;
 import com.anteiku.backend.model.CreateChannelResponseDto;
+import com.anteiku.backend.model.ServerChannelDto;
+import com.anteiku.backend.model.UpdateChannelDto;
+import com.anteiku.backend.repository.ChannelMemberRepository;
 import com.anteiku.backend.repository.ChannelRepository;
+import com.anteiku.backend.repository.OrganizationRepository;
+import com.anteiku.backend.repository.UserRepository;
 import com.anteiku.backend.service.ChannelService;
-import com.anteiku.backend.service.OrganizationService;
+import com.anteiku.backend.service.PermissionService;
+import com.anteiku.backend.util.SecurityUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.nio.channels.Channel;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -26,69 +32,176 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class ChannelServiceTests {
+
     @Mock
     private ChannelRepository channelRepository;
     @Mock
-    private OrganizationService organizationService;
+    private OrganizationRepository organizationRepository;
+    @Mock
+    private ChannelMemberRepository channelMemberRepository;
+    @Mock
+    private UserRepository userRepository;
+    @Mock
+    private PermissionService permissionService;
 
     @InjectMocks
     private ChannelService channelService;
 
     @Test
     void createChannelSuccessTest() {
-        CreateChannelDto createChannelDto = new CreateChannelDto();
-        createChannelDto.setName("test");
-        createChannelDto.setChannelType(CreateChannelDto.ChannelTypeEnum.TEXT);
+        UUID userId = UUID.randomUUID();
+        UUID orgId = UUID.randomUUID();
+        UUID memberId = UUID.randomUUID();
 
-        CreateChannelResponseDto res = channelService.createChannel(createChannelDto);
+        CreateChannelDto dto = new CreateChannelDto();
+        dto.setName("test-channel");
+        dto.setChannelType(CreateChannelDto.ChannelTypeEnum.TEXT);
+        dto.setOrganizationId(orgId);
+        dto.setMemberIds(List.of(memberId));
 
-        ArgumentCaptor<ChannelEntity> captor = ArgumentCaptor.forClass(ChannelEntity.class);
-        verify(channelRepository, times(1)).save(captor.capture());
-        ChannelEntity channelEntity = captor.getValue();
+        OrganizationEntity org = new OrganizationEntity();
+        org.setId(orgId);
 
-        assertEquals("test", channelEntity.getName());
-        assertEquals(ChannelType.TEXT, channelEntity.getType());
-        assertNotNull(channelEntity.getCreatedAt());
+        UserEntity memberUser = new UserEntity();
+        memberUser.setId(memberId);
 
-        assertNotNull(res);
-        assertEquals("test", res.getName());
-        assertEquals(CreateChannelResponseDto.ChannelTypeEnum.TEXT, res.getChannelType());
+        try (MockedStatic<SecurityUtils> mockedSecurity = mockStatic(SecurityUtils.class)) {
+            mockedSecurity.when(SecurityUtils::getCurrentUserId).thenReturn(userId);
+
+            doNothing().when(permissionService).verifyPermissions(eq(orgId), eq(userId), anyLong());
+            when(organizationRepository.findById(orgId)).thenReturn(Optional.of(org));
+            when(channelRepository.existsByNameAndOrganizationId("test-channel", orgId)).thenReturn(false);
+            when(userRepository.getReferenceById(memberId)).thenReturn(memberUser);
+
+            CreateChannelResponseDto res = channelService.createChannel(dto);
+
+            ArgumentCaptor<ChannelEntity> channelCaptor = ArgumentCaptor.forClass(ChannelEntity.class);
+            verify(channelRepository, times(1)).save(channelCaptor.capture());
+            ChannelEntity savedChannel = channelCaptor.getValue();
+
+            assertEquals("test-channel", savedChannel.getName());
+            assertEquals(ChannelType.TEXT, savedChannel.getType());
+            assertNotNull(savedChannel.getCreatedAt());
+
+            verify(channelMemberRepository, times(1)).save(any(ChannelMemberEntity.class));
+
+            assertNotNull(res);
+            assertEquals("test-channel", res.getName());
+            assertEquals(CreateChannelResponseDto.ChannelTypeEnum.TEXT, res.getChannelType());
+            assertEquals(orgId, res.getOrganizationId());
+        }
+    }
+
+    @Test
+    void createChannelNameConflictTest() {
+        UUID userId = UUID.randomUUID();
+        UUID orgId = UUID.randomUUID();
+
+        CreateChannelDto dto = new CreateChannelDto();
+        dto.setName("duplicate-channel");
+        dto.setChannelType(CreateChannelDto.ChannelTypeEnum.TEXT);
+        dto.setOrganizationId(orgId);
+
+        OrganizationEntity org = new OrganizationEntity();
+        org.setId(orgId);
+
+        try (MockedStatic<SecurityUtils> mockedSecurity = mockStatic(SecurityUtils.class)) {
+            mockedSecurity.when(SecurityUtils::getCurrentUserId).thenReturn(userId);
+
+            doNothing().when(permissionService).verifyPermissions(eq(orgId), eq(userId), anyLong());
+            when(organizationRepository.findById(orgId)).thenReturn(Optional.of(org));
+            when(channelRepository.existsByNameAndOrganizationId("duplicate-channel", orgId)).thenReturn(true);
+
+            assertThrows(ConflictException.class, () -> channelService.createChannel(dto));
+            verify(channelRepository, never()).save(any());
+        }
     }
 
     @Test
     void createChannelInvalidChannelTypeTest() {
-        CreateChannelDto createChannelDto = mock(CreateChannelDto.class);
-        createChannelDto.setName("test");
-        createChannelDto.setChannelType(null);
+        CreateChannelDto dto = new CreateChannelDto();
+        dto.setName("test");
+        dto.setChannelType(null);
 
-        assertThrows(NullPointerException.class, () -> channelService.createChannel(createChannelDto));
+        try (MockedStatic<SecurityUtils> mockedSecurity = mockStatic(SecurityUtils.class)) {
+            mockedSecurity.when(SecurityUtils::getCurrentUserId).thenReturn(UUID.randomUUID());
 
-        verify(channelRepository, never()).save(any());
+            assertThrows(NullPointerException.class, () -> channelService.createChannel(dto));
+            verify(channelRepository, never()).save(any());
+        }
     }
 
     @Test
     void deleteChannelSuccessTest() {
+        UUID userId = UUID.randomUUID();
         UUID channelId = UUID.randomUUID();
-        ChannelEntity channelEntity = new ChannelEntity();
-        channelEntity.setId(channelId);
-        channelEntity.setName("test");
-        channelEntity.setType(ChannelType.TEXT);
+        UUID orgId = UUID.randomUUID();
 
-        when(channelRepository.findById(channelId)).thenReturn(Optional.of(channelEntity));
+        OrganizationEntity org = new OrganizationEntity();
+        org.setId(orgId);
 
-        channelService.deleteChannel(channelId);
+        ChannelEntity channel = new ChannelEntity();
+        channel.setId(channelId);
+        channel.setName("test");
+        channel.setType(ChannelType.TEXT);
+        channel.setOrganization(org);
 
-        verify(channelRepository, times(1)).delete(channelEntity);
+        try (MockedStatic<SecurityUtils> mockedSecurity = mockStatic(SecurityUtils.class)) {
+            mockedSecurity.when(SecurityUtils::getCurrentUserId).thenReturn(userId);
+
+            when(channelRepository.findById(channelId)).thenReturn(Optional.of(channel));
+            doNothing().when(permissionService).verifyPermissions(eq(orgId), eq(userId), anyLong());
+
+            channelService.deleteChannel(channelId);
+
+            verify(channelRepository, times(1)).delete(channel);
+        }
     }
 
     @Test
     void deleteChannelNotFoundTest() {
         UUID randomId = UUID.randomUUID();
 
-        when(channelRepository.findById(randomId)).thenReturn(Optional.empty());
+        try (MockedStatic<SecurityUtils> mockedSecurity = mockStatic(SecurityUtils.class)) {
+            mockedSecurity.when(SecurityUtils::getCurrentUserId).thenReturn(UUID.randomUUID());
 
-        assertThrows(ResourceNotFoundException.class, () -> channelService.deleteChannel(randomId));
+            when(channelRepository.findById(randomId)).thenReturn(Optional.empty());
 
-        verify(channelRepository, never()).delete(any());
+            assertThrows(ResourceNotFoundException.class, () -> channelService.deleteChannel(randomId));
+            verify(channelRepository, never()).delete(any());
+        }
+    }
+
+    @Test
+    void updateChannelSuccessTest() {
+        UUID userId = UUID.randomUUID();
+        UUID channelId = UUID.randomUUID();
+        UUID orgId = UUID.randomUUID();
+
+        UpdateChannelDto dto = new UpdateChannelDto();
+        dto.setName("new-name");
+
+        OrganizationEntity org = new OrganizationEntity();
+        org.setId(orgId);
+
+        ChannelEntity channel = new ChannelEntity();
+        channel.setId(channelId);
+        channel.setName("old-name");
+        channel.setType(ChannelType.TEXT);
+        channel.setOrganization(org);
+
+        try (MockedStatic<SecurityUtils> mockedSecurity = mockStatic(SecurityUtils.class)) {
+            mockedSecurity.when(SecurityUtils::getCurrentUserId).thenReturn(userId);
+
+            when(channelRepository.findById(channelId)).thenReturn(Optional.of(channel));
+            doNothing().when(permissionService).verifyPermissions(eq(orgId), eq(userId), anyLong());
+            when(channelRepository.existsByNameAndOrganizationId("new-name", orgId)).thenReturn(false);
+
+            ServerChannelDto result = channelService.updateChannel(channelId, dto);
+
+            verify(channelRepository, times(1)).save(channel);
+            assertEquals("new-name", result.getName());
+            assertEquals(ServerChannelDto.TypeEnum.TEXT, result.getType());
+        }
     }
 }
