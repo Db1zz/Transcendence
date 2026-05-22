@@ -98,8 +98,8 @@ const VideoTile: React.FC<VideoTileProps> = ({
 	return (
 		<div
 			className={`relative aspect-video rounded-xl overflow-hidden shadow-lg border-2 transition-all cursor-pointer ${fallbackColor} ${isSelected
-					? "border-brand-peach"
-					: "border-transparent hover:border-brand-brick"
+				? "border-brand-peach"
+				: "border-transparent hover:border-brand-brick"
 				} ${className}`}
 			onClick={() => onClick?.(peerId)}
 		>
@@ -241,7 +241,7 @@ export const VoiceView: React.FC<VoiceViewProps> = ({
 				stream={stream}
 				displayName={displayName}
 				avatarUrl={participant?.picture || defaultAvatar}
-				showVideo={peerId !== "local" || camEnabled}
+				showVideo={peerId === "local" ? camEnabled : undefined}
 				isLocal={peerId === "local"}
 				isDeafened={deafened}
 				isSelected={selected}
@@ -257,8 +257,8 @@ export const VoiceView: React.FC<VoiceViewProps> = ({
 				<button
 					onClick={toggleMic}
 					className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${micEnabled
-							? "hover:bg-brand-green text-white bg-brand-green/20"
-							: "hover:bg-brand-brick text-white bg-brand-brick"
+						? "hover:bg-brand-green text-white bg-brand-green/20"
+						: "hover:bg-brand-brick text-white bg-brand-brick"
 						}`}
 					aria-label={micEnabled ? t("voice.mute") : t("voice.unmute")}
 				>
@@ -268,8 +268,8 @@ export const VoiceView: React.FC<VoiceViewProps> = ({
 				<button
 					onClick={toggleAudio}
 					className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${!deafened
-							? "hover:bg-brand-green text-white bg-brand-green/20"
-							: "hover:bg-brand-brick text-white bg-brand-brick"
+						? "hover:bg-brand-green text-white bg-brand-green/20"
+						: "hover:bg-brand-brick text-white bg-brand-brick"
 						}`}
 					aria-label={
 						deafened ? t("voice.headphonesOn") : t("voice.headphonesOff")
@@ -281,8 +281,8 @@ export const VoiceView: React.FC<VoiceViewProps> = ({
 				<button
 					onClick={toggleVideo}
 					className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${camEnabled
-							? "hover:bg-brand-green text-white bg-brand-green/20"
-							: "hover:bg-brand-brick text-white bg-brand-brick"
+						? "hover:bg-brand-green text-white bg-brand-green/20"
+						: "hover:bg-brand-brick text-white bg-brand-brick"
 						}`}
 					aria-label={camEnabled ? t("voice.cameraOff") : t("voice.cameraOn")}
 				>
@@ -302,14 +302,19 @@ export const VoiceView: React.FC<VoiceViewProps> = ({
 	);
 
 	const renderGridView = () => {
-		const tiles = Array.from(allStreams.entries()).map(([peerId, stream]) => (
-			<div
-				key={peerId}
-				className="w-full sm:w-64 md:w-72 lg:w-80 flex-shrink-0"
-			>
-				{renderTile(peerId, stream, "", false, undefined)}
-			</div>
-		));
+		let remoteIndex = 0;
+		const tiles = Array.from(allStreams.entries()).map(([peerId, stream]) => {
+			const fallbackIndex = peerId === "local" ? undefined : remoteIndex++;
+
+			return (
+				<div
+					key={peerId}
+					className="w-full sm:w-64 md:w-72 lg:w-80 flex-shrink-0"
+				>
+					{renderTile(peerId, stream, "", false, fallbackIndex)}
+				</div>
+			);
+		});
 
 		return (
 			<div className="flex flex-wrap justify-center gap-4 w-full">{tiles}</div>
@@ -320,6 +325,13 @@ export const VoiceView: React.FC<VoiceViewProps> = ({
 		const mainStream = allStreams.get(selectedPeerId!);
 		if (!mainStream) return null;
 
+		const remoteEntries = Array.from(allStreams.entries()).filter(
+			([id]) => id !== "local",
+		);
+		const selectedFallbackIndex = remoteEntries.findIndex(
+			([peerId]) => peerId === selectedPeerId,
+		);
+
 		const otherTiles = Array.from(allStreams.entries()).filter(
 			([id]) => id !== selectedPeerId,
 		);
@@ -327,17 +339,29 @@ export const VoiceView: React.FC<VoiceViewProps> = ({
 		return (
 			<div className="flex flex-col w-full h-full gap-2">
 				<div className="flex-1 min-h-0">
-					{renderTile(selectedPeerId!, mainStream, "w-full h-full", true, 0)}
+					{renderTile(
+						selectedPeerId!,
+						mainStream,
+						"w-full h-full",
+						true,
+						selectedFallbackIndex >= 0 ? selectedFallbackIndex : undefined,
+					)}
 				</div>
 				{otherTiles.length > 0 && (
 					<div className="h-24 sm:h-28 md:h-32 flex-shrink-0 w-full overflow-x-auto">
 						<div className="flex gap-2 h-full w-max flex-nowrap">
-							{otherTiles.map(([peerId, stream], index) => (
+							{otherTiles.map(([peerId, stream]) => (
 								<div
 									key={peerId}
 									className="h-full w-32 sm:w-36 md:w-40 flex-shrink-0"
 								>
-									{renderTile(peerId, stream, "w-full h-full", false, index)}
+									{renderTile(
+										peerId,
+										stream,
+										"w-full h-full",
+										false,
+										remoteEntries.findIndex(([id]) => id === peerId),
+									)}
 								</div>
 							))}
 						</div>
