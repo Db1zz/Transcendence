@@ -809,8 +809,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                         localParticipant={localVoiceParticipant}
                       />
                     ) : !activeDmChannelId ? (
-                      <div className="flex h-full items-center justify-center text-brand-beige">
-                        {t("home.selectFriendToChat")}
+                      <div className="flex h-full min-h-0 w-full flex-1 items-center justify-center text-center text-brand-beige">
+                        <div className="max-w-xs px-6">
+                          {t("home.selectFriendToChat")}
+                        </div>
                       </div>
                     ) : (
                       <Chat
