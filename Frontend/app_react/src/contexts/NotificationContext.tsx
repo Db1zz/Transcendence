@@ -31,6 +31,49 @@ const NotificationContext = createContext<NotificationContextType | undefined>(
   undefined,
 );
 
+const parsePayload = (payload: unknown) => {
+  if (typeof payload !== "string") return payload;
+
+  try {
+    return JSON.parse(payload);
+  } catch (error) {
+    console.error("Failed to parse notification payload", error);
+    return payload;
+  }
+};
+
+const normalizeNotification = (
+  item: BackendNotification,
+): StoredNotification => ({
+  ...item,
+  payload: parsePayload(item.payload),
+});
+
+const isMessageNotification = (item: Pick<BackendNotification, "etype">) =>
+  item.etype === "MESSAGE_CREATED";
+
+const getTargetId = (item: any) => {
+  try {
+    const inner =
+      typeof item.payload === "string"
+        ? JSON.parse(item.payload)
+        : item.payload;
+    if (
+      item.scope === "DM" ||
+      item.scope === "SERVER_CHANNEL" ||
+      item.scope === "GROUP_CHANNEL"
+    ) {
+      if (item.etype === "JOIN_CALL_CREATED") {
+        return inner.room_id;
+      }
+      return inner.channel_id;
+    }
+  } catch (e) {
+    console.error("Payload parse error", e);
+  }
+  return null;
+};
+
 export function NotificationProvider({
   children,
   notifyWsAddr,
@@ -53,49 +96,6 @@ export function NotificationProvider({
     if (!user?.id) return undefined;
     return new NotifyClient(notifyWsAddr);
   }, [notifyWsAddr, user?.id]);
-
-  const parsePayload = (payload: unknown) => {
-    if (typeof payload !== "string") return payload;
-
-    try {
-      return JSON.parse(payload);
-    } catch (error) {
-      console.error("Failed to parse notification payload", error);
-      return payload;
-    }
-  };
-
-  const normalizeNotification = (
-    item: BackendNotification,
-  ): StoredNotification => ({
-    ...item,
-    payload: parsePayload(item.payload),
-  });
-
-  const isMessageNotification = (item: Pick<BackendNotification, "etype">) =>
-    item.etype === "MESSAGE_CREATED";
-
-  const getTargetId = (item: any) => {
-    try {
-      const inner =
-        typeof item.payload === "string"
-          ? JSON.parse(item.payload)
-          : item.payload;
-      if (
-        item.scope === "DM" ||
-        item.scope === "SERVER_CHANNEL" ||
-        item.scope === "GROUP_CHANNEL"
-      ) {
-        if (item.etype === "JOIN_CALL_CREATED") {
-          return inner.room_id;
-        }
-        return inner.channel_id;
-      }
-    } catch (e) {
-      console.error("Payload parse error", e);
-    }
-    return null;
-  };
 
   useEffect(() => {
     if (!client) return;
@@ -259,7 +259,4 @@ export const useNotifications = (): NotificationContextType => {
   const context = useContext(NotificationContext);
   if (!context)
     throw new Error(
-      "useNotifications must be used within NotificationProvider",
-    );
-  return context;
-};
+      "useNotifications

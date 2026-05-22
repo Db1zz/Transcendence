@@ -1,47 +1,44 @@
 import { renderHook, act } from "@testing-library/react";
 import { useChat } from "./useChat";
 import api from "../utils/api";
-import { Client } from "@stomp/stompjs";
+import { useSocket } from "../contexts/SocketContext";
 
 jest.mock("../utils/api");
 const mockedApi = api as jest.Mocked<typeof api>;
 
-let mockClientInstance: any = null;
-
-jest.mock("@stomp/stompjs", () => {
-  return {
-    Client: class MockClient {
-      activate = jest.fn();
-      deactivate = jest.fn();
-      subscribe = jest.fn();
-      publish = jest.fn();
-      connected = false;
-      _config: any;
-
-      constructor(config: any) {
-        this._config = config;
-        mockClientInstance = this;
-      }
-    },
-  };
-});
+jest.mock("../contexts/SocketContext");
+const mockedUseSocket = useSocket as jest.Mock;
 
 describe("useChat Hook", () => {
+  const mockSubscribe = jest.fn();
+  const mockSend = jest.fn();
+  const mockUnsubscribe = jest.fn();
+
   beforeEach(() => {
     jest.clearAllMocks();
-    mockClientInstance = null;
     jest.spyOn(console, "error").mockImplementation(() => {});
+
+    mockSubscribe.mockReturnValue({ unsubscribe: mockUnsubscribe });
+    mockedUseSocket.mockReturnValue({
+      isConnected: false,
+      subscribe: mockSubscribe,
+      send: mockSend,
+    });
   });
 
   afterEach(() => {
     jest.restoreAllMocks();
   });
 
+  const freezeApi = () => {
+    mockedApi.get.mockImplementationOnce(() => new Promise(() => {}));
+  };
+
   it("fetches chat history on mount and updates messages state", async () => {
     const mockHistory = [
       {
         id: "1",
-        channelId: "channel-1", // CHANGED from roomId
+        channelId: "channel-1",
         senderId: "user-A",
         content: "Hello",
         createdAt: "2024-01-01",
@@ -89,105 +86,114 @@ describe("useChat Hook", () => {
     expect(result.current.messages).toEqual([]);
   });
 
-  const freezeApi = () => {
-    mockedApi.get.mockImplementationOnce(() => new Promise(() => {})); // Never resolves!
-  };
-
-  it("connects to STOMP and subscribes to the channel topic", async () => {
+  it("subscribes to the channel topic when connected", () => {
     freezeApi();
-    const { result } = renderHook(() => useChat("channel-1"));
-
-    expect(mockClientInstance).toBeTruthy();
-    expect(mockClientInstance.activate).toHaveBeenCalled();
-    expect(result.current.connected).toBe(false);
-
-    act(() => {
-      mockClientInstance.connected = true;
-      mockClientInstance._config.onConnect();
+    
+    mockedUseSocket.mockReturnValue({
+      isConnected: true,
+      subscribe: mockSubscribe,
+      send: mockSend,
     });
 
+    const { result } = renderHook(() => useChat("channel-1"));
+
     expect(result.current.connected).toBe(true);
-    expect(mockClientInstance.subscribe).toHaveBeenCalledWith(
+    expect(mockSubscribe).toHaveBeenCalledWith(
       "/topic/chat/channel-1",
       expect.any(Function),
     );
   });
 
-  it("appends new incoming WebSocket messages to the message list", async () => {
+  it("appends new incoming WebSocket messages to the message list", () => {
     freezeApi();
-    const { result } = renderHook(() => useChat("channel-1"));
-
-    act(() => {
-      mockClientInstance._config.onConnect();
+    
+    mockedUseSocket.mockReturnValue({
+      isConnected: true,
+      subscribe: mockSubscribe,
+      send: mockSend,
     });
 
-    const messageCallback = mockClientInstance.subscribe.mock.calls[0][1];
+    const { result } = renderHook(() => useChat("channel-1"));
+
+    const messageCallback = mockSubscribe.mock.calls[0][1];
+    
     const newWsMessage = {
       id: "2",
-      channelId: "channel-1", // CHANGED from roomId
+      channelId: "channel-1",
       senderId: "user-B",
       content: "Second",
       createdAt: "2024-01-02",
     };
 
     act(() => {
-      messageCallback({ body: JSON.stringify(newWsMessage) });
+      messageCallback(newWsMessage);
     });
 
     expect(result.current.messages).toHaveLength(1);
     expect(result.current.messages[0]).toEqual(newWsMessage);
   });
 
-  it("allows sending a message if connected", async () => {
+  it("allows sending a message if connected", () => {
     freezeApi();
-    const { result } = renderHook(() => useChat("channel-1"));
-
-    act(() => {
-      mockClientInstance.connected = true;
-      mockClientInstance._config.onConnect();
+    
+    mockedUseSocket.mockReturnValue({
+      isConnected: true,
+      subscribe: mockSubscribe,
+      send: mockSend,
     });
+
+    const { result } = renderHook(() => useChat("channel-1"));
 
     act(() => {
       result.current.sendMessage("Hello World", "user-1");
     });
 
-    expect(mockClientInstance.publish).toHaveBeenCalledWith({
-      destination: "/app/chat.send",
-      body: JSON.stringify({
-        channelId: "channel-1",
-        senderId: "user-1",
-        content: "Hello World",
-      }),
+    expect(mockSend).toHaveBeenCalledWith("/app/chat.send", {
+      channelId: "channel-1",
+      senderId: "user-1",
+      content: "Hello World",
     });
   });
 
-  it("prevents sending empty messages or sending while disconnected", async () => {
+  it("prevents sending empty messages or sending while disconnected", () => {
     freezeApi();
-    const { result } = renderHook(() => useChat("channel-1"));
+    
+    const { result: disconnectedResult, unmount } = renderHook(() => useChat("channel-1"));
 
     act(() => {
-      result.current.sendMessage("Hello", "user-1");
+      disconnectedResult.current.sendMessage("Hello", "user-1");
     });
-    expect(mockClientInstance.publish).not.toHaveBeenCalled();
+    expect(mockSend).not.toHaveBeenCalled();
+    unmount();
+
+    mockedUseSocket.mockReturnValue({
+      isConnected: true,
+      subscribe: mockSubscribe,
+      send: mockSend,
+    });
+    
+    const { result: connectedResult } = renderHook(() => useChat("channel-1"));
 
     act(() => {
-      mockClientInstance.connected = true;
-      mockClientInstance._config.onConnect();
+      connectedResult.current.sendMessage("   ", "user-1");
     });
 
-    act(() => {
-      result.current.sendMessage("   ", "user-1");
-    });
-
-    expect(mockClientInstance.publish).not.toHaveBeenCalled();
+    expect(mockSend).not.toHaveBeenCalled();
   });
 
-  it("deactivates the STOMP client when the hook unmounts", () => {
+  it("unsubscribes from the topic when the hook unmounts", () => {
     freezeApi();
+    
+    mockedUseSocket.mockReturnValue({
+      isConnected: true,
+      subscribe: mockSubscribe.mockReturnValue({ unsubscribe: mockUnsubscribe }),
+      send: mockSend,
+    });
+
     const { unmount } = renderHook(() => useChat("channel-1"));
 
     unmount();
 
-    expect(mockClientInstance.deactivate).toHaveBeenCalled();
+    expect(mockUnsubscribe).toHaveBeenCalled();
   });
 });

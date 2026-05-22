@@ -776,7 +776,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
               <div className="mb-2 mr-2 flex items-center justify-between bg-brand-brick text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-pulse flex-shrink-0">
                 <div className="flex items-center gap-2">
                   <Phone size={16} />
-                  <span className="text-sm font-medium">Voice call active</span>
+                  <span className="text-sm font-medium">{t("voice.activeCall")}</span>
                 </div>
                 <button
                   onClick={() => {
@@ -795,7 +795,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   }}
                   className="flex items-center gap-1 text-xs bg-white/20 hover:bg-white/30 px-2 py-1 rounded transition-colors"
                 >
-                  Return <ArrowUpRight size={14} />
+                  {t("voice.return")} <ArrowUpRight size={14} />
                 </button>
               </div>
             )}
@@ -956,7 +956,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                       <div className="flex flex-col h-full w-full">
                         {activeFriendsMapped.length === 0 ? (
                           <p className="text-brand-beige/70 text-sm mt-4 text-center italic">
-                            No friends online.
+                            {t("friends.noFriendsOnline")}
                           </p>
                         ) : (
                           <MemberList members={activeFriendsMapped} />
