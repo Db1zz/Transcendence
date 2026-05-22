@@ -632,7 +632,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     activeView === "friends" || activeView === "friendsList";
 
   return (
-    <div className="min-h-dvh flex flex-col overflow-hidden relative">
+    <div className="h-dvh flex flex-col overflow-hidden relative">
       {showMobileFriendsPage ? (
         <HeaderBar type="friends" />
       ) : showMobileNotificationsPage ? (
@@ -651,7 +651,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       ) : (
         <HeaderBar type="friends" />
       )}
-      <div className="flex flex-1 min-h-0 overflow-y-auto md:overflow-hidden flex-row">
+      <div className="flex flex-1 min-h-0 overflow-hidden flex-row">
         <div
           className={`${showMobileMessagesPage || showMobileServerPage ? "flex" : "hidden md:flex"} w-[72px] z-30 flex-col overflow-hidden flex-shrink-0`}
         >
@@ -753,7 +753,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 <div
                   className={`${showMobileMessagesPage ? "hidden md:flex" : "flex"} flex-1 min-h-0 overflow-hidden`}
                 >
-                  <div className="flex-1 min-h-0">
+                  <div className="flex h-full min-h-0 w-full">
                     {activeView === "server" ? (
                       inServerVoice ? (
                         <VoiceView
