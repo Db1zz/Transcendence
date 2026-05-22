@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Pencil } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "./Button";
@@ -32,6 +32,7 @@ export const ProfileEditForm = ({
   const [values, setValues] = useState<ProfileEditValues>(initialValues);
   const [isUploadingPicture, setIsUploadingPicture] = useState(false);
   const [uploadError, setUploadError] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setValues(initialValues);
@@ -46,7 +47,6 @@ export const ProfileEditForm = ({
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
-    event.target.value = "";
     if (!file) {
       return;
     }
@@ -65,6 +65,9 @@ export const ProfileEditForm = ({
       );
     } finally {
       setIsUploadingPicture(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
@@ -86,6 +89,7 @@ export const ProfileEditForm = ({
               id="profile-picture-upload"
               type="file"
               accept="image/*"
+              ref={fileInputRef} // FIX: Attach the ref here
               onChange={handlePictureChange}
               className="hidden"
             />

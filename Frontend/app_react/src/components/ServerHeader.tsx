@@ -1,11 +1,14 @@
 import React from "react";
 import { Hash, Bell, Search, Inbox, HelpCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface ServerHeaderProps {
   channelName: string;
 }
 
 export const ServerHeader: React.FC<ServerHeaderProps> = ({ channelName }) => {
+  const { t } = useTranslation();
+
   return (
     <header className="w-full h-[50px] shrink-0 bg-brand-green hidden md:flex items-center justify-between px-4 border-b border-brand-peach z-50">
       <div className="flex items-center gap-2 text-brand-beige w-1/3">
@@ -18,7 +21,7 @@ export const ServerHeader: React.FC<ServerHeaderProps> = ({ channelName }) => {
         <div className="flex h-8 items-center gap-2 rounded-lg border-2 border-gray-800 bg-brand-beige px-3 w-full max-w-md shadow-sharp-xs focus-within:ring-2 focus-within:ring-brand-brick transition-all">
           <Search className="h-4 w-4 text-gray-500" />
           <input
-            placeholder="Search messages..."
+            placeholder={t("serverHeader.searchPlaceholder")}
             className="w-full bg-transparent text-sm font-roboto text-gray-800 placeholder:text-gray-500 focus:outline-none"
           />
         </div>

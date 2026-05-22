@@ -11,7 +11,7 @@ import {
   MicOff,
   Video,
   VideoOff,
-  Headphones, // Added for the "On" state
+  Headphones,
   HeadphoneOff,
   Phone,
 } from "lucide-react";

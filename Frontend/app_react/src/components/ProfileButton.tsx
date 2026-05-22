@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { ProfilePopup } from "./ProfilePopup";
+import { useTranslation } from "react-i18next";
 
 interface ProfileButtonProps {
   user: any;
@@ -25,6 +26,7 @@ export const ProfileButton: React.FC<ProfileButtonProps> = ({
   disablePopup = false,
   variant = "default",
 }) => {
+  const { t } = useTranslation();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const isV2 = variant === "v2";
 
@@ -90,7 +92,8 @@ export const ProfileButton: React.FC<ProfileButtonProps> = ({
                 isV2 ? "text-gray-500" : "text-brand-brick"
               }`}
             >
-              {currentStatus}
+              {/* FIX: Translated the status text dynamically based on the currentStatus variable */}
+              {t(`status.${currentStatus}`, currentStatus)}
             </p>
           </div>
         </div>

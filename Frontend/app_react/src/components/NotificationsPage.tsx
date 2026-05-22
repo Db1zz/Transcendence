@@ -33,10 +33,11 @@ const safeParse = (payload: unknown): Record<string, unknown> | null => {
 const getSenderName = (
   senderId: string | undefined,
   friends: Array<{ id: string; name: string; picture?: string }>,
+  t: any
 ) => {
-  if (!senderId) return "Someone";
+  if (!senderId) return t("notifications.someone", "Someone");
   const friend = friends.find((item) => item.id === senderId);
-  return friend?.name || `User ${senderId.slice(0, 8)}`;
+  return friend?.name || t("notifications.user", { id: senderId.slice(0, 8), defaultValue: `User ${senderId.slice(0, 8)}` });
 };
 
 export const NotificationsPage: React.FC = () => {
@@ -50,7 +51,8 @@ export const NotificationsPage: React.FC = () => {
       const payload = safeParse(item.payload);
       const senderId =
         typeof payload?.sender_id === "string" ? payload.sender_id : undefined;
-      const senderName = getSenderName(senderId, friends);
+      const senderName = getSenderName(senderId, friends, t);
+      
       const avatarUrl =
         friends.find((friend) => friend.id === senderId)?.picture ||
         `https://api.dicebear.com/7.x/identicon/svg?seed=${senderId || item.id}`;
@@ -59,7 +61,7 @@ export const NotificationsPage: React.FC = () => {
         return {
           id: item.id,
           title: t("voice.incomingCall", "Incoming call"),
-          message: `${senderName} started a call.`,
+          message: t("notifications.callStarted", { name: senderName, defaultValue: `${senderName} started a call.` }),
           subtitle: t("notifications.callSubtitle", "Tap to review or dismiss"),
           badge: t("notifications.live", "live"),
           avatarUrl,
@@ -105,7 +107,7 @@ export const NotificationsPage: React.FC = () => {
             color="bg-brand-brick"
             className="!px-3 !py-2 !text-xs whitespace-nowrap"
           >
-            clear all
+            {t("notifications.clearAll", "clear all")}
           </Button>
         )}
       </div>
@@ -166,7 +168,7 @@ export const NotificationsPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => dismissNotification(item.id)}
-                        aria-label="Dismiss notification"
+                        aria-label={t("notifications.dismiss", "Dismiss notification")}
                         className="rounded-lg border-2 border-transparent p-1 text-gray-500 transition-colors hover:border-gray-800 hover:bg-brand-brick hover:text-brand-beige"
                       >
                         <X className="h-4 w-4" />

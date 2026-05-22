@@ -5,6 +5,92 @@ import { initReactI18next } from "react-i18next";
 const resources = {
   en: {
     translation: {
+      memberList: {
+        offline: "Offline",
+        online: "Online",
+      },
+      mobileNavBar: {
+        main: "main",
+        friends: "friends",
+        notifications: "notifications",
+        you: "you"
+      },
+      notifications: {
+        over99: "99+",
+        unreadCount: "{{count}} unread notifications",
+        title: "notifications",
+        subtitle: "Non-message alerts from the app",
+        genericTitle: "Notification",
+        genericBody: "You have a new update.",
+        callSubtitle: "Tap to review or dismiss",
+        live: "live",
+        emptyTitle: "no notifications yet",
+        emptyBody: "messages stay out of this view. other alerts will appear here.",
+        clearAll: "clear all",
+        dismiss: "Dismiss notification",
+        someone: "Someone",
+        user: "User {{id}}",
+        callStarted: "{{name}} started a call."
+      },
+      notification: {
+        user: "User {{id}}",
+        new: "new",
+        close: "Close notification"
+      },
+      status: {
+        online: "online",
+        idle: "idle",
+        dnd: "do not disturb",
+        offline: "offline"
+      },
+      serverHeader: {
+        searchPlaceholder: "Search messages...",
+      },
+      serverLeftBar: {
+        invitePeople: "Invite People",
+        serverSettings: "Server Settings",
+        voiceConnected: "Voice Connected",
+        disconnect: "Disconnect",
+        inviteTitle: "Invite friends to {{name}}",
+        inviteDescription: "Share this code with others so they can join your server. It expires in 1 day.",
+        generating: "Generating...",
+        copied: "Copied!"
+      },
+      serverSettings: {
+        title: "{{name}} Settings",
+        tabs: {
+          overview: "Overview",
+          roles: "Roles",
+          members: "Members"
+        },
+        overview: {
+          title: "Server Overview",
+          description: "Settings for {{name}} will go here."
+        },
+        roles: {
+          title: "Server Roles",
+          createNew: "Create New Role",
+          namePlaceholder: "Role Name (e.g. Moderator)",
+          createButton: "Create Role",
+          existingRoles: "Existing Roles",
+          roleCount: "{{count}} Roles",
+          noRoles: "No custom roles created yet.",
+          cancel: "Cancel",
+          noPermissions: "No Permissions",
+          deleteRole: "Delete Role"
+        },
+        members: {
+          title: "Server Members",
+          user: "User",
+          roles: "Roles",
+          addRole: "+ Add Role"
+        },
+        errors: {
+          unexpected: "An unexpected error occurred.",
+          updateFailed: "Failed to update role.",
+          deleteFailed: "Failed to delete role."
+        }
+      },
       common: {
         unknown: "Unknown",
         save: "save",
@@ -17,6 +103,8 @@ const resources = {
       auth: {
         welcome: "welcome to anteiku cafe",
         login: {
+          github: "Log in with GitHub",
+          google: "Log in with Google",
           title: "login",
           subtitle: "sign in to continue",
           email: "email",
@@ -138,6 +226,7 @@ const resources = {
           error: "There are no users with such name.",
           wow: "wau",
         },
+        noFriendsOnline: "No friends online.",
       },
       chat: {
         online: "online",
@@ -154,14 +243,18 @@ const resources = {
         placeholder: "some content",
       },
       voice: {
+        incomingCall: "Incoming call",
         mute: "Mute microphone",
         unmute: "Unmute microphone",
+        headphonesOn: "Turn on headphones",
         headphonesOff: "Headphones off",
         cameraOff: "Turn off camera",
         cameraOn: "Turn on camera",
         endCall: "End call",
         you: "You",
         user: "User {{id}}",
+        activeCall: "Voice call active.",
+        return: "Return",
       },
       server: {
         create: {
@@ -178,6 +271,92 @@ const resources = {
   },
   ru: {
     translation: {
+      memberList: {
+        offline: "Не в сети",
+        online: "Онлайн",
+      },
+      mobileNavBar: {
+        main: "главная",
+        friends: "друзья",
+        notifications: "уведомления",
+        you: "вы"
+      },
+      notifications: {
+        over99: "99+",
+        unreadCount: "Непрочитанных уведомлений: {{count}}",
+        title: "уведомления",
+        subtitle: "Не-текстовые оповещения от приложения",
+        genericTitle: "Уведомление",
+        genericBody: "У вас новое обновление.",
+        callSubtitle: "Нажмите, чтобы просмотреть или скрыть",
+        live: "в эфире",
+        emptyTitle: "пока нет уведомлений",
+        emptyBody: "сообщения не отображаются здесь. другие оповещения появятся тут.",
+        clearAll: "очистить все",
+        dismiss: "Скрыть уведомление",
+        someone: "Кто-то",
+        user: "Пользователь {{id}}",
+        callStarted: "{{name}} начал(а) звонок."
+      },
+      notification: {
+        user: "Пользователь {{id}}",
+        new: "новое",
+        close: "Закрыть уведомление"
+      },
+      status: {
+        online: "в сети",
+        idle: "нет на месте",
+        dnd: "не беспокоить",
+        offline: "не в сети"
+      },
+      serverHeader: {
+        searchPlaceholder: "Поиск сообщений...",
+      },
+      serverLeftBar: {
+        invitePeople: "Пригласить людей",
+        serverSettings: "Настройки сервера",
+        voiceConnected: "Голосовая связь",
+        disconnect: "Отключиться",
+        inviteTitle: "Пригласить друзей в {{name}}",
+        inviteDescription: "Поделитесь этим кодом с другими, чтобы они могли зайти на ваш сервер. Код истекает через 1 день.",
+        generating: "Генерация...",
+        copied: "Скопировано!"
+      },
+      serverSettings: {
+        title: "Настройки {{name}}",
+        tabs: {
+          overview: "Обзор",
+          roles: "Роли",
+          members: "Участники"
+        },
+        overview: {
+          title: "Обзор сервера",
+          description: "Здесь будут настройки для {{name}}."
+        },
+        roles: {
+          title: "Роли сервера",
+          createNew: "Создать новую роль",
+          namePlaceholder: "Имя роли (напр. Модератор)",
+          createButton: "Создать роль",
+          existingRoles: "Существующие роли",
+          roleCount: "{{count}} ролей",
+          noRoles: "Пользовательские роли еще не созданы.",
+          cancel: "Отмена",
+          noPermissions: "Нет прав",
+          deleteRole: "Удалить роль"
+        },
+        members: {
+          title: "Участники сервера",
+          user: "Пользователь",
+          roles: "Роли",
+          addRole: "+ Добавить роль"
+        },
+        errors: {
+          unexpected: "Произошла непредвиденная ошибка.",
+          updateFailed: "Не удалось обновить роль.",
+          deleteFailed: "Не удалось удалить роль."
+        }
+      },
       common: {
         unknown: "Неизвестно",
         save: "сохранить",
@@ -190,6 +369,8 @@ const resources = {
       auth: {
         welcome: "добро пожаловать в кафе anteiku",
         login: {
+          github: "Войти через GitHub",
+          google: "Войти через Google",
           title: "вход",
           subtitle: "войдите, чтобы продолжить",
           email: "почта",
@@ -311,6 +492,7 @@ const resources = {
           error: "пользователь с таким именем не найден.",
           wow: "вау",
         },
+        noFriendsOnline: "Нет друзей онлайн.",
       },
       chat: {
         offline: "не в сети",
@@ -329,14 +511,18 @@ const resources = {
         placeholder: "контент",
       },
       voice: {
+        incomingCall: "Входящий звонок",
         mute: "Выключить микрофон",
         unmute: "Включить микрофон",
+        headphonesOn: "Включить наушники",
         headphonesOff: "Выключить наушники",
         cameraOff: "Выключить камеру",
         cameraOn: "Включить камеру",
         endCall: "Завершить звонок",
         you: "Вы",
         user: "Пользователь {{id}}",
+        activeCall: "Голосовой вызов активен",
+        return: "Вернуться",
       },
       server: {
         create: {
@@ -353,6 +539,92 @@ const resources = {
   },
   de: {
     translation: {
+      memberList: {
+        offline: "Offline",
+        online: "Online",
+      },
+      mobileNavBar: {
+        main: "start",
+        friends: "freunde",
+        notifications: "mitteilungen",
+        you: "du"
+      },
+      notifications: {
+        over99: "99+",
+        unreadCount: "{{count}} ungelesene Benachrichtigungen",
+        title: "benachrichtigungen",
+        subtitle: "Nicht-Nachrichten-Benachrichtigungen",
+        genericTitle: "Benachrichtigung",
+        genericBody: "Du hast ein neues Update.",
+        callSubtitle: "Tippen zum Überprüfen oder Schließen",
+        live: "live",
+        emptyTitle: "noch keine benachrichtigungen",
+        emptyBody: "Nachrichten bleiben hier draußen. Andere Warnungen erscheinen hier.",
+        clearAll: "alles löschen",
+        dismiss: "Benachrichtigung schließen",
+        someone: "Jemand",
+        user: "Benutzer {{id}}",
+        callStarted: "{{name}} hat einen Anruf gestartet."
+      },
+      notification: {
+        user: "Benutzer {{id}}",
+        new: "neu",
+        close: "Benachrichtigung schließen"
+      },
+      status: {
+        online: "online",
+        idle: "abwesend",
+        dnd: "bitte nicht stören",
+        offline: "offline"
+      },
+      serverHeader: {
+        searchPlaceholder: "Nachrichten suchen...",
+      },
+      serverLeftBar: {
+        invitePeople: "Leute einladen",
+        serverSettings: "Servereinstellungen",
+        voiceConnected: "Sprache verbunden",
+        disconnect: "Trennen",
+        inviteTitle: "Freunde zu {{name}} einladen",
+        inviteDescription: "Teile diesen Code mit anderen, damit sie deinem Server beitreten können. Er läuft in 1 Tag ab.",
+        generating: "Wird generiert...",
+        copied: "Kopiert!"
+      },
+      serverSettings: {
+        title: "{{name}} Einstellungen",
+        tabs: {
+          overview: "Übersicht",
+          roles: "Rollen",
+          members: "Mitglieder"
+        },
+        overview: {
+          title: "Serverübersicht",
+          description: "Einstellungen für {{name}} werden hier sein."
+        },
+        roles: {
+          title: "Serverrollen",
+          createNew: "Neue Rolle erstellen",
+          namePlaceholder: "Rollenname (z. B. Moderator)",
+          createButton: "Rolle erstellen",
+          existingRoles: "Vorhandene Rollen",
+          roleCount: "{{count}} Rollen",
+          noRoles: "Noch keine benutzerdefinierten Rollen erstellt.",
+          cancel: "Abbrechen",
+          noPermissions: "Keine Berechtigungen",
+          deleteRole: "Rolle löschen"
+        },
+        members: {
+          title: "Servermitglieder",
+          user: "Benutzer",
+          roles: "Rollen",
+          addRole: "+ Rolle hinzufügen"
+        },
+        errors: {
+          unexpected: "Ein unerwarteter Fehler ist aufgetreten.",
+          updateFailed: "Rolle konnte nicht aktualisiert werden.",
+          deleteFailed: "Rolle konnte nicht gelöscht werden."
+        }
+      },
       common: {
         unknown: "Unbekannt",
         save: "speichern",
@@ -365,6 +637,8 @@ const resources = {
       auth: {
         welcome: "willkommen im anteiku cafe",
         login: {
+          github: "Mit GitHub anmelden",
+          google: "Mit Google anmelden",
           title: "anmelden",
           subtitle: "melde dich an, um fortzufahren",
           email: "e-mail",
@@ -485,6 +759,7 @@ const resources = {
           error: "Es gibt keinen Benutzer mit diesem Namen.",
           wow: "wow",
         },
+        noFriendsOnline: "Keine Freunde online.",
       },
       chat: {
         online: "online",
@@ -501,14 +776,18 @@ const resources = {
         placeholder: "inhalt",
       },
       voice: {
+        incomingCall: "Eingehender Anruf",
         mute: "Mikrofon stummschalten",
         unmute: "Mikrofon aktivieren",
         headphonesOff: "Kopfhörer aus",
+        headphonesOn: "Kopfhörer einschalten",
         cameraOff: "Kamera ausschalten",
         cameraOn: "Kamera einschalten",
         endCall: "Anruf beenden",
         you: "Du",
         user: "Benutzer {{id}}",
+        activeCall: "Sprachanruf aktiv",
+        return: "Zurück",
       },
       server: {
         create: {

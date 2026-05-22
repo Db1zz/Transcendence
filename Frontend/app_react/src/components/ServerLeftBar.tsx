@@ -18,6 +18,7 @@ import { useCall } from "../hooks/useCall";
 import { useAuth } from "../contexts/AuthContext";
 import { useOrganizationEvents } from "../hooks/useOrganizationEvents";
 import { ServerSettingsModal } from "./ServerSettingsModal";
+import { useTranslation } from "react-i18next";
 
 export type ChannelType = "text" | "voice";
 
@@ -56,6 +57,7 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
   activeChannelId,
   onSelectChannel,
 }) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { sendToOrganization, sendOrganizationAction } =
     useOrganizationEvents();
@@ -168,7 +170,7 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
                   onClick={handleGenerateInvite}
                   className="w-full flex items-center justify-between px-3 py-2 text-sm font-bold text-brand-green hover:bg-brand-green hover:text-brand-beige transition-colors"
                 >
-                  <span>Invite People</span>
+                  <span>{t("serverLeftBar.invitePeople")}</span>
                   <UserPlus className="h-4 w-4" />
                 </button>
                 <div className="mx-2 my-1 border-b border-brand-green/20" />
@@ -179,7 +181,7 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
                   }}
                   className="w-full flex items-center justify-between px-3 py-2 text-sm font-bold text-gray-700 hover:bg-gray-200 transition-colors"
                 >
-                  <span>Server Settings</span>
+                  <span>{t("serverLeftBar.serverSettings")}</span>
                   <Settings className="h-4 w-4" />
                 </button>
               </div>
@@ -259,8 +261,7 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
               <div className="flex items-center justify-between">
                 <div className="flex flex-col min-w-0">
                   <div className="flex items-center gap-1 text-brand-beige font-bold text-xs uppercase tracking-wider">
-                    <Volume2 size={14} className="animate-pulse" /> Voice
-                    Connected
+                    <Volume2 size={14} className="animate-pulse" /> {t("serverLeftBar.voiceConnected")}
                   </div>
                   <div className="text-xs text-brand-beige/80 truncate font-medium">
                     {serverName}
@@ -269,7 +270,7 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
                 <button
                   onClick={handleDisconnect}
                   className="p-1.5 bg-brand-brick hover:bg-red-600 text-white rounded-md transition-colors shadow-sm"
-                  title="Disconnect"
+                  title={t("serverLeftBar.disconnect")}
                 >
                   <PhoneOff size={16} />
                 </button>
@@ -288,30 +289,16 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
               <X size={20} />
             </button>
             <h3 className="text-lg font-bold text-brand-green mb-2">
-              Invite friends to {serverName}
+              {t("serverLeftBar.inviteTitle", { name: serverName })}
             </h3>
             <p className="text-sm text-gray-600 mb-4">
-              Share this code with others so they can join your server. It
-              expires in 1 day.
-            </p>
-            <button
-              onClick={() => setInviteModalOpen(false)}
-              className="absolute top-4 right-4 text-brand-green hover:text-brand-brick"
-            >
-              <X size={20} />
-            </button>
-            <h3 className="text-lg font-bold text-brand-green mb-2">
-              Invite friends to {serverName}
-            </h3>
-            <p className="text-sm text-gray-600 mb-4">
-              Share this code with others so they can join your server. It
-              expires in 1 day.
+              {t("serverLeftBar.inviteDescription")}
             </p>
             <div className="flex items-center gap-2 bg-white border border-gray-300 rounded p-2">
               <input
                 type="text"
                 readOnly
-                value={inviteCode || "Generating..."}
+                value={inviteCode || t("serverLeftBar.generating")}
                 className="flex-1 bg-transparent text-gray-800 font-mono font-bold focus:outline-none"
               />
               <button
@@ -324,7 +311,7 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
             </div>
             {copied && (
               <p className="text-xs text-brand-green mt-2 font-bold text-right">
-                Copied!
+                {t("serverLeftBar.copied")}
               </p>
             )}
           </div>

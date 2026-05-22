@@ -17,6 +17,7 @@ import {
 } from "../hooks/usePermissions";
 import { useServerMembers } from "../hooks/useServerMembers";
 import { useAuth } from "../contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 
 interface ServerSettingsModalProps {
   isOpen: boolean;
@@ -31,6 +32,7 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
   serverId,
   serverName,
 }) => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<"overview" | "roles" | "members">(
     "overview",
   );
@@ -82,7 +84,7 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
       setNewRolePermissions(0);
     } catch (err: any) {
       setErrorMessage(
-        err.response?.data?.error || "An unexpected error occurred.",
+        err.response?.data?.error || t("serverSettings.errors.unexpected"),
       );
     }
   };
@@ -102,7 +104,9 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
       await updateRole(editingRoleId, editRoleName, editRolePermissions);
       setEditingRoleId(null);
     } catch (err: any) {
-      setErrorMessage(err.response?.data?.error || "Failed to update role.");
+      setErrorMessage(
+        err.response?.data?.error || t("serverSettings.errors.updateFailed"),
+      );
     }
   };
 
@@ -117,27 +121,27 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
       <div className="bg-[#f2ece9] rounded-xl shadow-2xl w-full max-w-4xl h-[80vh] flex overflow-hidden border border-[#d3c5bd]">
         <div className="w-1/3 bg-[#e8deda]/50 border-r border-[#d3c5bd] p-6 flex flex-col gap-2">
           <h3 className="font-bold text-xs uppercase tracking-wider text-gray-500 mb-3 px-2">
-            {serverName} Settings
+            {t("serverSettings.title", { name: serverName })}
           </h3>
           <button
             onClick={() => setActiveTab("overview")}
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-bold text-sm transition-all ${activeTab === "overview" ? "bg-brand-green text-brand-beige shadow-sm" : "text-gray-600 hover:bg-[#d3c5bd]/40 hover:text-gray-900"}`}
           >
-            <Info size={18} /> Overview
+            <Info size={18} /> {t("serverSettings.tabs.overview")}
           </button>
           {canManageRoles && (
             <button
               onClick={() => setActiveTab("roles")}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-bold text-sm transition-all ${activeTab === "roles" ? "bg-brand-green text-brand-beige shadow-sm" : "text-gray-600 hover:bg-[#d3c5bd]/40 hover:text-gray-900"}`}
             >
-              <Shield size={18} /> Roles
+              <Shield size={18} /> {t("serverSettings.tabs.roles")}
             </button>
           )}
           <button
             onClick={() => setActiveTab("members")}
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg font-bold text-sm transition-all ${activeTab === "members" ? "bg-brand-green text-brand-beige shadow-sm" : "text-gray-600 hover:bg-[#d3c5bd]/40 hover:text-gray-900"}`}
           >
-            <Users size={18} /> Members
+            <Users size={18} /> {t("serverSettings.tabs.members")}
           </button>
         </div>
         <div className="flex-1 flex flex-col relative bg-[#f2ece9]">
@@ -166,19 +170,17 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
             {activeTab === "overview" && (
               <div className="animate-in fade-in">
                 <h2 className="text-3xl font-extrabold text-brand-green mb-6">
-                  Server Overview
+                  {t("serverSettings.overview.title")}
                 </h2>
                 <p className="text-gray-600 text-lg">
-                  Settings for {serverName} will go here.
+                  {t("serverSettings.overview.description", { name: serverName })}
                 </p>
               </div>
             )}
-
-            {/* ROLES TAB */}
             {activeTab === "roles" && canManageRoles && (
               <div className="flex flex-col h-full animate-in fade-in">
                 <h2 className="text-3xl font-extrabold text-brand-green mb-6">
-                  Server Roles
+                  {t("serverSettings.roles.title")}
                 </h2>
                 <form
                   onSubmit={handleCreateRole}
@@ -186,13 +188,13 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
                 >
                   <div className="absolute top-0 left-0 w-1 h-full bg-brand-green"></div>
                   <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <Plus size={18} className="text-brand-green" /> Create New
-                    Role
+                    <Plus size={18} className="text-brand-green" />{" "}
+                    {t("serverSettings.roles.createNew")}
                   </h3>
                   <div className="flex gap-3 mb-6">
                     <input
                       type="text"
-                      placeholder="Role Name (e.g. Moderator)"
+                      placeholder={t("serverSettings.roles.namePlaceholder")}
                       value={newRoleName}
                       onChange={(e) => {
                         setNewRoleName(e.target.value);
@@ -205,7 +207,7 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
                       disabled={!newRoleName.trim()}
                       className="bg-brand-green text-brand-beige px-6 py-2.5 rounded-lg font-bold hover:bg-brand-brick transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                     >
-                      Create Role
+                      {t("serverSettings.roles.createButton")}
                     </button>
                   </div>
                   <div className="grid grid-cols-2 gap-y-3 gap-x-6 bg-gray-50 p-4 rounded-lg border border-gray-100">
@@ -249,9 +251,9 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
                 </form>
                 <div className="flex-1 overflow-y-auto pr-2 pb-4">
                   <h3 className="font-bold text-gray-800 mb-4 flex items-center justify-between">
-                    <span>Existing Roles</span>
+                    <span>{t("serverSettings.roles.existingRoles")}</span>
                     <span className="bg-brand-green/10 text-brand-green py-0.5 px-2.5 rounded-full text-xs">
-                      {roles.length} Roles
+                      {t("serverSettings.roles.roleCount", { count: roles.length })}
                     </span>
                   </h3>
                   <div className="space-y-3">
@@ -262,7 +264,7 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
                           className="mx-auto text-gray-300 mb-3"
                         />
                         <p className="text-gray-500 font-medium">
-                          No custom roles created yet.
+                          {t("serverSettings.roles.noRoles")}
                         </p>
                       </div>
                     ) : (
@@ -287,13 +289,13 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
                                   onClick={handleUpdateRole}
                                   className="p-2 bg-brand-green text-white rounded-lg hover:bg-brand-brick transition-all shadow-sm flex items-center gap-1.5 px-4 font-bold text-sm"
                                 >
-                                  <Save size={16} /> Save
+                                  <Save size={16} /> {t("common.save")}
                                 </button>
                                 <button
                                   onClick={() => setEditingRoleId(null)}
                                   className="p-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-all font-medium text-sm px-4"
                                 >
-                                  Cancel
+                                  {t("serverSettings.roles.cancel")}
                                 </button>
                               </div>
                               <div className="grid grid-cols-2 gap-3 bg-gray-50 p-4 rounded-lg border border-gray-100">
@@ -362,7 +364,7 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
                                   )}
                                   {role.permissions === 0 && (
                                     <span className="px-2.5 py-0.5 bg-gray-100 text-gray-500 border border-gray-200 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                                      No Permissions
+                                      {t("serverSettings.roles.noPermissions")}
                                     </span>
                                   )}
                                 </div>
@@ -375,12 +377,12 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
                                   } catch (err: any) {
                                     setErrorMessage(
                                       err.response?.data?.error ||
-                                        "Failed to delete role",
+                                        t("serverSettings.errors.deleteFailed"),
                                     );
                                   }
                                 }}
                                 className="p-2.5 text-gray-400 hover:text-brand-brick hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
-                                title="Delete Role"
+                                title={t("serverSettings.roles.deleteRole")}
                               >
                                 <Trash2 size={18} />
                               </button>
@@ -396,12 +398,12 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
             {activeTab === "members" && (
               <div className="flex flex-col h-full animate-in fade-in">
                 <h2 className="text-3xl font-extrabold text-brand-green mb-6">
-                  Server Members
+                  {t("serverSettings.members.title")}
                 </h2>
                 <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden flex-1 flex flex-col">
                   <div className="grid grid-cols-12 gap-4 bg-gray-50 p-4 border-b border-gray-200 font-bold text-xs uppercase tracking-wider text-gray-500">
-                    <div className="col-span-5">User</div>
-                    <div className="col-span-7">Roles</div>
+                    <div className="col-span-5">{t("serverSettings.members.user")}</div>
+                    <div className="col-span-7">{t("serverSettings.members.roles")}</div>
                   </div>
                   <div className="overflow-y-auto p-2 space-y-1">
                     {members.map((member) => (
@@ -470,7 +472,7 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
                                 }}
                               >
                                 <option value="" disabled>
-                                  + Add Role
+                                  {t("serverSettings.members.addRole")}
                                 </option>
                                 {roles
                                   .filter((r) => !member.roles.includes(r.id))

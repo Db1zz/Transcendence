@@ -1,5 +1,6 @@
 import React from "react";
 import { X, MessageCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export interface NotificationPayload {
   user_id: string;
@@ -24,6 +25,7 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({
   senderPicture,
   onClick,
 }) => {
+  const { t } = useTranslation();
   const { sender_id, content, timestamp } = payload;
 
   const timeString = new Date(timestamp).toLocaleTimeString([], {
@@ -35,7 +37,7 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({
     senderPicture ||
     `https://api.dicebear.com/7.x/identicon/svg?seed=${sender_id}`;
 
-  const displayName = senderName || `User ${sender_id.slice(0, 8)}`;
+  const displayName = senderName || t("notification.user", { id: sender_id.slice(0, 8) });
 
   return (
     <div
@@ -75,7 +77,7 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({
                   {displayName}
                 </p>
                 <span className="shrink-0 rounded-full border border-gray-800/20 bg-brand-green/40 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-gray-700">
-                  new
+                  {t("notification.new")}
                 </span>
               </div>
               <p className="mt-0.5 text-[11px] font-roboto text-gray-500">
@@ -90,7 +92,7 @@ export const NotificationToast: React.FC<NotificationToastProps> = ({
                   e.stopPropagation();
                   onClose();
                 }}
-                aria-label="Close notification"
+                aria-label={t("notification.close")}
                 className="
                   rounded-lg border-2 border-transparent p-1 text-gray-500
                   transition-colors hover:border-gray-800 hover:bg-brand-brick hover:text-brand-beige
