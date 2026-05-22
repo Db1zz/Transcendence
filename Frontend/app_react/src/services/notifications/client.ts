@@ -13,7 +13,7 @@ export class NotifyClient {
 
   public async fetchOfflineNotifications(token: string): Promise<any[]> {
     try {
-      const response = await fetch(`http://127.0.0.1:9921/notification`, {
+      const response = await fetch(`/notify/fetch`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -111,3 +111,4 @@ export class NotifyClient {
     console.log("Notify client stopped manually");
   }
 }
+

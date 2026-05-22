@@ -1,13 +1,7 @@
 use std::sync::Arc;
 
 use axum::{
-    extract::{Request, State},
-    http::{header, StatusCode},
-    middleware::Next,
-    response::Response,
-    routing::get,
-    routing::post,
-    Extension, Json, Router,
+    Extension, Json, Router, extract::{Request, State}, http::{Method, HeaderValue, StatusCode, header}, middleware::Next, response::Response, routing::{get, post}
 };
 use serde::Deserialize;
 use tower_http::cors::{Any, CorsLayer};
@@ -34,10 +28,22 @@ pub struct NotificationRouter {
 
 impl NotificationRouter {
     pub fn new(user_notifications: Arc<CassandraUserNotificationsRepository>) -> Self {
-        let cors = CorsLayer::new()
-            .allow_origin(Any)
-            .allow_methods(Any)
-            .allow_headers([header::AUTHORIZATION, header::CONTENT_TYPE]);
+    let cors = CorsLayer::new()
+        .allow_origin([
+            "https://localhost".parse::<HeaderValue>().unwrap(),
+            "http://localhost:3000".parse::<HeaderValue>().unwrap(),
+        ])
+        .allow_methods([
+            Method::GET,
+            Method::POST,
+            Method::OPTIONS,
+        ])
+        .allow_headers([
+            header::AUTHORIZATION, 
+            header::CONTENT_TYPE,
+            header::ACCEPT,
+        ])
+        .allow_credentials(true);
 
         let router = Router::new()
             .route("/notify/fetch", get(Self::get_notifications))
