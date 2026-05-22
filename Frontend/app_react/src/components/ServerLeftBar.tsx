@@ -361,23 +361,6 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
 																					{u.name
 																						? u.name.charAt(0).toUpperCase()
 																						: "?"}
-																					{contextMenuChannel && contextMenuPosition && (
-																						<div
-																							ref={contextMenuRef}
-																							role="menu"
-																							className="fixed z-[80] min-w-44 rounded-md border-2 border-brand-green bg-brand-beige py-1 shadow-2xl"
-																							style={{ left: contextMenuPosition.x, top: contextMenuPosition.y }}
-																						>
-																							<button
-																								type="button"
-																								onClick={handleDeleteChannel}
-																								className="flex w-full items-center gap-2 px-3 py-2 text-sm font-bold text-red-700 hover:bg-red-50 hover:text-red-800"
-																							>
-																								<Trash2 className="h-4 w-4" />
-																								Delete {contextMenuChannel.type === "voice" ? "Voice Channel" : "Channel"}
-																							</button>
-																						</div>
-																					)}
 																				</div>
 																			)}
 																			<span className="text-sm text-gray-800 font-medium truncate">
@@ -387,6 +370,23 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
 																	))}
 																</div>
 															)}
+														{contextMenuChannel && contextMenuPosition && contextMenuChannel.id === ch.id && (
+															<div
+																ref={contextMenuRef}
+																role="menu"
+																className="fixed z-[80] min-w-44 rounded-md border-2 border-brand-green bg-brand-beige py-1 shadow-2xl"
+																style={{ left: contextMenuPosition.x, top: contextMenuPosition.y }}
+															>
+																<button
+																	type="button"
+																	onClick={handleDeleteChannel}
+																	className="flex w-full items-center gap-2 px-3 py-2 text-sm font-bold text-red-700 hover:bg-red-50 hover:text-red-800"
+																>
+																	<Trash2 className="h-4 w-4" />
+																	Delete {contextMenuChannel.type === "voice" ? "Voice Channel" : "Channel"}
+																</button>
+															</div>
+														)}
 													</div>
 												);
 											})}
