@@ -1,17 +1,17 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
-	ChevronDown,
-	ChevronRight,
-	Hash,
-	Volume2,
-	Plus,
-	UserPlus,
-	Settings,
-	X,
-	Copy,
-	Check,
-	PhoneOff,
-	Trash2,
+  ChevronDown,
+  ChevronRight,
+  Hash,
+  Volume2,
+  Plus,
+  UserPlus,
+  Settings,
+  X,
+  Copy,
+  Check,
+  PhoneOff,
+  Trash2,
 } from "lucide-react";
 import bgLSideBar from "../img/bg_l_sidebar.png";
 import defaultAvatar from "../img/default.png";
@@ -25,490 +25,498 @@ import { CreateChannelModal } from "./CreateChannelModal";
 export type ChannelType = "text" | "voice";
 
 export interface ConnectedUser {
-	id: string;
-	name: string;
-	avatar?: string;
+  id: string;
+  name: string;
+  avatar?: string;
 }
 
 export interface Channel {
-	id: string;
-	name: string;
-	type: ChannelType;
-	unread?: boolean;
-	connectedUsers?: ConnectedUser[];
+  id: string;
+  name: string;
+  type: ChannelType;
+  unread?: boolean;
+  connectedUsers?: ConnectedUser[];
 }
 
 export interface ChannelCategory {
-	id: string;
-	name: string;
-	channels: Channel[];
+  id: string;
+  name: string;
+  channels: Channel[];
 }
 
 interface ServerLeftBarProps {
-	serverId: string;
-	serverName: string;
-	serverOwnerId?: string;
-	serverIconUrl?: string;
-	categories: ChannelCategory[];
-	activeChannelId: string;
-	onSelectChannel: (channel: Channel) => void;
-	onChannelsChanged?: () => Promise<void> | void;
-	onDeleteChannel?: (channel: Channel) => Promise<void> | void;
-	onServerDeleted?: () => Promise<void> | void;
-	onServerLeft?: () => Promise<void> | void;
-	canManageChannels?: boolean;
+  serverId: string;
+  serverName: string;
+  serverOwnerId?: string;
+  serverIconUrl?: string;
+  categories: ChannelCategory[];
+  activeChannelId: string;
+  onSelectChannel: (channel: Channel) => void;
+  onChannelsChanged?: () => Promise<void> | void;
+  onDeleteChannel?: (channel: Channel) => Promise<void> | void;
+  onServerDeleted?: () => Promise<void> | void;
+  onServerLeft?: () => Promise<void> | void;
+  canManageChannels?: boolean;
 }
 
 export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
-	serverId,
-	serverName,
-	serverOwnerId,
-	serverIconUrl,
-	categories,
-	activeChannelId,
-	onSelectChannel,
-	onChannelsChanged,
-	onDeleteChannel,
-	onServerDeleted,
-	onServerLeft,
-	canManageChannels = false,
+  serverId,
+  serverName,
+  serverOwnerId,
+  serverIconUrl,
+  categories,
+  activeChannelId,
+  onSelectChannel,
+  onChannelsChanged,
+  onDeleteChannel,
+  onServerDeleted,
+  onServerLeft,
+  canManageChannels = false,
 }) => {
-	const { user } = useAuth();
-	const { sendToOrganization, sendOrganizationAction } =
-		useOrganizationEvents();
-	const { activeCall, leaveRoom, joinVoiceChannel } = useCall();
+  const { user } = useAuth();
+  const { sendToOrganization, sendOrganizationAction } =
+    useOrganizationEvents();
+  const { activeCall, leaveRoom, joinVoiceChannel } = useCall();
 
-	const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
-	const toggle = (id: string) => setCollapsed((c) => ({ ...c, [id]: !c[id] }));
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const toggle = (id: string) => setCollapsed((c) => ({ ...c, [id]: !c[id] }));
 
-	const [isMenuOpen, setIsMenuOpen] = useState(false);
-	const menuRef = useRef<HTMLDivElement>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
-	const [inviteModalOpen, setInviteModalOpen] = useState(false);
-	const [inviteCode, setInviteCode] = useState<string | null>(null);
-	const [copied, setCopied] = useState(false);
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
-	const [settingsModalOpen, setSettingsModalOpen] = useState(false);
-	const [createTextChannelOpen, setCreateTextChannelOpen] = useState(false);
-	const [createVoiceChannelOpen, setCreateVoiceChannelOpen] = useState(false);
-	const [contextMenuChannel, setContextMenuChannel] = useState<Channel | null>(
-		null,
-	);
-	const [contextMenuPosition, setContextMenuPosition] = useState<{
-		x: number;
-		y: number;
-	} | null>(null);
-	const contextMenuRef = useRef<HTMLDivElement>(null);
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+  const [createTextChannelOpen, setCreateTextChannelOpen] = useState(false);
+  const [createVoiceChannelOpen, setCreateVoiceChannelOpen] = useState(false);
+  const [contextMenuChannel, setContextMenuChannel] = useState<Channel | null>(
+    null,
+  );
+  const [contextMenuPosition, setContextMenuPosition] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+  const contextMenuRef = useRef<HTMLDivElement>(null);
 
-	const handleCreateChannel = async (
-		channelType: ChannelType,
-		name: string,
-	) => {
-		const response = await api.post("/channels", {
-			name,
-			channelType: channelType === "voice" ? "VOICE" : "TEXT",
-			organizationId: serverId,
-			memberIds: [],
-		});
+  const handleCreateChannel = async (
+    channelType: ChannelType,
+    name: string,
+  ) => {
+    const response = await api.post("/channels", {
+      name,
+      channelType: channelType === "voice" ? "VOICE" : "TEXT",
+      organizationId: serverId,
+      memberIds: [],
+    });
 
-		const createdChannel: Channel = {
-			id: response.data.id,
-			name: response.data.name || name,
-			type: channelType,
-		};
+    const createdChannel: Channel = {
+      id: response.data.id,
+      name: response.data.name || name,
+      type: channelType,
+    };
 
-		if (channelType === "voice") {
-			await onChannelsChanged?.();
-			onSelectChannel(createdChannel);
-			return;
-		}
+    if (channelType === "voice") {
+      await onChannelsChanged?.();
+      onSelectChannel(createdChannel);
+      return;
+    }
 
-		onSelectChannel(createdChannel);
-		await onChannelsChanged?.();
-	};
+    onSelectChannel(createdChannel);
+    await onChannelsChanged?.();
+  };
 
-	const handleCreateChannelClick = (channelType: ChannelType) => {
-		if (channelType === "voice") {
-			setCreateVoiceChannelOpen(true);
-			return;
-		}
+  const handleCreateChannelClick = (channelType: ChannelType) => {
+    if (channelType === "voice") {
+      setCreateVoiceChannelOpen(true);
+      return;
+    }
 
-		setCreateTextChannelOpen(true);
-	};
+    setCreateTextChannelOpen(true);
+  };
 
-	useEffect(() => {
-		const handleClickOutside = (event: MouseEvent) => {
-			if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-				setIsMenuOpen(false);
-			}
-		};
-		document.addEventListener("mousedown", handleClickOutside);
-		return () => document.removeEventListener("mousedown", handleClickOutside);
-	}, []);
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-	useEffect(() => {
-		const handleClickOutsideContextMenu = (event: MouseEvent) => {
-			if (
-				contextMenuRef.current &&
-				!contextMenuRef.current.contains(event.target as Node)
-			) {
-				setContextMenuChannel(null);
-				setContextMenuPosition(null);
-			}
-		};
+  useEffect(() => {
+    const handleClickOutsideContextMenu = (event: MouseEvent) => {
+      if (
+        contextMenuRef.current &&
+        !contextMenuRef.current.contains(event.target as Node)
+      ) {
+        setContextMenuChannel(null);
+        setContextMenuPosition(null);
+      }
+    };
 
-		const handleEscape = (event: KeyboardEvent) => {
-			if (event.key === "Escape") {
-				setContextMenuChannel(null);
-				setContextMenuPosition(null);
-			}
-		};
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setContextMenuChannel(null);
+        setContextMenuPosition(null);
+      }
+    };
 
-		document.addEventListener("mousedown", handleClickOutsideContextMenu);
-		document.addEventListener("keydown", handleEscape);
-		return () => {
-			document.removeEventListener("mousedown", handleClickOutsideContextMenu);
-			document.removeEventListener("keydown", handleEscape);
-		};
-	}, []);
+    document.addEventListener("mousedown", handleClickOutsideContextMenu);
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutsideContextMenu);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
 
-	const closeContextMenu = () => {
-		setContextMenuChannel(null);
-		setContextMenuPosition(null);
-	};
+  const closeContextMenu = () => {
+    setContextMenuChannel(null);
+    setContextMenuPosition(null);
+  };
 
-	const handleChannelContextMenu = (
-		e: React.MouseEvent,
-		channel: Channel,
-	) => {
-		e.preventDefault();
-		if (!canManageChannels) {
-			return;
-		}
+  const handleChannelContextMenu = (e: React.MouseEvent, channel: Channel) => {
+    e.preventDefault();
+    if (!canManageChannels) {
+      return;
+    }
 
-		setIsMenuOpen(false);
-		setContextMenuChannel(channel);
-		setContextMenuPosition({ x: e.clientX, y: e.clientY });
-	};
+    setIsMenuOpen(false);
+    setContextMenuChannel(channel);
+    setContextMenuPosition({ x: e.clientX, y: e.clientY });
+  };
 
-	const handleDeleteChannel = async () => {
-		if (!contextMenuChannel || !onDeleteChannel) return;
+  const handleDeleteChannel = async () => {
+    if (!contextMenuChannel || !onDeleteChannel) return;
 
-		const confirmed = window.confirm(
-			`Delete ${contextMenuChannel.type === "voice" ? "voice channel" : "channel"} "${contextMenuChannel.name}"?`,
-		);
-		if (!confirmed) return;
+    const confirmed = window.confirm(
+      `Delete ${contextMenuChannel.type === "voice" ? "voice channel" : "channel"} "${contextMenuChannel.name}"?`,
+    );
+    if (!confirmed) return;
 
-		const channelToDelete = contextMenuChannel;
-		closeContextMenu();
-		await onDeleteChannel(channelToDelete);
-	};
+    const channelToDelete = contextMenuChannel;
+    closeContextMenu();
+    await onDeleteChannel(channelToDelete);
+  };
 
-	const handleChannelClick = async (ch: Channel) => {
-		if (ch.type === "voice") {
-			try {
-				await joinVoiceChannel(ch.id);
+  const handleChannelClick = async (ch: Channel) => {
+    if (ch.type === "voice") {
+      try {
+        await joinVoiceChannel(ch.id);
 
-				if (user) {
-					sendToOrganization(serverId, {
-						type: "VOICE_STATE_UPDATE",
-						userId: user.id,
-						userName: user.username || user.name,
-						userAvatar: user.picture || defaultAvatar,
-						channelId: ch.id,
-						action: "JOIN",
-					});
-				}
-			} catch (error) {
-				console.error("Failed to connect to voice channel:", error);
-			}
-		}
+        if (user) {
+          sendToOrganization(serverId, {
+            type: "VOICE_STATE_UPDATE",
+            userId: user.id,
+            userName: user.username || user.name,
+            userAvatar: user.picture || defaultAvatar,
+            channelId: ch.id,
+            action: "JOIN",
+          });
+        }
+      } catch (error) {
+        console.error("Failed to connect to voice channel:", error);
+      }
+    }
 
-		onSelectChannel(ch);
-	};
+    onSelectChannel(ch);
+  };
 
-	const handleDisconnect = () => {
-		let channelId = activeCall?.roomId;
-		if (channelId && user) {
-			sendOrganizationAction(serverId, `voice/${channelId}/leave`, {
-				type: "VOICE_STATE_UPDATE",
-				userId: user.id,
-				userName: user.username || user.name,
-				channelId: null,
-				action: "LEAVE",
-			});
-			leaveRoom();
-		}
-	};
+  const handleDisconnect = () => {
+    let channelId = activeCall?.roomId;
+    if (channelId && user) {
+      sendOrganizationAction(serverId, `voice/${channelId}/leave`, {
+        type: "VOICE_STATE_UPDATE",
+        userId: user.id,
+        userName: user.username || user.name,
+        channelId: null,
+        action: "LEAVE",
+      });
+      leaveRoom();
+    }
+  };
 
-	const handleGenerateInvite = async () => {
-		setIsMenuOpen(false);
-		setInviteModalOpen(true);
-		setInviteCode(null);
-		setCopied(false);
-		try {
-			const res = await api.post(`/organizations/${serverId}/invites`);
-			setInviteCode(res.data.code);
-		} catch (error) {
-			console.error("Failed to generate invite:", error);
-		}
-	};
+  const handleGenerateInvite = async () => {
+    setIsMenuOpen(false);
+    setInviteModalOpen(true);
+    setInviteCode(null);
+    setCopied(false);
+    try {
+      const res = await api.post(`/organizations/${serverId}/invites`);
+      setInviteCode(res.data.code);
+    } catch (error) {
+      console.error("Failed to generate invite:", error);
+    }
+  };
 
-	const copyToClipboard = () => {
-		if (inviteCode) {
-			navigator.clipboard.writeText(inviteCode);
-			setCopied(true);
-			setTimeout(() => setCopied(false), 2000);
-		}
-	};
+  const copyToClipboard = () => {
+    if (inviteCode) {
+      navigator.clipboard.writeText(inviteCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
-	return (
-		<>
-			<div className="flex-1 rounded-tl-lg border border-brand-green relative flex flex-col min-h-0">
-				<div
-					className="absolute inset-0 bg-cover bg-center rounded-tl-lg"
-					style={{ backgroundImage: `url(${bgLSideBar})` }}
-				/>
-				<div className="absolute inset-0 bg-brand-peach opacity-90 rounded-tl-lg" />
-				<div className="relative z-10 flex flex-col h-full">
-					<div className="relative" ref={menuRef}>
-						<button
-							onClick={() => setIsMenuOpen(!isMenuOpen)}
-							className="w-full flex h-12 shrink-0 items-center justify-between border-b-2 border-gray-800 bg-brand-brick px-4 text-brand-beige shadow-sm hover:bg-brand-brick/90 transition-colors"
-						>
-							<h2 className="truncate font-ananias text-base font-bold uppercase">
-								{serverName}
-							</h2>
-							<ChevronDown
-								className={`h-4 w-4 transition-transform duration-200 ${isMenuOpen ? "rotate-180" : ""}`}
-							/>
-						</button>
-						{isMenuOpen && (
-							<div className="absolute top-12 left-2 right-2 bg-brand-beige border-2 border-brand-green rounded-md shadow-xl py-2 z-50 animate-in fade-in slide-in-from-top-2">
-								<button
-									onClick={handleGenerateInvite}
-									className="w-full flex items-center justify-between px-3 py-2 text-sm font-bold text-brand-green hover:bg-brand-green hover:text-brand-beige transition-colors"
-								>
-									<span>Invite People</span>
-									<UserPlus className="h-4 w-4" />
-								</button>
-								<div className="mx-2 my-1 border-b border-brand-green/20" />
-								<button
-									onClick={() => {
-										setIsMenuOpen(false);
-										setSettingsModalOpen(true);
-									}}
-									className="w-full flex items-center justify-between px-3 py-2 text-sm font-bold text-gray-700 hover:bg-gray-200 transition-colors"
-								>
-									<span>Server Settings</span>
-									<Settings className="h-4 w-4" />
-								</button>
-							</div>
-						)}
-					</div>
-					<div className="flex-1 space-y-3 overflow-y-auto px-2 py-3 scrollbar-hide mt-2">
-						{categories.map((cat) => {
-							const isCollapsed = collapsed[cat.id];
-							const channelType = cat.id === "voice" ? "voice" : "text";
-							return (
-								<div key={cat.id}>
-									<div className="group flex items-center gap-1 px-1 py-1 text-xs font-ananias font-bold uppercase tracking-wider text-gray-800/70 hover:text-gray-900">
-										<button
-											type="button"
-											onClick={() => toggle(cat.id)}
-											className="flex flex-1 items-center gap-1 text-left"
-										>
-											{isCollapsed ? (
-												<ChevronRight className="h-3 w-3" />
-											) : (
-												<ChevronDown className="h-3 w-3" />
-											)}
-											<span className="flex-1 text-left">{cat.name}</span>
-										</button>
-										<button
-											type="button"
-											onClick={() => handleCreateChannelClick(channelType)}
-											className="rounded p-0.5 opacity-0 transition-opacity hover:bg-brand-green/20 group-hover:opacity-100"
-											aria-label={`Create ${channelType} channel`}
-											title={`Create ${channelType} channel`}
-										>
-											<Plus className="h-3.5 w-3.5" />
-										</button>
-									</div>
-									{!isCollapsed && (
-										<div className="mt-1 space-y-1">
-											{cat.channels.map((ch) => {
-												const isActive = ch.id === activeChannelId;
-												const Icon = ch.type === "voice" ? Volume2 : Hash;
-												return (
-													<div key={ch.id} className="flex flex-col">
-														<button
-															onClick={() => handleChannelClick(ch)}
-															onContextMenu={(e) => handleChannelContextMenu(e, ch)}
-															className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm font-roboto font-medium transition-colors border-2 ${isActive ? "bg-brand-green border-gray-800 text-brand-beige shadow-sharp-xs" : "border-transparent text-gray-800 hover:bg-brand-green/30"}`}
-														>
-															<Icon className="h-4 w-4 shrink-0" />
-															<span className="truncate">{ch.name}</span>
-														</button>
-														{ch.type === "voice" &&
-															ch.connectedUsers &&
-															ch.connectedUsers.length > 0 && (
-																<div className="flex flex-col mt-1 mb-1 pl-6 space-y-1">
-																	{ch.connectedUsers.map((u) => (
-																		<div
-																			key={u.id}
-																			className="flex items-center gap-2 px-2 py-1 rounded-md hover:bg-white/30 cursor-pointer transition-colors"
-																		>
-																			<img
-																				src={u.avatar || defaultAvatar}
-																				alt={u.name}
-																				className="w-6 h-6 rounded-full border border-gray-800 object-cover"
-																				onError={(event) => {
-																					event.currentTarget.src = defaultAvatar;
-																				}}
-																			/>
-																			{!u.avatar && (
-																				<div className="w-6 h-6 rounded-full bg-brand-green flex items-center justify-center text-xs text-brand-beige font-bold border border-gray-800">
-																					{u.name
-																						? u.name.charAt(0).toUpperCase()
-																						: "?"}
-																				</div>
-																			)}
-																			<span className="text-sm text-gray-800 font-medium truncate">
-																				{u.name || "User"}
-																			</span>
-																		</div>
-																	))}
-																</div>
-															)}
-														{contextMenuChannel && contextMenuPosition && contextMenuChannel.id === ch.id && (
-															<div
-																ref={contextMenuRef}
-																role="menu"
-																className="fixed z-[80] min-w-44 rounded-md border-2 border-brand-green bg-brand-beige py-1 shadow-2xl"
-																style={{ left: contextMenuPosition.x, top: contextMenuPosition.y }}
-															>
-																<button
-																	type="button"
-																	onClick={handleDeleteChannel}
-																	className="flex w-full items-center gap-2 px-3 py-2 text-sm font-bold text-red-700 hover:bg-red-50 hover:text-red-800"
-																>
-																	<Trash2 className="h-4 w-4" />
-																	Delete {contextMenuChannel.type === "voice" ? "Voice Channel" : "Channel"}
-																</button>
-															</div>
-														)}
-													</div>
-												);
-											})}
-										</div>
-									)}
-								</div>
-							);
-						})}
-					</div>
-					{activeCall && (
-						<div className="mt-auto shrink-0 bg-brand-green border-t border-brand-brick p-3 flex flex-col gap-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-20">
-							<div className="flex items-center justify-between">
-								<div className="flex flex-col min-w-0">
-									<div className="flex items-center gap-1 text-brand-beige font-bold text-xs uppercase tracking-wider">
-										<Volume2 size={14} className="animate-pulse" /> Voice
-										Connected
-									</div>
-									<div className="text-xs text-brand-beige/80 truncate font-medium">
-										{serverName}
-									</div>
-								</div>
-								<button
-									onClick={handleDisconnect}
-									className="p-1.5 bg-brand-brick hover:bg-red-600 text-white rounded-md transition-colors shadow-sm"
-									title="Disconnect"
-								>
-									<PhoneOff size={16} />
-								</button>
-							</div>
-						</div>
-					)}
-				</div>
-			</div>
-			{inviteModalOpen && (
-				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
-					<div className="bg-brand-beige rounded-lg shadow-xl w-full max-w-sm overflow-hidden border-2 border-brand-green p-6 relative">
-						<button
-							onClick={() => setInviteModalOpen(false)}
-							className="absolute top-4 right-4 text-brand-green hover:text-brand-brick"
-						>
-							<X size={20} />
-						</button>
-						<h3 className="text-lg font-bold text-brand-green mb-2">
-							Invite friends to {serverName}
-						</h3>
-						<p className="text-sm text-gray-600 mb-4">
-							Share this code with others so they can join your server. It
-							expires in 1 day.
-						</p>
-						<button
-							onClick={() => setInviteModalOpen(false)}
-							className="absolute top-4 right-4 text-brand-green hover:text-brand-brick"
-						>
-							<X size={20} />
-						</button>
-						<h3 className="text-lg font-bold text-brand-green mb-2">
-							Invite friends to {serverName}
-						</h3>
-						<p className="text-sm text-gray-600 mb-4">
-							Share this code with others so they can join your server. It
-							expires in 1 day.
-						</p>
-						<div className="flex items-center gap-2 bg-white border border-gray-300 rounded p-2">
-							<input
-								type="text"
-								readOnly
-								value={inviteCode || "Generating..."}
-								className="flex-1 bg-transparent text-gray-800 font-mono font-bold focus:outline-none"
-							/>
-							<button
-								onClick={copyToClipboard}
-								disabled={!inviteCode}
-								className="bg-brand-green text-brand-beige p-2 rounded hover:bg-brand-brick transition-colors disabled:opacity-50"
-							>
-								{copied ? <Check size={18} /> : <Copy size={18} />}
-							</button>
-						</div>
-						{copied && (
-							<p className="text-xs text-brand-green mt-2 font-bold text-right">
-								Copied!
-							</p>
-						)}
-					</div>
-				</div>
-			)}
-			<ServerSettingsModal
-				isOpen={settingsModalOpen}
-				onClose={() => setSettingsModalOpen(false)}
-				serverId={serverId}
-				serverName={serverName}
-				ownerId={serverOwnerId}
-				serverIconUrl={serverIconUrl}
-				onServerDeleted={onServerDeleted}
-				onServerLeft={onServerLeft}
-			/>
-			<CreateChannelModal
-				isOpen={createTextChannelOpen}
-				title="Create Text Channel"
-				description="Choose a name for the new text channel."
-				placeholder="general"
-				onClose={() => setCreateTextChannelOpen(false)}
-				onCreate={(name) => handleCreateChannel("text", name)}
-			/>
-			<CreateChannelModal
-				isOpen={createVoiceChannelOpen}
-				title="Create Voice Channel"
-				description="Choose a name for the new voice channel."
-				placeholder="voice-room"
-				onClose={() => setCreateVoiceChannelOpen(false)}
-				onCreate={(name) => handleCreateChannel("voice", name)}
-			/>
-		</>
-	);
+  return (
+    <>
+      <div className="flex-1 rounded-tl-lg border border-brand-green relative flex flex-col min-h-0">
+        <div
+          className="absolute inset-0 bg-cover bg-center rounded-tl-lg"
+          style={{ backgroundImage: `url(${bgLSideBar})` }}
+        />
+        <div className="absolute inset-0 bg-brand-peach opacity-90 rounded-tl-lg" />
+        <div className="relative z-10 flex flex-col h-full">
+          <div className="relative" ref={menuRef}>
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="w-full flex h-12 shrink-0 items-center justify-between border-b-2 border-gray-800 bg-brand-brick px-4 text-brand-beige shadow-sm hover:bg-brand-brick/90 transition-colors"
+            >
+              <h2 className="truncate font-ananias text-base font-bold uppercase">
+                {serverName}
+              </h2>
+              <ChevronDown
+                className={`h-4 w-4 transition-transform duration-200 ${isMenuOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+            {isMenuOpen && (
+              <div className="absolute top-12 left-2 right-2 bg-brand-beige border-2 border-brand-green rounded-md shadow-xl py-2 z-50 animate-in fade-in slide-in-from-top-2">
+                <button
+                  onClick={handleGenerateInvite}
+                  className="w-full flex items-center justify-between px-3 py-2 text-sm font-bold text-brand-green hover:bg-brand-green hover:text-brand-beige transition-colors"
+                >
+                  <span>Invite People</span>
+                  <UserPlus className="h-4 w-4" />
+                </button>
+                <div className="mx-2 my-1 border-b border-brand-green/20" />
+                <button
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    setSettingsModalOpen(true);
+                  }}
+                  className="w-full flex items-center justify-between px-3 py-2 text-sm font-bold text-gray-700 hover:bg-gray-200 transition-colors"
+                >
+                  <span>Server Settings</span>
+                  <Settings className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+          </div>
+          <div className="flex-1 space-y-3 overflow-y-auto px-2 py-3 scrollbar-hide mt-2">
+            {categories.map((cat) => {
+              const isCollapsed = collapsed[cat.id];
+              const channelType = cat.id === "voice" ? "voice" : "text";
+              return (
+                <div key={cat.id}>
+                  <div className="group flex items-center gap-1 px-1 py-1 text-xs font-ananias font-bold uppercase tracking-wider text-gray-800/70 hover:text-gray-900">
+                    <button
+                      type="button"
+                      onClick={() => toggle(cat.id)}
+                      className="flex flex-1 items-center gap-1 text-left"
+                    >
+                      {isCollapsed ? (
+                        <ChevronRight className="h-3 w-3" />
+                      ) : (
+                        <ChevronDown className="h-3 w-3" />
+                      )}
+                      <span className="flex-1 text-left">{cat.name}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleCreateChannelClick(channelType)}
+                      className="rounded p-0.5 opacity-0 transition-opacity hover:bg-brand-green/20 group-hover:opacity-100"
+                      aria-label={`Create ${channelType} channel`}
+                      title={`Create ${channelType} channel`}
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                  {!isCollapsed && (
+                    <div className="mt-1 space-y-1">
+                      {cat.channels.map((ch) => {
+                        const isActive = ch.id === activeChannelId;
+                        const Icon = ch.type === "voice" ? Volume2 : Hash;
+                        return (
+                          <div key={ch.id} className="flex flex-col">
+                            <button
+                              onClick={() => handleChannelClick(ch)}
+                              onContextMenu={(e) =>
+                                handleChannelContextMenu(e, ch)
+                              }
+                              className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm font-roboto font-medium transition-colors border-2 ${isActive ? "bg-brand-green border-gray-800 text-brand-beige shadow-sharp-xs" : "border-transparent text-gray-800 hover:bg-brand-green/30"}`}
+                            >
+                              <Icon className="h-4 w-4 shrink-0" />
+                              <span className="truncate">{ch.name}</span>
+                            </button>
+                            {ch.type === "voice" &&
+                              ch.connectedUsers &&
+                              ch.connectedUsers.length > 0 && (
+                                <div className="flex flex-col mt-1 mb-1 pl-6 space-y-1">
+                                  {ch.connectedUsers.map((u) => (
+                                    <div
+                                      key={u.id}
+                                      className="flex items-center gap-2 px-2 py-1 rounded-md hover:bg-white/30 cursor-pointer transition-colors"
+                                    >
+                                      <img
+                                        src={u.avatar || defaultAvatar}
+                                        alt={u.name}
+                                        className="w-6 h-6 rounded-full border border-gray-800 object-cover"
+                                        onError={(event) => {
+                                          event.currentTarget.src =
+                                            defaultAvatar;
+                                        }}
+                                      />
+                                      {!u.avatar && (
+                                        <div className="w-6 h-6 rounded-full bg-brand-green flex items-center justify-center text-xs text-brand-beige font-bold border border-gray-800">
+                                          {u.name
+                                            ? u.name.charAt(0).toUpperCase()
+                                            : "?"}
+                                        </div>
+                                      )}
+                                      <span className="text-sm text-gray-800 font-medium truncate">
+                                        {u.name || "User"}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            {contextMenuChannel &&
+                              contextMenuPosition &&
+                              contextMenuChannel.id === ch.id && (
+                                <div
+                                  ref={contextMenuRef}
+                                  role="menu"
+                                  className="fixed z-[80] min-w-44 rounded-md border-2 border-brand-green bg-brand-beige py-1 shadow-2xl"
+                                  style={{
+                                    left: contextMenuPosition.x,
+                                    top: contextMenuPosition.y,
+                                  }}
+                                >
+                                  <button
+                                    type="button"
+                                    onClick={handleDeleteChannel}
+                                    className="flex w-full items-center gap-2 px-3 py-2 text-sm font-bold text-red-700 hover:bg-red-50 hover:text-red-800"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                    Delete{" "}
+                                    {contextMenuChannel.type === "voice"
+                                      ? "Voice Channel"
+                                      : "Channel"}
+                                  </button>
+                                </div>
+                              )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          {activeCall && (
+            <div className="mt-auto shrink-0 bg-brand-green border-t border-brand-brick p-3 flex flex-col gap-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-20">
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col min-w-0">
+                  <div className="flex items-center gap-1 text-brand-beige font-bold text-xs uppercase tracking-wider">
+                    <Volume2 size={14} className="animate-pulse" /> Voice
+                    Connected
+                  </div>
+                  <div className="text-xs text-brand-beige/80 truncate font-medium">
+                    {serverName}
+                  </div>
+                </div>
+                <button
+                  onClick={handleDisconnect}
+                  className="p-1.5 bg-brand-brick hover:bg-red-600 text-white rounded-md transition-colors shadow-sm"
+                  title="Disconnect"
+                >
+                  <PhoneOff size={16} />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+      {inviteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4">
+          <div className="bg-brand-beige rounded-lg shadow-xl w-full max-w-sm overflow-hidden border-2 border-brand-green p-6 relative">
+            <button
+              onClick={() => setInviteModalOpen(false)}
+              className="absolute top-4 right-4 text-brand-green hover:text-brand-brick"
+            >
+              <X size={20} />
+            </button>
+            <h3 className="text-lg font-bold text-brand-green mb-2">
+              Invite friends to {serverName}
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Share this code with others so they can join your server. It
+              expires in 1 day.
+            </p>
+            <button
+              onClick={() => setInviteModalOpen(false)}
+              className="absolute top-4 right-4 text-brand-green hover:text-brand-brick"
+            >
+              <X size={20} />
+            </button>
+            <h3 className="text-lg font-bold text-brand-green mb-2">
+              Invite friends to {serverName}
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Share this code with others so they can join your server. It
+              expires in 1 day.
+            </p>
+            <div className="flex items-center gap-2 bg-white border border-gray-300 rounded p-2">
+              <input
+                type="text"
+                readOnly
+                value={inviteCode || "Generating..."}
+                className="flex-1 bg-transparent text-gray-800 font-mono font-bold focus:outline-none"
+              />
+              <button
+                onClick={copyToClipboard}
+                disabled={!inviteCode}
+                className="bg-brand-green text-brand-beige p-2 rounded hover:bg-brand-brick transition-colors disabled:opacity-50"
+              >
+                {copied ? <Check size={18} /> : <Copy size={18} />}
+              </button>
+            </div>
+            {copied && (
+              <p className="text-xs text-brand-green mt-2 font-bold text-right">
+                Copied!
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+      <ServerSettingsModal
+        isOpen={settingsModalOpen}
+        onClose={() => setSettingsModalOpen(false)}
+        serverId={serverId}
+        serverName={serverName}
+        ownerId={serverOwnerId}
+        serverIconUrl={serverIconUrl}
+        onServerDeleted={onServerDeleted}
+        onServerLeft={onServerLeft}
+      />
+      <CreateChannelModal
+        isOpen={createTextChannelOpen}
+        title="Create Text Channel"
+        description="Choose a name for the new text channel."
+        placeholder="general"
+        onClose={() => setCreateTextChannelOpen(false)}
+        onCreate={(name) => handleCreateChannel("text", name)}
+      />
+      <CreateChannelModal
+        isOpen={createVoiceChannelOpen}
+        title="Create Voice Channel"
+        description="Choose a name for the new voice channel."
+        placeholder="voice-room"
+        onClose={() => setCreateVoiceChannelOpen(false)}
+        onCreate={(name) => handleCreateChannel("voice", name)}
+      />
+    </>
+  );
 };
