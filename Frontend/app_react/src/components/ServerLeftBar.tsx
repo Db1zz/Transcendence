@@ -11,14 +11,17 @@ import {
   Copy,
   Check,
   PhoneOff,
+  Trash2,
 } from "lucide-react";
 import bgLSideBar from "../img/bg_l_sidebar.png";
+import defaultAvatar from "../img/default.png";
 import api from "../utils/api";
 import { useCall } from "../hooks/useCall";
 import { useAuth } from "../contexts/AuthContext";
 import { useOrganizationEvents } from "../hooks/useOrganizationEvents";
 import { ServerSettingsModal } from "./ServerSettingsModal";
 import { useTranslation } from "react-i18next";
+import { CreateChannelModal } from "./CreateChannelModal";
 
 export type ChannelType = "text" | "voice";
 
@@ -45,17 +48,31 @@ export interface ChannelCategory {
 interface ServerLeftBarProps {
   serverId: string;
   serverName: string;
+  serverOwnerId?: string;
+  serverIconUrl?: string;
   categories: ChannelCategory[];
   activeChannelId: string;
   onSelectChannel: (channel: Channel) => void;
+  onChannelsChanged?: () => Promise<void> | void;
+  onDeleteChannel?: (channel: Channel) => Promise<void> | void;
+  onServerDeleted?: () => Promise<void> | void;
+  onServerLeft?: () => Promise<void> | void;
+  canManageChannels?: boolean;
 }
 
 export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
   serverId,
   serverName,
+  serverOwnerId,
+  serverIconUrl,
   categories,
   activeChannelId,
   onSelectChannel,
+  onChannelsChanged,
+  onDeleteChannel,
+  onServerDeleted,
+  onServerLeft,
+  canManageChannels = false,
 }) => {
   const { t } = useTranslation();
   const { user } = useAuth();
@@ -74,6 +91,52 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
   const [copied, setCopied] = useState(false);
 
   const [settingsModalOpen, setSettingsModalOpen] = useState(false);
+  const [createTextChannelOpen, setCreateTextChannelOpen] = useState(false);
+  const [createVoiceChannelOpen, setCreateVoiceChannelOpen] = useState(false);
+  const [contextMenuChannel, setContextMenuChannel] = useState<Channel | null>(
+    null,
+  );
+  const [contextMenuPosition, setContextMenuPosition] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+  const contextMenuRef = useRef<HTMLDivElement>(null);
+
+  const handleCreateChannel = async (
+    channelType: ChannelType,
+    name: string,
+  ) => {
+    const response = await api.post("/channels", {
+      name,
+      channelType: channelType === "voice" ? "VOICE" : "TEXT",
+      organizationId: serverId,
+      memberIds: [],
+    });
+
+    const createdChannel: Channel = {
+      id: response.data.id,
+      name: response.data.name || name,
+      type: channelType,
+    };
+
+    if (channelType === "voice") {
+      await onChannelsChanged?.();
+      onSelectChannel(createdChannel);
+      return;
+    }
+
+    onSelectChannel(createdChannel);
+    await onChannelsChanged?.();
+  };
+
+  const handleCreateChannelClick = (channelType: ChannelType) => {
+    if (channelType === "voice") {
+      setCreateVoiceChannelOpen(true);
+      return;
+    }
+
+    setCreateTextChannelOpen(true);
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -85,6 +148,61 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    const handleClickOutsideContextMenu = (event: MouseEvent) => {
+      if (
+        contextMenuRef.current &&
+        !contextMenuRef.current.contains(event.target as Node)
+      ) {
+        setContextMenuChannel(null);
+        setContextMenuPosition(null);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setContextMenuChannel(null);
+        setContextMenuPosition(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutsideContextMenu);
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutsideContextMenu);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
+
+  const closeContextMenu = () => {
+    setContextMenuChannel(null);
+    setContextMenuPosition(null);
+  };
+
+  const handleChannelContextMenu = (e: React.MouseEvent, channel: Channel) => {
+    e.preventDefault();
+    if (!canManageChannels) {
+      return;
+    }
+
+    setIsMenuOpen(false);
+    setContextMenuChannel(channel);
+    setContextMenuPosition({ x: e.clientX, y: e.clientY });
+  };
+
+  const handleDeleteChannel = async () => {
+    if (!contextMenuChannel || !onDeleteChannel) return;
+
+    const confirmed = window.confirm(
+      `Delete ${contextMenuChannel.type === "voice" ? "voice channel" : "channel"} "${contextMenuChannel.name}"?`,
+    );
+    if (!confirmed) return;
+
+    const channelToDelete = contextMenuChannel;
+    closeContextMenu();
+    await onDeleteChannel(channelToDelete);
+  };
+
   const handleChannelClick = async (ch: Channel) => {
     if (ch.type === "voice") {
       try {
@@ -94,8 +212,8 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
           sendToOrganization(serverId, {
             type: "VOICE_STATE_UPDATE",
             userId: user.id,
-            userName: user.name,
-            userAvatar: user.picture,
+            userName: user.username || user.name,
+            userAvatar: user.picture || defaultAvatar,
             channelId: ch.id,
             action: "JOIN",
           });
@@ -114,7 +232,7 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
       sendOrganizationAction(serverId, `voice/${channelId}/leave`, {
         type: "VOICE_STATE_UPDATE",
         userId: user.id,
-        userName: user.name,
+        userName: user.username || user.name,
         channelId: null,
         action: "LEAVE",
       });
@@ -190,20 +308,32 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
           <div className="flex-1 space-y-3 overflow-y-auto px-2 py-3 scrollbar-hide mt-2">
             {categories.map((cat) => {
               const isCollapsed = collapsed[cat.id];
+              const channelType = cat.id === "voice" ? "voice" : "text";
               return (
                 <div key={cat.id}>
-                  <button
-                    onClick={() => toggle(cat.id)}
-                    className="group flex w-full items-center gap-1 px-1 py-1 text-xs font-ananias font-bold uppercase tracking-wider text-gray-800/70 hover:text-gray-900"
-                  >
-                    {isCollapsed ? (
-                      <ChevronRight className="h-3 w-3" />
-                    ) : (
-                      <ChevronDown className="h-3 w-3" />
-                    )}
-                    <span className="flex-1 text-left">{cat.name}</span>
-                    <Plus className="h-3.5 w-3.5 opacity-0 transition-opacity group-hover:opacity-100" />
-                  </button>
+                  <div className="group flex items-center gap-1 px-1 py-1 text-xs font-ananias font-bold uppercase tracking-wider text-gray-800/70 hover:text-gray-900">
+                    <button
+                      type="button"
+                      onClick={() => toggle(cat.id)}
+                      className="flex flex-1 items-center gap-1 text-left"
+                    >
+                      {isCollapsed ? (
+                        <ChevronRight className="h-3 w-3" />
+                      ) : (
+                        <ChevronDown className="h-3 w-3" />
+                      )}
+                      <span className="flex-1 text-left">{cat.name}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleCreateChannelClick(channelType)}
+                      className="rounded p-0.5 opacity-0 transition-opacity hover:bg-brand-green/20 group-hover:opacity-100"
+                      aria-label={`Create ${channelType} channel`}
+                      title={`Create ${channelType} channel`}
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                   {!isCollapsed && (
                     <div className="mt-1 space-y-1">
                       {cat.channels.map((ch) => {
@@ -213,6 +343,9 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
                           <div key={ch.id} className="flex flex-col">
                             <button
                               onClick={() => handleChannelClick(ch)}
+                              onContextMenu={(e) =>
+                                handleChannelContextMenu(e, ch)
+                              }
                               className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm font-roboto font-medium transition-colors border-2 ${isActive ? "bg-brand-green border-gray-800 text-brand-beige shadow-sharp-xs" : "border-transparent text-gray-800 hover:bg-brand-green/30"}`}
                             >
                               <Icon className="h-4 w-4 shrink-0" />
@@ -227,13 +360,16 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
                                       key={u.id}
                                       className="flex items-center gap-2 px-2 py-1 rounded-md hover:bg-white/30 cursor-pointer transition-colors"
                                     >
-                                      {u.avatar ? (
-                                        <img
-                                          src={u.avatar}
-                                          alt={u.name}
-                                          className="w-6 h-6 rounded-full border border-gray-800 object-cover"
-                                        />
-                                      ) : (
+                                      <img
+                                        src={u.avatar || defaultAvatar}
+                                        alt={u.name}
+                                        className="w-6 h-6 rounded-full border border-gray-800 object-cover"
+                                        onError={(event) => {
+                                          event.currentTarget.src =
+                                            defaultAvatar;
+                                        }}
+                                      />
+                                      {!u.avatar && (
                                         <div className="w-6 h-6 rounded-full bg-brand-green flex items-center justify-center text-xs text-brand-beige font-bold border border-gray-800">
                                           {u.name
                                             ? u.name.charAt(0).toUpperCase()
@@ -245,6 +381,31 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
                                       </span>
                                     </div>
                                   ))}
+                                </div>
+                              )}
+                            {contextMenuChannel &&
+                              contextMenuPosition &&
+                              contextMenuChannel.id === ch.id && (
+                                <div
+                                  ref={contextMenuRef}
+                                  role="menu"
+                                  className="fixed z-[80] min-w-44 rounded-md border-2 border-brand-green bg-brand-beige py-1 shadow-2xl"
+                                  style={{
+                                    left: contextMenuPosition.x,
+                                    top: contextMenuPosition.y,
+                                  }}
+                                >
+                                  <button
+                                    type="button"
+                                    onClick={handleDeleteChannel}
+                                    className="flex w-full items-center gap-2 px-3 py-2 text-sm font-bold text-red-700 hover:bg-red-50 hover:text-red-800"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                    Delete{" "}
+                                    {contextMenuChannel.type === "voice"
+                                      ? "Voice Channel"
+                                      : "Channel"}
+                                  </button>
                                 </div>
                               )}
                           </div>
@@ -322,6 +483,26 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
         onClose={() => setSettingsModalOpen(false)}
         serverId={serverId}
         serverName={serverName}
+        ownerId={serverOwnerId}
+        serverIconUrl={serverIconUrl}
+        onServerDeleted={onServerDeleted}
+        onServerLeft={onServerLeft}
+      />
+      <CreateChannelModal
+        isOpen={createTextChannelOpen}
+        title="Create Text Channel"
+        description="Choose a name for the new text channel."
+        placeholder="general"
+        onClose={() => setCreateTextChannelOpen(false)}
+        onCreate={(name) => handleCreateChannel("text", name)}
+      />
+      <CreateChannelModal
+        isOpen={createVoiceChannelOpen}
+        title="Create Voice Channel"
+        description="Choose a name for the new voice channel."
+        placeholder="voice-room"
+        onClose={() => setCreateVoiceChannelOpen(false)}
+        onCreate={(name) => handleCreateChannel("voice", name)}
       />
     </>
   );

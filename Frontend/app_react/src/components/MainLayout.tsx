@@ -1,7 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import { FriendsView } from "./FriendsView";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
+import { Friend, FriendsView } from "./FriendsView";
 import { NavigationSidebar } from "./navigation/NavigationSideBar";
 import Chat from "./Chat";
 import ProfileButton from "../components/ProfileButton";
@@ -23,9 +29,15 @@ import { useOrganizationEvents } from "../hooks/useOrganizationEvents";
 import { useUserStatuses } from "../hooks/useUserStatuses";
 import { useServerMembers } from "../hooks/useServerMembers";
 import { useFriends } from "../hooks/useFriends";
+import { useRoles } from "../hooks/useRoles";
+import { usePermissions, PERMISSION_FLAGS } from "../hooks/usePermissions";
+import { useServers } from "../hooks/useServers";
+import type { VoiceParticipant } from "./VoiceView";
 import MobileNavBar from "./MobileNavBar";
 import { ProfilePopup } from "./ProfilePopup";
 import { NotificationsPage } from "./NotificationsPage";
+import defaultAvatar from "../img/default.png";
+import Footer from "./Footer";
 
 const parseStompPayload = (data: any) => {
   if (data && typeof data === "object") {
@@ -66,8 +78,16 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const { t } = useTranslation();
   const { user, loading } = useAuth();
   const { incomingCall, setIncomingCall } = useNotifications();
-  const { activeCall, joinOrCreateRoom, joinVoiceChannel } = useCall();
+  const { activeCall, joinOrCreateRoom, joinVoiceChannel, leaveRoom } =
+    useCall();
+  const {
+    servers,
+    createServer,
+    joinServer,
+    refetch: refetchServers,
+  } = useServers();
   const { statuses } = useUserStatuses(user?.id ?? "");
+  const { hasPermission } = usePermissions();
 
   const [activeView, setActiveView] = useState<
     "friends" | "chat" | "voice" | "server" | "friendsList" | "notifications"
@@ -106,6 +126,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const { members: rawServerMembers, fetchMembers } = useServerMembers(
     activeView === "server" ? activeServerId : null,
   );
+  const { roles: serverRoles, fetchRoles } = useRoles(activeServerId || "");
   const { friends: rawFriends } = useFriends();
 
   const serverMembersMapped: Member[] = rawServerMembers.map((m) => ({
@@ -113,10 +134,37 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     name: m.user.displayName || m.user.username,
     avatarUrl: m.user.picture,
     status: String(
-      statuses[m.user.id] || m.user.status || "offline",
+      statuses[m.user.id] || "offline",
     ).toLowerCase() as MemberStatus,
     role: "Member",
   }));
+
+  const serverSenderNameById = useMemo<Record<string, string>>(() => {
+    return rawServerMembers.reduce<Record<string, string>>((acc, member) => {
+      acc[member.user.id] = member.user.displayName || member.user.username;
+      return acc;
+    }, {});
+  }, [rawServerMembers]);
+
+  const myMemberProfile = useMemo(() => {
+    if (!user) return null;
+    return (
+      rawServerMembers.find((member) => member.user.id === user.id) || null
+    );
+  }, [rawServerMembers, user]);
+
+  const myTotalPermissions = useMemo(() => {
+    if (!myMemberProfile) return 0;
+    return myMemberProfile.roles.reduce((acc, roleId) => {
+      const role = serverRoles.find((r) => r.id === roleId);
+      return acc | (role ? role.permissions : 0);
+    }, 0);
+  }, [myMemberProfile, serverRoles]);
+
+  const canManageChannels = hasPermission(
+    myTotalPermissions,
+    PERMISSION_FLAGS.MANAGE_CHANNELS,
+  );
 
   const activeFriendsMapped: Member[] = rawFriends
     .filter((f) => f.isFriend === "friend")
@@ -124,10 +172,61 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       id: f.id,
       name: f.name || f.username,
       avatarUrl: f.picture,
-      status: String(
-        statuses[f.id] || f.status || "offline",
-      ).toLowerCase() as MemberStatus,
+      status: String(statuses[f.id] || "offline").toLowerCase() as MemberStatus,
     }));
+
+  const localVoiceParticipant = useMemo<VoiceParticipant | null>(() => {
+    if (!user) return null;
+    return {
+      id: user.id,
+      username: user.username || user.name,
+      displayName: user.name,
+      picture: user.picture || defaultAvatar,
+    };
+  }, [user]);
+
+  const voiceParticipants = useMemo<VoiceParticipant[]>(() => {
+    const merged = new Map<string, VoiceParticipant>();
+
+    if (user) {
+      const localParticipant = {
+        id: user.id,
+        username: user.username || user.name,
+        displayName: user.name,
+        picture: user.picture || defaultAvatar,
+      };
+      merged.set(user.id, localParticipant);
+      merged.set("local", localParticipant);
+    }
+
+    rawServerMembers.forEach((member) => {
+      merged.set(member.user.id, {
+        id: member.user.id,
+        username: member.user.username,
+        displayName: member.user.displayName || member.user.username,
+        picture: member.user.picture || defaultAvatar,
+      });
+    });
+
+    rawFriends.forEach((friend) => {
+      merged.set(friend.id, {
+        id: friend.id,
+        username: friend.username,
+        displayName: friend.name || friend.username,
+        picture: friend.picture || defaultAvatar,
+      });
+    });
+
+    return Array.from(merged.values());
+  }, [rawFriends, rawServerMembers, user]);
+
+  const activeServerOwnerId = useMemo(() => {
+    return servers.find((server) => server.id === activeServerId)?.ownerId;
+  }, [servers, activeServerId]);
+
+  const activeServerIconUrl = useMemo(() => {
+    return servers.find((server) => server.id === activeServerId)?.iconUrl;
+  }, [servers, activeServerId]);
 
   useEffect(() => {
     activeServerIdRef.current = activeServerId;
@@ -178,7 +277,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 updatedUsers.push({
                   id: String(data.userId),
                   name: data.userName || fallbackName,
-                  avatar: data.userAvatar,
+                  avatar: data.userAvatar || defaultAvatar,
                 });
               }
 
@@ -219,8 +318,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                   const rawUsers = syncMap.get(String(ch.id));
                   const formattedUsers = rawUsers.map((u: any) => ({
                     id: String(u.id),
-                    name: u.displayName,
-                    avatar: u.picture,
+                    name: u.username || u.displayName,
+                    avatar: u.picture || defaultAvatar,
                   }));
                   return { ...ch, connectedUsers: formattedUsers };
                 }
@@ -358,8 +457,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   useEffect(() => {
     if (activeView === "server" && activeServerId) {
       fetchMembers();
+      fetchRoles();
     }
-  }, [activeServerId, activeView, fetchMembers]);
+  }, [activeServerId, activeView, fetchMembers, fetchRoles]);
 
   useEffect(() => {
     if (activeCall) {
@@ -447,8 +547,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 if (ch.id === c.id) {
                   users.push({
                     id: user.id,
-                    name: user.name,
-                    avatar: user.picture,
+                    name: user.username || user.name,
+                    avatar: user.picture || defaultAvatar,
                   });
                 }
                 return { ...ch, connectedUsers: users };
@@ -462,8 +562,31 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     }
   };
 
+  const handleChannelDelete = async (channel: Channel) => {
+    if (!activeServerId) return;
+
+    try {
+      if (activeCall?.roomId === channel.id) {
+        leaveRoom();
+        setInServerVoice(false);
+      }
+
+      if (activeServerChannelId === channel.id) {
+        setActiveServerChannelId(null);
+        setActiveServerChannelName("");
+        localStorage.removeItem("activeServerChannelId");
+        localStorage.removeItem("activeServerChannelName");
+      }
+
+      await api.delete(`/channels/${channel.id}`);
+      await fetchServerData(activeServerId);
+    } catch (error) {
+      console.error("Failed to delete channel", error);
+    }
+  };
+
   const handleVoiceDisconnect = () => {
-    let channelId = activeCall?.roomId;
+    const channelId = activeCall?.roomId;
     if (activeServerId && channelId && user) {
       sendOrganizationAction(activeServerId, `voice/${channelId}/leave`, {
         type: "VOICE_STATE_UPDATE",
@@ -517,6 +640,34 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     setInServerVoice(false);
     localStorage.removeItem("activeServerChannelId");
     localStorage.removeItem("activeServerChannelName");
+  };
+
+  const resetActiveServerState = () => {
+    setActiveServerId(null);
+    activeServerIdRef.current = null;
+    lastServerId.current = null;
+    setActiveServerName("");
+    setActiveServerChannelId(null);
+    setActiveServerChannelName("");
+    setServerCategories([]);
+    setInServerVoice(false);
+    localStorage.removeItem("activeServerId");
+    localStorage.removeItem("activeServerName");
+    localStorage.removeItem("activeServerChannelId");
+    localStorage.removeItem("activeServerChannelName");
+    handleViewChange("friends");
+  };
+
+  const handleServerDeleted = async () => {
+    leaveRoom();
+    await refetchServers();
+    resetActiveServerState();
+  };
+
+  const handleServerLeft = async () => {
+    leaveRoom();
+    await refetchServers();
+    resetActiveServerState();
   };
 
   const handleMobileFriendsOpenChat = async (friend: {
@@ -586,12 +737,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     activeView === "friends" || activeView === "friendsList";
 
   return (
-    <div className="min-h-dvh flex flex-col overflow-hidden relative">
+    <div className="h-dvh flex flex-col overflow-hidden relative">
       {showMobileFriendsPage ? (
         <HeaderBar type="friends" />
       ) : showMobileNotificationsPage ? (
         <HeaderBar type="notifications" />
-      ) : activeView === "server" && !showMobileServerChat ? (
+      ) : activeView === "server" &&
+        (!activeServerChannelId || inServerVoice) ? (
         <ServerHeader
           channelName={activeServerName || activeServerChannelName || "general"}
         />
@@ -604,7 +756,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       ) : (
         <HeaderBar type="friends" />
       )}
-      <div className="flex flex-1 min-h-0 overflow-y-auto md:overflow-hidden flex-row">
+      <div className="flex flex-1 min-h-0 overflow-hidden flex-row">
         <div
           className={`${showMobileMessagesPage || showMobileServerPage ? "flex" : "hidden md:flex"} w-[72px] z-30 flex-col overflow-hidden flex-shrink-0`}
         >
@@ -612,6 +764,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             onChatClick={() => handleViewChange("chat")}
             onFriendsClick={() => handleViewChange("friends")}
             onServerClick={handleServerClick}
+            servers={servers}
+            onCreateServer={createServer}
+            onJoinServer={joinServer}
           />
         </div>
         <main className="flex-1 flex flex-col p-0 pb-0 md:p-2 md:pb-0 overflow-hidden relative min-h-0">
@@ -662,12 +817,17 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 personName={`# ${activeServerChannelName}`}
                 userId={user?.id || ""}
                 channelId={activeServerChannelId || ""}
+                senderNameById={serverSenderNameById}
                 onBack={handleServerBack}
               />
             </div>
           ) : showMobileServerVoice ? (
             <div className="flex h-full min-h-0 w-full md:hidden overflow-hidden pb-24">
-              <VoiceView onLeave={handleVoiceDisconnect} />
+              <VoiceView
+                onLeave={handleVoiceDisconnect}
+                participants={voiceParticipants}
+                localParticipant={localVoiceParticipant}
+              />
             </div>
           ) : (
             <>
@@ -679,9 +839,20 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                     <ServerLeftBar
                       serverId={activeServerId || ""}
                       serverName={activeServerName}
+                      serverOwnerId={activeServerOwnerId}
+                      serverIconUrl={activeServerIconUrl}
                       categories={serverCategories}
                       activeChannelId={activeServerChannelId || ""}
                       onSelectChannel={handleChannelSelect}
+                      canManageChannels={canManageChannels}
+                      onDeleteChannel={handleChannelDelete}
+                      onServerDeleted={handleServerDeleted}
+                      onServerLeft={handleServerLeft}
+                      onChannelsChanged={async () => {
+                        if (activeServerId) {
+                          await fetchServerData(activeServerId);
+                        }
+                      }}
                     />
                   ) : (
                     <LeftBar
@@ -702,16 +873,20 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 <div
                   className={`${showMobileMessagesPage ? "hidden md:flex" : "flex"} flex-1 min-h-0 overflow-hidden`}
                 >
-                  <div className="flex-1 min-h-0">
+                  <div className="flex h-full min-h-0 w-full">
                     {activeView === "server" ? (
                       inServerVoice ? (
-                        <VoiceView onLeave={handleVoiceDisconnect} />
+                        <VoiceView
+                          onLeave={handleVoiceDisconnect}
+                          participants={voiceParticipants}
+                          localParticipant={localVoiceParticipant}
+                        />
                       ) : activeServerChannelId ? (
                         <Chat
                           personName={`# ${activeServerChannelName}`}
                           userId={user?.id || ""}
                           channelId={activeServerChannelId}
-                          hideHeader={true}
+                          senderNameById={serverSenderNameById}
                         />
                       ) : null
                     ) : isFriendsView ? (
@@ -749,10 +924,16 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                         />
                       </div>
                     ) : activeView === "voice" ? (
-                      <VoiceView onLeave={handleVoiceDisconnect} />
+                      <VoiceView
+                        onLeave={handleVoiceDisconnect}
+                        participants={voiceParticipants}
+                        localParticipant={localVoiceParticipant}
+                      />
                     ) : !activeDmChannelId ? (
-                      <div className="flex h-full items-center justify-center text-brand-beige">
-                        {t("home.selectFriendToChat")}
+                      <div className="flex h-full min-h-0 w-full flex-1 items-center justify-center text-center text-brand-beige">
+                        <div className="max-w-xs px-6">
+                          {t("home.selectFriendToChat")}
+                        </div>
                       </div>
                     ) : (
                       <Chat
@@ -826,6 +1007,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           onClose={() => setIsDmProfileOpen(false)}
         />
       )}
+      <Footer />
     </div>
   );
 };

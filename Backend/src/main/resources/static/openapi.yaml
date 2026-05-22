@@ -1130,6 +1130,11 @@ components:
         roomId:
           type: string
           format: uuid
+        invitedUserIds:
+          type: array
+          items:
+            type: string
+            format: uuid
 
     JoinOrCreateVoiceRoomResponseDto:
       type: object
@@ -1137,6 +1142,11 @@ components:
         roomId:
           type: string
           format: uuid
+        invitedUserIds:
+          type: array
+          items:
+            type: string
+            format: uuid
 
     CreateRoleDto:
       type: object

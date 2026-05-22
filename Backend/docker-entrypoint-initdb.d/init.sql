@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS organizations (
     id UUID PRIMARY KEY,
     name VARCHAR NOT NULL,
     owner_id UUID NOT NULL,
+    picture VARCHAR,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 
     FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE

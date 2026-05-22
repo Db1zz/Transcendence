@@ -18,12 +18,19 @@ import {
 import { useServerMembers } from "../hooks/useServerMembers";
 import { useAuth } from "../contexts/AuthContext";
 import { useTranslation } from "react-i18next";
+import api from "../utils/api";
+import { Button } from "./Button";
+import defaultAvatar from "../img/default.png";
 
 interface ServerSettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   serverId: string;
   serverName: string;
+  ownerId?: string;
+  serverIconUrl?: string;
+  onServerDeleted?: () => Promise<void> | void;
+  onServerLeft?: () => Promise<void> | void;
 }
 
 export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
@@ -31,6 +38,10 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
   onClose,
   serverId,
   serverName,
+  ownerId,
+  serverIconUrl,
+  onServerDeleted,
+  onServerLeft,
 }) => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<"overview" | "roles" | "members">(
@@ -43,6 +54,7 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
   const { user } = useAuth();
   const { members, fetchMembers, updateMemberRoles } =
     useServerMembers(serverId);
+  const isOwner = ownerId !== undefined && ownerId === user?.id;
 
   const [newRoleName, setNewRoleName] = useState("");
   const [newRolePermissions, setNewRolePermissions] = useState<number>(0);
@@ -50,6 +62,11 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
   const [editRoleName, setEditRoleName] = useState("");
   const [editRolePermissions, setEditRolePermissions] = useState<number>(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isUploadingPicture, setIsUploadingPicture] = useState(false);
+  const [previewIconUrl, setPreviewIconUrl] = useState<string | undefined>(
+    serverIconUrl,
+  );
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -57,8 +74,9 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
       fetchRoles();
       fetchMembers();
       setErrorMessage(null);
+      setPreviewIconUrl(serverIconUrl);
     }
-  }, [isOpen, fetchRoles, fetchMembers]);
+  }, [isOpen, fetchRoles, fetchMembers, serverIconUrl]);
 
   const myMemberProfile = members.find((m) => m.user.id === user?.id);
 
@@ -107,6 +125,96 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
       setErrorMessage(
         err.response?.data?.error || t("serverSettings.errors.updateFailed"),
       );
+    }
+  };
+
+  const handleUploadServerPicture = async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await api.post(
+      `/organizations/${serverId}/picture`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      },
+    );
+
+    const pictureUrl = response?.data?.url;
+    if (!pictureUrl || typeof pictureUrl !== "string") {
+      throw new Error("Failed to upload picture");
+    }
+
+    setPreviewIconUrl(pictureUrl);
+    return pictureUrl;
+  };
+
+  const triggerPictureUpload = () => {
+    fileInputRef.current?.click();
+  };
+
+  const onPictureFileSelected = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    setIsUploadingPicture(true);
+    setErrorMessage(null);
+    try {
+      await handleUploadServerPicture(file);
+    } catch (err: any) {
+      setErrorMessage(
+        err?.response?.data?.error ||
+          err.message ||
+          "Failed to upload picture.",
+      );
+    } finally {
+      setIsUploadingPicture(false);
+    }
+  };
+
+  const handleDeleteServer = async () => {
+    if (!window.confirm(`Delete ${serverName}? This cannot be undone.`)) {
+      return;
+    }
+
+    setErrorMessage(null);
+
+    try {
+      await api.delete(`/organizations/${serverId}`);
+      await onServerDeleted?.();
+      onClose();
+    } catch (err: any) {
+      setErrorMessage(err.response?.data?.error || "Failed to delete server.");
+    }
+  };
+
+  const handleLeaveServer = async () => {
+    const myMemberProfile = members.find(
+      (member) => member.user.id === user?.id,
+    );
+
+    if (!myMemberProfile) {
+      setErrorMessage("You are not a member of this server.");
+      return;
+    }
+
+    if (!window.confirm(`Leave ${serverName}?`)) {
+      return;
+    }
+
+    setErrorMessage(null);
+
+    try {
+      await api.delete(`/members/${myMemberProfile.id}`);
+      await onServerLeft?.();
+      onClose();
+    } catch (err: any) {
+      setErrorMessage(err.response?.data?.error || "Failed to leave server.");
     }
   };
 
@@ -168,13 +276,84 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
             )}
 
             {activeTab === "overview" && (
-              <div className="animate-in fade-in">
+              <div className="animate-in fade-in flex h-full flex-col">
                 <h2 className="text-3xl font-extrabold text-brand-green mb-6">
                   {t("serverSettings.overview.title")}
                 </h2>
                 <p className="text-gray-600 text-lg">
                   {t("serverSettings.overview.description", { name: serverName })}
                 </p>
+                <div className="mt-auto pt-10">
+                  {isOwner && (
+                    <div className="mb-5 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+                      <div className="flex items-center gap-4">
+                        <img
+                          src={previewIconUrl || defaultAvatar}
+                          alt={`${serverName} icon`}
+                          className="h-20 w-20 rounded-2xl border border-gray-300 object-cover bg-gray-50"
+                          onError={(event) => {
+                            event.currentTarget.src = defaultAvatar;
+                          }}
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-bold text-gray-800">
+                            Server Picture
+                          </p>
+                          <p className="mt-1 text-sm text-gray-600">
+                            Upload an image for this server.
+                          </p>
+                          <div className="mt-3 flex flex-wrap items-center gap-3">
+                            <Button
+                              type="button"
+                              onClick={triggerPictureUpload}
+                              color="bg-brand-green"
+                              className="px-4 py-2.5"
+                              disabled={isUploadingPicture}
+                            >
+                              {isUploadingPicture
+                                ? "Uploading..."
+                                : "Upload Picture"}
+                            </Button>
+                            <input
+                              ref={fileInputRef}
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={onPictureFileSelected}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  {isOwner ? (
+                    <div className="rounded-xl border border-red-200 bg-red-50 p-5 shadow-sm">
+                      <p className="text-sm text-red-700/80 mb-4">
+                        You are an owner so you can delete this server for
+                        everyone.
+                      </p>
+                      <Button
+                        type="button"
+                        onClick={handleDeleteServer}
+                        color="bg-red-600"
+                        className="px-4 py-2.5"
+                      >
+                        <Trash2 size={16} />
+                        Delete Server
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      onClick={handleLeaveServer}
+                      color="bg-brand-brick"
+                      className="px-4 py-2.5"
+                    >
+                      <X size={16} />
+                      Leave Server
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
             {activeTab === "roles" && canManageRoles && (

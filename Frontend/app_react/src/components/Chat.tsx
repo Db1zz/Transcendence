@@ -8,6 +8,7 @@ interface ChatProps {
   personName: string;
   userId: string;
   channelId: string;
+  senderNameById?: Record<string, string>;
   onSendMessage?: (message: string) => void;
   onBack?: () => void;
   onPersonNameClick?: () => void;
@@ -18,6 +19,7 @@ const Chat: React.FC<ChatProps> = ({
   personName,
   userId,
   channelId,
+  senderNameById,
   onSendMessage,
   onBack,
   onPersonNameClick,
@@ -77,30 +79,40 @@ const Chat: React.FC<ChatProps> = ({
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
+  const getSenderLabel = (senderId: string) => {
+    if (senderId === userId) {
+      return t("voice.you");
+    }
+
+    return (
+      senderNameById?.[senderId] ||
+      (!personName.startsWith("#") ? personName : undefined) ||
+      `User ${senderId.slice(0, 8)}`
+    );
+  };
+
   return (
     <div className="flex flex-col h-full min-h-0 w-full bg-brand-green">
       {!hideHeader && (
-        <div className="bg-brand-peach border-y border-brand-green text-white p-3 sm:p-4 shadow-md">
-          <div className="flex items-start gap-3">
-            {onBack && (
-              <BackButton onClick={onBack} className="md:hidden mt-0.5" />
-            )}
+        <div className="bg-brand-peach border-y border-brand-green text-white px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-2 shadow-md">
+          <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
+            {onBack && <BackButton onClick={onBack} className="md:hidden" />}
             <div className="min-w-0 flex-1">
               {onPersonNameClick ? (
                 <button
                   type="button"
                   onClick={onPersonNameClick}
-                  className="text-left text-lg sm:text-xl font-bold truncate hover:underline focus:outline-none focus:underline"
+                  className="text-left text-sm sm:text-base md:text-lg font-bold truncate hover:underline focus:outline-none focus:underline"
                 >
                   {personName}
                 </button>
               ) : (
-                <h2 className="text-lg sm:text-xl font-bold truncate">
+                <h2 className="text-sm sm:text-base md:text-lg font-bold truncate">
                   {personName}
                 </h2>
               )}
               <p
-                className={`text-sm ${connected ? "text-green-100" : "text-red-100"}`}
+                className={`text-[10px] sm:text-xs leading-none ${connected ? "text-green-100" : "text-red-100"}`}
               >
                 {connected ? t("chat.connected") : t("chat.connecting")}
               </p>
@@ -128,22 +140,29 @@ const Chat: React.FC<ChatProps> = ({
             }`}
           >
             <div
-              className={`max-w-[85%] sm:max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                message.senderId === userId
-                  ? "bg-brand-beige text-gray-600 rounded-br-none"
-                  : "bg-brand-peach text-white rounded-bl-none"
-              }`}
+              className={`flex flex-col ${message.senderId === userId ? "items-end" : "items-start"} max-w-[85%] sm:max-w-xs lg:max-w-md`}
             >
-              <p className="break-words">{message.content}</p>
-              <p
-                className={`text-xs mt-1 ${
+              <span className="text-[10px] font-bold text-brand-beige/80 mb-0.5 px-1 uppercase tracking-wider font-ananias">
+                {getSenderLabel(message.senderId)}
+              </span>
+              <div
+                className={`w-full px-4 py-2 rounded-lg ${
                   message.senderId === userId
-                    ? "text-brand-green"
-                    : "text-gray-500"
+                    ? "bg-brand-beige text-gray-600 rounded-br-none"
+                    : "bg-brand-peach text-white rounded-bl-none"
                 }`}
               >
-                {formatTime(new Date(message.createdAt))}
-              </p>
+                <p className="break-words">{message.content}</p>
+                <p
+                  className={`text-xs mt-1 ${
+                    message.senderId === userId
+                      ? "text-brand-green"
+                      : "text-gray-500"
+                  }`}
+                >
+                  {formatTime(new Date(message.createdAt))}
+                </p>
+              </div>
             </div>
           </div>
         ))}

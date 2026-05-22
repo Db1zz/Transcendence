@@ -11,4 +11,5 @@ import java.util.UUID;
 public interface OrganizationInviteRepository extends JpaRepository<OrganizationInviteEntity, String> {
     Optional<OrganizationInviteEntity> findFirstByOrganizationIdAndCreatorIdAndExpiresAtAfter(UUID organizationId, UUID creatorId, Instant now);
     void deleteByExpiresAtBefore(Instant now);
+    void deleteByOrganizationId(UUID organizationId);
 }
