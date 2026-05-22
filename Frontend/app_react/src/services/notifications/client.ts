@@ -13,7 +13,7 @@ export class NotifyClient {
 
   public async fetchOfflineNotifications(token: string): Promise<any[]> {
     try {
-      const response = await fetch(`https://localhost/notification`, {
+      const response = await fetch(`/notify`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -36,7 +36,7 @@ export class NotifyClient {
     if (notificationIds.length === 0) return true;
 
     try {
-      const response = await fetch(`https://localhost/notification/read`, {
+      const response = await fetch(`/notify/read`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -57,7 +57,7 @@ export class NotifyClient {
     }
 
     try {
-      const res = await api.get<{ token: string }>("https://localhost/notification/token");
+      const res = await api.get<{ token: string }>("/notification/token");
       const token = res.data.token;
 
       this.ws = new WebSocket(this.notifyWsAddr);

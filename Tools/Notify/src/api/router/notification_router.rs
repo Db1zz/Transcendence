@@ -40,8 +40,8 @@ impl NotificationRouter {
             .allow_headers([header::AUTHORIZATION, header::CONTENT_TYPE]);
 
         let router = Router::new()
-            .route("/notification", get(Self::get_notifications))
-            .route("/notification/read", post(Self::mark_as_read))
+            .route("/notify", get(Self::get_notifications))
+            .route("/notify/read", post(Self::mark_as_read))
             .layer(axum::middleware::from_fn(Self::auth_middleware))
             .layer(cors)
             .with_state(user_notifications);
