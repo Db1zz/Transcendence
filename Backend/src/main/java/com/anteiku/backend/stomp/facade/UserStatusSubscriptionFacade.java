@@ -26,8 +26,16 @@ public class UserStatusSubscriptionFacade {
         userStatusRegistryService.subscribe(userId, friends);
         List<UUID> onlineFriends = userStatusRegistryService.getMyOnlineSubs(userId);
 
+<<<<<<< Updated upstream
         for (UUID friendId : onlineFriends) {
             log.info("Friend with Id: {} is online!", friendId);
+=======
+        if (subscriberIds == null || subscriberIds.isEmpty()) {
+            return;
+        }
+
+        for (UUID subscriberId : subscriberIds) {
+>>>>>>> Stashed changes
             statusNotificationGateway.send(
                     userId,
                     String.format("{\"userId\":\"%s\", \"status\":\"online\"}", friendId)

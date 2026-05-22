@@ -144,7 +144,15 @@ impl ClientsManager {
     pub async fn listen(&self) {
         loop {
             let (tcp_socket, client_addr) = self.listener.accept().await.unwrap();
-            let ws_stream = accept_async(tcp_socket).await.expect("Handshake failed");
+
+            let ws_stream = match accept_async(tcp_socket).await {
+                Ok(ws) => ws,
+                Err(err) => {
+                    error!("Handshake failed safely: {}", err);
+                    continue;
+                }
+            };
+            
             let connected_clients = self.connected_clients.clone();
             let jwt_secret = self.jwt_secret.clone();
 

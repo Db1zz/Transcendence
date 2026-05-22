@@ -1,4 +1,7 @@
 services:
+  nginx:
+    depends_on:
+      - notify
   kafka:
     image: confluentinc/cp-kafka:latest
     ports:

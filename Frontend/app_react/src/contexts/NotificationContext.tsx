@@ -33,10 +33,11 @@ const NotificationContext = createContext<NotificationContextType | undefined>(
 
 export function NotificationProvider({
   children,
-  notifyServerAddr,
+  notifyWsAddr,
+  
 }: {
   children: React.ReactNode;
-  notifyServerAddr: string;
+  notifyWsAddr: string;
 }) {
   const { user } = useAuth();
 
@@ -50,8 +51,8 @@ export function NotificationProvider({
 
   const client = useMemo(() => {
     if (!user?.id) return undefined;
-    return new NotifyClient(notifyServerAddr);
-  }, [notifyServerAddr, user?.id]);
+    return new NotifyClient(notifyWsAddr);
+  }, [notifyWsAddr, user?.id]);
 
   const parsePayload = (payload: unknown) => {
     if (typeof payload !== "string") return payload;
