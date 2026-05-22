@@ -26,30 +26,29 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     final private SecurityProperties securityProperties;
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)  throws IOException, ServletException {
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
-
-        log.info("Login successful");
-
         UserSessionDto userSessionDto = userSessionsService.createNewSession(oAuth2User.getAttribute("email"));
 
-        Cookie accessCookie = new Cookie(TokenNames.ACCESS_TOKEN, userSessionDto.getAccessToken());
-        accessCookie.setHttpOnly(true);
-        accessCookie.setSecure(false);
-        accessCookie.setMaxAge((int)Duration.ofDays(securityProperties.getAccessTokenExpirationPeriod()).toSeconds());
-        accessCookie.setPath("/");
+        org.springframework.http.ResponseCookie accessCookie = org.springframework.http.ResponseCookie.from(TokenNames.ACCESS_TOKEN, userSessionDto.getAccessToken())
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(Duration.ofDays(securityProperties.getAccessTokenExpirationPeriod()))
+                .sameSite("Lax")
+                .build();
 
-        Cookie refreshCookie = new Cookie(TokenNames.REFRESH_TOKEN, userSessionDto.getRefreshToken());
-        refreshCookie.setHttpOnly(true);
-        refreshCookie.setSecure(false);
-        refreshCookie.setMaxAge((int)Duration.ofDays(securityProperties.getRefreshTokenExpirationPeriod()).toSeconds());
-        refreshCookie.setPath("/api/auth/refresh");
+        org.springframework.http.ResponseCookie refreshCookie = org.springframework.http.ResponseCookie.from(TokenNames.REFRESH_TOKEN, userSessionDto.getRefreshToken())
+                .httpOnly(true)
+                .secure(true)
+                .path("/api/auth/refresh")
+                .maxAge(Duration.ofDays(securityProperties.getRefreshTokenExpirationPeriod()))
+                .sameSite("Lax")
+                .build();
 
-        response.addCookie(accessCookie);
-        response.addCookie(refreshCookie);
-        response.setStatus(HttpServletResponse.SC_OK);
+        response.addHeader(org.springframework.http.HttpHeaders.SET_COOKIE, accessCookie.toString());
+        response.addHeader(org.springframework.http.HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
-        final String redirectUri = "http://localhost:3000/";
-        response.sendRedirect(redirectUri);
+        response.sendRedirect("https://localhost/");
     }
 }

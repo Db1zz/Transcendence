@@ -30,6 +30,10 @@ public class VoiceService {
     }
 
     public void inviteUsersToVoiceRoom(UUID roomId, List<UUID> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return;
+        }
+
         UUID userId = SecurityUtils.getCurrentUserId();
         if (!roomSessions.containsKey(roomId)) {
             throw new ResourceNotFoundException("Room with id " + roomId + " not found");
@@ -52,6 +56,9 @@ public class VoiceService {
 
         Map<UUID, UserPublicDto> participants = roomSessions.computeIfAbsent(roomId, k -> new ConcurrentHashMap<>());
         participants.put(userId, userPublicDto);
+
+        List<UUID> invitedUsers = Objects.requireNonNullElse(dto.getInvitedUserIds(), Collections.emptyList());
+        inviteUsersToVoiceRoom(roomId, invitedUsers);
 
         response.setRoomId(roomId);
         return response;

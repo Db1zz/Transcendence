@@ -36,7 +36,7 @@ const SignupPage: React.FC = () => {
 
     try {
       const response = await axios.get(
-        `http://localhost:8080/api/users/check-email?email=${encodeURIComponent(emailToCheck)}`,
+        `https://localhost/api/users/check-email?email=${encodeURIComponent(emailToCheck)}`,
       );
       setEmailValidation(response.data ? "available" : "taken");
     } catch (error) {
@@ -55,7 +55,7 @@ const SignupPage: React.FC = () => {
 
     try {
       const response = await axios.get(
-        `http://localhost:8080/api/users/check-username?username=${encodeURIComponent(usernameToCheck)}`,
+        `https://localhost/api/users/check-username?username=${encodeURIComponent(usernameToCheck)}`,
       );
       setUsernameValidation(response.data ? "available" : "taken");
     } catch (error) {
@@ -125,7 +125,7 @@ const SignupPage: React.FC = () => {
     setLoading(true);
 
     try {
-      await axios.post("http://localhost:8080/api/users/register", {
+      await axios.post("https://localhost/api/users/register", {
         username,
         email,
         password,

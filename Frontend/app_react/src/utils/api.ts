@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:8080/api",
+  baseURL: "https://localhost/api",
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
@@ -9,13 +9,11 @@ const api = axios.create({
 });
 
 api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   async (error) => {
     const originalReq = error.config;
 
-    if (originalReq.url === "/auth/refresh") {
+    if (originalReq.url.includes("/auth/refresh")) {
       return Promise.reject(error);
     }
 
@@ -23,17 +21,12 @@ api.interceptors.response.use(
       originalReq._retry = true;
 
       try {
-        await axios.post(
-          "http://localhost:8080/api/auth/refresh",
-          {},
-          { withCredentials: true },
-        );
+        await api.post("/auth/refresh", {});
         return api(originalReq);
       } catch (refreshError) {
         console.error("Refresh token expired");
         localStorage.removeItem("user");
-        const currentPath = window.location.pathname;
-        if (currentPath !== "/login" && currentPath !== "/signup") {
+        if (window.location.pathname !== "/login" && window.location.pathname !== "/signup") {
           window.location.href = "/login";
         }
         return Promise.reject(refreshError);

@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -20,6 +21,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.config.Customizer;
 
 
 @Configuration
@@ -36,8 +38,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationConfiguration authenticationConfiguration, UserService userService, JwtService jwtService) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // check if it works with oauth2
-                .cors(cors -> cors.configurationSource(new CorsConfig().corsConfigurationSource()))
+                .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers("/v3/api-docs",
                                 "/swagger-resources/**",
@@ -55,7 +56,9 @@ public class SecurityConfig {
                                 "/api/users/public/**",
                                 "/api/voice",
                                 "/socket",
-                                "/api/auth/refresh"
+                                "/api/auth/refresh",
+                                "/api",
+                                "/api/"
                         ).permitAll()
                         .anyRequest().authenticated())
 
@@ -66,7 +69,7 @@ public class SecurityConfig {
                         .successHandler(oAuth2AuthenticationSuccessHandler))
 
                 .logout(logout -> logout
-                        .logoutSuccessUrl("http://localhost:3000/login")
+                        .logoutSuccessUrl("https://localhost/login")
                         .addLogoutHandler(new SessionLogoutHandler(sessionService, this.jwtService))
                         .invalidateHttpSession(true)
                         .clearAuthentication(true)
@@ -75,10 +78,14 @@ public class SecurityConfig {
 
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint((req, response, authException) -> {
-                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                            System.out.printf("SECURITY ALERT: Unauthorized request to path '" + req.getRequestURI() +  "'. Reason: " + authException.getMessage() + "\n",
+                                    req.getRequestURI(), authException.getMessage());
+                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
                         })
                         .accessDeniedHandler((req, response, accessDeniedException) -> {
-                            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                            System.out.printf("SECURITY ALERT: Access denied to path '%s'. Recason: %s\n",
+                                    req.getRequestURI(), accessDeniedException.getMessage());
+                            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden");
                         }))
          .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
