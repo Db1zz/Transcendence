@@ -2,32 +2,37 @@
 
 import React, { useState } from "react";
 import { MessageSquare, Plus } from "lucide-react";
-import { useServers } from "../../hooks/useServers";
+import type { Organization } from "../../hooks/useServers";
 import { CreateServerPopup } from "../CreateServerPopup";
 
 interface NavigationSidebarProps {
   onChatClick: () => void;
   onFriendsClick: () => void;
   onServerClick: (serverId: string, serverName: string) => void;
+  servers: Organization[];
+  onCreateServer: (name: string) => Promise<Organization | void>;
+  onJoinServer: (code: string) => Promise<Organization | void>;
 }
 
 export const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
   onChatClick,
   onFriendsClick,
   onServerClick,
+  servers,
+  onCreateServer,
+  onJoinServer,
 }) => {
-  const { servers, createServer, joinServer } = useServers();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
 
   const handleCreateServer = async (name: string) => {
-    const newServer = await createServer(name);
+    const newServer = await onCreateServer(name);
     if (newServer) {
       onServerClick(newServer.id, newServer.name);
     }
   };
 
   const handleJoinServer = async (code: string) => {
-    const joinedServer = await joinServer(code);
+    const joinedServer = await onJoinServer(code);
     if (joinedServer) {
       onServerClick(joinedServer.id, joinedServer.name);
     }
