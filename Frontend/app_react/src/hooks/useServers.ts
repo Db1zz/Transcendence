@@ -5,6 +5,7 @@ export interface Organization {
   id: string;
   name: string;
   iconUrl?: string;
+  ownerId?: string;
 }
 
 export const useServers = () => {
