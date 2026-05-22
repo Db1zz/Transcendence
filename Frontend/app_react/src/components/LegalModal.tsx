@@ -85,15 +85,16 @@ export const LegalModal: React.FC<LegalModalProps> = ({
                 <Section title="1. Information We Collect">
                   <p>
                     We collect information you provide directly to us when you
-                    create an account, such as your username, display name, email
-                    address, and profile picture. We also collect content you
-                    submit through the platform, including messages, posts, and
-                    any files you upload.
+                    create an account, such as your username, display name,
+                    email address, and profile picture. We also collect content
+                    you submit through the platform, including messages, posts,
+                    and any files you upload.
                   </p>
                   <p className="mt-2">
                     We automatically collect certain technical information when
-                    you use our service, including your IP address, browser type,
-                    operating system, referring URLs, and device identifiers.
+                    you use our service, including your IP address, browser
+                    type, operating system, referring URLs, and device
+                    identifiers.
                   </p>
                 </Section>
 
@@ -122,8 +123,8 @@ export const LegalModal: React.FC<LegalModalProps> = ({
                 <Section title="3. Information Sharing">
                   <p>
                     We do not sell, trade, or rent your personal information to
-                    third parties. We may share your information in the following
-                    limited circumstances:
+                    third parties. We may share your information in the
+                    following limited circumstances:
                   </p>
                   <ul className="mt-2 space-y-1.5 ml-4">
                     {[
@@ -147,10 +148,10 @@ export const LegalModal: React.FC<LegalModalProps> = ({
                   <p>
                     We retain your personal data for as long as your account is
                     active or as needed to provide you services. You may request
-                    deletion of your account and associated data at any time. Some
-                    information may be retained for legal compliance or legitimate
-                    business purposes for a period not exceeding 90 days after
-                    account deletion.
+                    deletion of your account and associated data at any time.
+                    Some information may be retained for legal compliance or
+                    legitimate business purposes for a period not exceeding 90
+                    days after account deletion.
                   </p>
                 </Section>
 
@@ -158,8 +159,8 @@ export const LegalModal: React.FC<LegalModalProps> = ({
                   <p>
                     We use cookies and similar tracking technologies to maintain
                     your session, remember your preferences, and analyze how you
-                    use our platform. You can control cookies through your browser
-                    settings, though disabling them may affect platform
+                    use our platform. You can control cookies through your
+                    browser settings, though disabling them may affect platform
                     functionality.
                   </p>
                 </Section>
@@ -168,9 +169,9 @@ export const LegalModal: React.FC<LegalModalProps> = ({
                   <p>
                     We implement industry-standard security measures including
                     encryption in transit (TLS), hashed password storage, and
-                    access controls to protect your personal information. However,
-                    no method of transmission over the Internet is 100% secure,
-                    and we cannot guarantee absolute security.
+                    access controls to protect your personal information.
+                    However, no method of transmission over the Internet is 100%
+                    secure, and we cannot guarantee absolute security.
                   </p>
                 </Section>
 
@@ -217,9 +218,9 @@ export const LegalModal: React.FC<LegalModalProps> = ({
                   <p>
                     By accessing or using our platform, you agree to be bound by
                     these Terms of Service. If you do not agree to these terms,
-                    please do not use the service. We reserve the right to modify
-                    these terms at any time, and your continued use constitutes
-                    acceptance of the updated terms.
+                    please do not use the service. We reserve the right to
+                    modify these terms at any time, and your continued use
+                    constitutes acceptance of the updated terms.
                   </p>
                 </Section>
 
@@ -272,10 +273,10 @@ export const LegalModal: React.FC<LegalModalProps> = ({
                 <Section title="5. Content Ownership">
                   <p>
                     You retain ownership of content you create and post on the
-                    platform. By submitting content, you grant us a non-exclusive,
-                    worldwide, royalty-free license to use, display, and
-                    distribute that content solely for the purpose of operating
-                    the service.
+                    platform. By submitting content, you grant us a
+                    non-exclusive, worldwide, royalty-free license to use,
+                    display, and distribute that content solely for the purpose
+                    of operating the service.
                   </p>
                   <p className="mt-2">
                     You are solely responsible for the content you post. We do
@@ -307,27 +308,27 @@ export const LegalModal: React.FC<LegalModalProps> = ({
                   <p>
                     The service is provided "as is" without warranties of any
                     kind. We do not guarantee that the service will be
-                    uninterrupted, error-free, or free of harmful components. Your
-                    use of the service is at your own risk.
+                    uninterrupted, error-free, or free of harmful components.
+                    Your use of the service is at your own risk.
                   </p>
                 </Section>
 
                 <Section title="9. Limitation of Liability">
                   <p>
-                    To the maximum extent permitted by law, we shall not be liable
-                    for any indirect, incidental, special, or consequential
-                    damages arising from your use or inability to use the service,
-                    even if we have been advised of the possibility of such
-                    damages.
+                    To the maximum extent permitted by law, we shall not be
+                    liable for any indirect, incidental, special, or
+                    consequential damages arising from your use or inability to
+                    use the service, even if we have been advised of the
+                    possibility of such damages.
                   </p>
                 </Section>
 
                 <Section title="10. Governing Law">
                   <p>
                     These Terms shall be governed by and construed in accordance
-                    with applicable laws. Any disputes arising from these Terms or
-                    the service shall be resolved through binding arbitration or
-                    in the courts of competent jurisdiction.
+                    with applicable laws. Any disputes arising from these Terms
+                    or the service shall be resolved through binding arbitration
+                    or in the courts of competent jurisdiction.
                   </p>
                 </Section>
 

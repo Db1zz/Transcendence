@@ -1007,7 +1007,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           onClose={() => setIsDmProfileOpen(false)}
         />
       )}
-	  <Footer />
+      <Footer />
     </div>
   );
 };
