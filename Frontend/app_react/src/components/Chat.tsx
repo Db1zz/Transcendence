@@ -125,23 +125,32 @@ const Chat: React.FC<ChatProps> = ({
               message.senderId === userId ? "justify-end" : "justify-start"
             }`}
           >
-            <div
-              className={`max-w-[85%] sm:max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                message.senderId === userId
-                  ? "bg-brand-beige text-gray-600 rounded-br-none"
-                  : "bg-brand-peach text-white rounded-bl-none"
-              }`}
-            >
-              <p className="break-words">{message.content}</p>
-              <p
-                className={`text-xs mt-1 ${
+            <div className={`flex flex-col ${message.senderId === userId ? "items-end" : "items-start"} max-w-[85%] sm:max-w-xs lg:max-w-md`}>
+              <span className="text-[10px] font-bold text-brand-beige/80 mb-0.5 px-1 uppercase tracking-wider font-ananias">
+                {message.senderId === userId
+                  ? t("voice.you")
+                  : personName.startsWith("#")
+                    ? `User ${message.senderId.slice(0, 8)}`
+                    : personName}
+              </span>
+              <div
+                className={`w-full px-4 py-2 rounded-lg ${
                   message.senderId === userId
-                    ? "text-brand-green"
-                    : "text-gray-500"
+                    ? "bg-brand-beige text-gray-600 rounded-br-none"
+                    : "bg-brand-peach text-white rounded-bl-none"
                 }`}
               >
-                {formatTime(new Date(message.createdAt))}
-              </p>
+                <p className="break-words">{message.content}</p>
+                <p
+                  className={`text-xs mt-1 ${
+                    message.senderId === userId
+                      ? "text-brand-green"
+                      : "text-gray-500"
+                  }`}
+                >
+                  {formatTime(new Date(message.createdAt))}
+                </p>
+              </div>
             </div>
           </div>
         ))}
