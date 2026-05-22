@@ -12,7 +12,7 @@ class SocketService {
       }
 
       this.client = new Client({
-        brokerURL: "https://localhost/ws",
+        brokerURL: "wss://localhost/ws/",
         heartbeatIncoming: 10000,
         heartbeatOutgoing: 10000,
 
