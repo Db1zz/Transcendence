@@ -76,6 +76,7 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
 
 	const [settingsModalOpen, setSettingsModalOpen] = useState(false);
 	const [createTextChannelOpen, setCreateTextChannelOpen] = useState(false);
+	const [createVoiceChannelOpen, setCreateVoiceChannelOpen] = useState(false);
 
 	const handleCreateChannel = async (
 		channelType: ChannelType,
@@ -106,12 +107,7 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
 
 	const handleCreateChannelClick = (channelType: ChannelType) => {
 		if (channelType === "voice") {
-			const channelName = window.prompt("Enter a name for the voice channel");
-			if (!channelName?.trim()) return;
-
-			void handleCreateChannel("voice", channelName.trim()).catch((error) => {
-				console.error("Failed to create voice channel:", error);
-			});
+			setCreateVoiceChannelOpen(true);
 			return;
 		}
 
@@ -400,6 +396,14 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
 				placeholder="general"
 				onClose={() => setCreateTextChannelOpen(false)}
 				onCreate={(name) => handleCreateChannel("text", name)}
+			/>
+			<CreateChannelModal
+				isOpen={createVoiceChannelOpen}
+				title="Create Voice Channel"
+				description="Choose a name for the new voice channel."
+				placeholder="voice-room"
+				onClose={() => setCreateVoiceChannelOpen(false)}
+				onCreate={(name) => handleCreateChannel("voice", name)}
 			/>
 		</>
 	);
