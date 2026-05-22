@@ -1,6 +1,7 @@
 import React from "react";
 import { Home, Bell, Users } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 
 const StatusColors: Record<string, string> = {
   online: "bg-green-500",
@@ -35,6 +36,7 @@ export const MobileNavBar: React.FC<MobileNavBarProps> = ({
   onMainClick,
   onYouClick,
 }) => {
+  const { t } = useTranslation();
   const { user } = useAuth();
 
   const handleMain = () => {
@@ -69,43 +71,43 @@ export const MobileNavBar: React.FC<MobileNavBarProps> = ({
         <button
           onClick={handleMain}
           className={`${btnBase} ${mainActive ? "bg-brand-brick text-brand-beige" : "text-brand-beige hover:bg-white/5"}`}
-          aria-label="Main"
+          aria-label={t("mobileNavBar.main", "main")}
         >
           <Home
             size={20}
             className={`${mainActive ? "text-brand-beige" : "text-brand-beige"}`}
           />
-          <span className="text-[10px]">main</span>
+          <span className="text-[10px]">{t("mobileNavBar.main", "main")}</span>
         </button>
 
         <button
           onClick={handleFriends}
           className={`${btnBase} ${friendsActive ? "bg-brand-brick text-brand-beige" : "text-brand-beige hover:bg-white/5"}`}
-          aria-label="Friends"
+          aria-label={t("mobileNavBar.friends", "friends")}
         >
           <Users
             size={20}
             className={`${friendsActive ? "text-brand-beige" : "text-brand-beige"}`}
           />
-          <span className="text-[10px]">friends</span>
+          <span className="text-[10px]">{t("mobileNavBar.friends", "friends")}</span>
         </button>
 
         <button
           onClick={handleNotifications}
           className={`${btnBase} ${notifActive ? "bg-brand-brick text-brand-beige" : "text-brand-beige hover:bg-white/5"}`}
-          aria-label="Notifications"
+          aria-label={t("mobileNavBar.notifications", "notifications")}
         >
           <Bell
             size={20}
             className={`${notifActive ? "text-brand-beige" : "text-brand-beige"}`}
           />
-          <span className="text-[10px]">notifications</span>
+          <span className="text-[10px]">{t("mobileNavBar.notifications", "notifications")}</span>
         </button>
 
         <button
           onClick={handleYou}
           className={`${btnBase} ${youActive ? "bg-brand-brick text-brand-beige" : "text-brand-beige hover:bg-white/5"}`}
-          aria-label="You"
+          aria-label={t("mobileNavBar.you", "you")}
         >
           <div className="relative">
             <div
@@ -124,7 +126,7 @@ export const MobileNavBar: React.FC<MobileNavBarProps> = ({
               }`}
             />
           </div>
-          <span className="text-[10px]">you</span>
+          <span className="text-[10px]">{t("mobileNavBar.you", "you")}</span>
         </button>
       </div>
     </div>

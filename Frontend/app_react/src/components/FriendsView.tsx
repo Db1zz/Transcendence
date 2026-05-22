@@ -4,7 +4,6 @@ import { AddFriendView } from "./AddFriendView";
 import { FriendsList } from "./FriendsList";
 import { useFriends } from "../hooks/useFriends";
 import { useCall } from "../hooks/useCall";
-import { useUserStatuses } from "../hooks/useUserStatuses";
 import { useAuth } from "../contexts/AuthContext";
 
 export type FriendsTab = "online" | "all" | "pending" | "blocked" | "add";
@@ -35,7 +34,6 @@ export const FriendsView: React.FC<FriendsViewProps> = ({
   const [searchQuery, setSearchQuery] = useState("");
 
   const { user } = useAuth();
-  // const { statuses } = useUserStatuses(user?.id ?? "");
   const { joinOrCreateRoom } = useCall();
 
   const {
