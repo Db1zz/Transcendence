@@ -29,6 +29,8 @@ import { useOrganizationEvents } from "../hooks/useOrganizationEvents";
 import { useUserStatuses } from "../hooks/useUserStatuses";
 import { useServerMembers } from "../hooks/useServerMembers";
 import { useFriends } from "../hooks/useFriends";
+import { useRoles } from "../hooks/useRoles";
+import { usePermissions, PERMISSION_FLAGS } from "../hooks/usePermissions";
 import type { VoiceParticipant } from "./VoiceView";
 import MobileNavBar from "./MobileNavBar";
 import { ProfilePopup } from "./ProfilePopup";
@@ -73,8 +75,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 	const { t } = useTranslation();
 	const { user, loading } = useAuth();
 	const { incomingCall, setIncomingCall } = useNotifications();
-	const { activeCall, joinOrCreateRoom, joinVoiceChannel } = useCall();
+	const { activeCall, joinOrCreateRoom, joinVoiceChannel, leaveRoom } =
+		useCall();
 	const { statuses } = useUserStatuses(user?.id ?? "");
+	const { hasPermission } = usePermissions();
 
 	const [activeView, setActiveView] = useState<
 		"friends" | "chat" | "voice" | "server" | "friendsList" | "notifications"
@@ -113,6 +117,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 	const { members: rawServerMembers, fetchMembers } = useServerMembers(
 		activeView === "server" ? activeServerId : null,
 	);
+	const { roles: serverRoles, fetchRoles } = useRoles(activeServerId || "");
 	const { friends: rawFriends } = useFriends();
 
 	const serverMembersMapped: Member[] = rawServerMembers.map((m) => ({
@@ -131,6 +136,24 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 			return acc;
 		}, {});
 	}, [rawServerMembers]);
+
+	const myMemberProfile = useMemo(() => {
+		if (!user) return null;
+		return rawServerMembers.find((member) => member.user.id === user.id) || null;
+	}, [rawServerMembers, user]);
+
+	const myTotalPermissions = useMemo(() => {
+		if (!myMemberProfile) return 0;
+		return myMemberProfile.roles.reduce((acc, roleId) => {
+			const role = serverRoles.find((r) => r.id === roleId);
+			return acc | (role ? role.permissions : 0);
+		}, 0);
+	}, [myMemberProfile, serverRoles]);
+
+	const canManageChannels = hasPermission(
+		myTotalPermissions,
+		PERMISSION_FLAGS.MANAGE_CHANNELS,
+	);
 
 	const activeFriendsMapped: Member[] = rawFriends
 		.filter((f) => f.isFriend === "friend")
@@ -411,8 +434,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 	useEffect(() => {
 		if (activeView === "server" && activeServerId) {
 			fetchMembers();
+			fetchRoles();
 		}
-	}, [activeServerId, activeView, fetchMembers]);
+	}, [activeServerId, activeView, fetchMembers, fetchRoles]);
 
 	useEffect(() => {
 		if (activeCall) {
@@ -512,6 +536,29 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 			}
 		} else {
 			setInServerVoice(false);
+		}
+	};
+
+	const handleChannelDelete = async (channel: Channel) => {
+		if (!activeServerId) return;
+
+		try {
+			if (activeCall?.roomId === channel.id) {
+				leaveRoom();
+				setInServerVoice(false);
+			}
+
+			if (activeServerChannelId === channel.id) {
+				setActiveServerChannelId(null);
+				setActiveServerChannelName("");
+				localStorage.removeItem("activeServerChannelId");
+				localStorage.removeItem("activeServerChannelName");
+			}
+
+			await api.delete(`/channels/${channel.id}`);
+			await fetchServerData(activeServerId);
+		} catch (error) {
+			console.error("Failed to delete channel", error);
 		}
 	};
 
@@ -741,6 +788,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 											categories={serverCategories}
 											activeChannelId={activeServerChannelId || ""}
 											onSelectChannel={handleChannelSelect}
+											canManageChannels={canManageChannels}
+											onDeleteChannel={handleChannelDelete}
 											onChannelsChanged={async () => {
 												if (activeServerId) {
 													await fetchServerData(activeServerId);

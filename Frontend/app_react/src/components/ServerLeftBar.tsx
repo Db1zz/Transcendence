@@ -11,6 +11,7 @@ import {
 	Copy,
 	Check,
 	PhoneOff,
+	Trash2,
 } from "lucide-react";
 import bgLSideBar from "../img/bg_l_sidebar.png";
 import api from "../utils/api";
@@ -49,6 +50,8 @@ interface ServerLeftBarProps {
 	activeChannelId: string;
 	onSelectChannel: (channel: Channel) => void;
 	onChannelsChanged?: () => Promise<void> | void;
+	onDeleteChannel?: (channel: Channel) => Promise<void> | void;
+	canManageChannels?: boolean;
 }
 
 export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
@@ -58,6 +61,8 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
 	activeChannelId,
 	onSelectChannel,
 	onChannelsChanged,
+	onDeleteChannel,
+	canManageChannels = false,
 }) => {
 	const { user } = useAuth();
 	const { sendToOrganization, sendOrganizationAction } =
@@ -77,6 +82,14 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
 	const [settingsModalOpen, setSettingsModalOpen] = useState(false);
 	const [createTextChannelOpen, setCreateTextChannelOpen] = useState(false);
 	const [createVoiceChannelOpen, setCreateVoiceChannelOpen] = useState(false);
+	const [contextMenuChannel, setContextMenuChannel] = useState<Channel | null>(
+		null,
+	);
+	const [contextMenuPosition, setContextMenuPosition] = useState<{
+		x: number;
+		y: number;
+	} | null>(null);
+	const contextMenuRef = useRef<HTMLDivElement>(null);
 
 	const handleCreateChannel = async (
 		channelType: ChannelType,
@@ -123,6 +136,64 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
 		document.addEventListener("mousedown", handleClickOutside);
 		return () => document.removeEventListener("mousedown", handleClickOutside);
 	}, []);
+
+	useEffect(() => {
+		const handleClickOutsideContextMenu = (event: MouseEvent) => {
+			if (
+				contextMenuRef.current &&
+				!contextMenuRef.current.contains(event.target as Node)
+			) {
+				setContextMenuChannel(null);
+				setContextMenuPosition(null);
+			}
+		};
+
+		const handleEscape = (event: KeyboardEvent) => {
+			if (event.key === "Escape") {
+				setContextMenuChannel(null);
+				setContextMenuPosition(null);
+			}
+		};
+
+		document.addEventListener("mousedown", handleClickOutsideContextMenu);
+		document.addEventListener("keydown", handleEscape);
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutsideContextMenu);
+			document.removeEventListener("keydown", handleEscape);
+		};
+	}, []);
+
+	const closeContextMenu = () => {
+		setContextMenuChannel(null);
+		setContextMenuPosition(null);
+	};
+
+	const handleChannelContextMenu = (
+		e: React.MouseEvent,
+		channel: Channel,
+	) => {
+		e.preventDefault();
+		if (!canManageChannels) {
+			return;
+		}
+
+		setIsMenuOpen(false);
+		setContextMenuChannel(channel);
+		setContextMenuPosition({ x: e.clientX, y: e.clientY });
+	};
+
+	const handleDeleteChannel = async () => {
+		if (!contextMenuChannel || !onDeleteChannel) return;
+
+		const confirmed = window.confirm(
+			`Delete ${contextMenuChannel.type === "voice" ? "voice channel" : "channel"} "${contextMenuChannel.name}"?`,
+		);
+		if (!confirmed) return;
+
+		const channelToDelete = contextMenuChannel;
+		closeContextMenu();
+		await onDeleteChannel(channelToDelete);
+	};
 
 	const handleChannelClick = async (ch: Channel) => {
 		if (ch.type === "voice") {
@@ -264,6 +335,7 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
 													<div key={ch.id} className="flex flex-col">
 														<button
 															onClick={() => handleChannelClick(ch)}
+															onContextMenu={(e) => handleChannelContextMenu(e, ch)}
 															className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm font-roboto font-medium transition-colors border-2 ${isActive ? "bg-brand-green border-gray-800 text-brand-beige shadow-sharp-xs" : "border-transparent text-gray-800 hover:bg-brand-green/30"}`}
 														>
 															<Icon className="h-4 w-4 shrink-0" />
@@ -289,6 +361,23 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
 																					{u.name
 																						? u.name.charAt(0).toUpperCase()
 																						: "?"}
+																					{contextMenuChannel && contextMenuPosition && (
+																						<div
+																							ref={contextMenuRef}
+																							role="menu"
+																							className="fixed z-[80] min-w-44 rounded-md border-2 border-brand-green bg-brand-beige py-1 shadow-2xl"
+																							style={{ left: contextMenuPosition.x, top: contextMenuPosition.y }}
+																						>
+																							<button
+																								type="button"
+																								onClick={handleDeleteChannel}
+																								className="flex w-full items-center gap-2 px-3 py-2 text-sm font-bold text-red-700 hover:bg-red-50 hover:text-red-800"
+																							>
+																								<Trash2 className="h-4 w-4" />
+																								Delete {contextMenuChannel.type === "voice" ? "Voice Channel" : "Channel"}
+																							</button>
+																						</div>
+																					)}
 																				</div>
 																			)}
 																			<span className="text-sm text-gray-800 font-medium truncate">
