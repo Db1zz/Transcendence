@@ -19,6 +19,10 @@ public class StatusDisconnectEventHandler implements ClientDisconnectHandler {
         List<UUID> onlineFriends = userStatusService.getMyOnlineSubs(userId);
         userStatusService.unsubscribe(userId);
 
+        if (onlineFriends == null || onlineFriends.isEmpty()) {
+            return;
+        }
+
         for (UUID friendId : onlineFriends) {
             statusNotificationGateway.send(
                     friendId,

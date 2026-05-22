@@ -25,6 +25,11 @@ public class UserStatusRegistryService {
 
     public List<UUID> getMyOnlineSubs(UUID userId) {
         Set<UUID> subscriptions = subscribedUsers.get(userId);
+
+        if (subscriptions == null || subscriptions.isEmpty()) {
+            return null;
+        }
+
         List<UUID> result = new ArrayList<UUID>();
         for (UUID sub : subscriptions) {
             if (isOnline(sub)) {

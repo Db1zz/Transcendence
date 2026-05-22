@@ -1,4 +1,7 @@
 services:
+  nginx:
+    depends_on:
+      - notify
   kafka:
     image: confluentinc/cp-kafka:latest
     ports:
@@ -49,8 +52,7 @@ services:
   notify:
     image: rust:latest
     ports:
-      - "6767:6767"
-      - "9921:9921"
+      - "6161:6161"
       - "6969:6969"
     volumes:
       - ./Tools/Notify/:/app

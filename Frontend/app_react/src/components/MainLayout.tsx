@@ -37,7 +37,6 @@ import MobileNavBar from "./MobileNavBar";
 import { ProfilePopup } from "./ProfilePopup";
 import { NotificationsPage } from "./NotificationsPage";
 import defaultAvatar from "../img/default.png";
-import Footer from "./Footer";
 
 const parseStompPayload = (data: any) => {
   if (data && typeof data === "object") {
@@ -1007,7 +1006,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           onClose={() => setIsDmProfileOpen(false)}
         />
       )}
-      <Footer />
     </div>
   );
 };

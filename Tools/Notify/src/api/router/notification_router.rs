@@ -1,13 +1,7 @@
 use std::sync::Arc;
 
 use axum::{
-    extract::{Request, State},
-    http::{header, StatusCode},
-    middleware::Next,
-    response::Response,
-    routing::get,
-    routing::post,
-    Extension, Json, Router,
+    Extension, Json, Router, extract::{Request, State}, http::{Method, HeaderValue, StatusCode, header}, middleware::Next, response::Response, routing::{get, post}
 };
 use serde::Deserialize;
 use tower_http::cors::{Any, CorsLayer};
@@ -34,14 +28,26 @@ pub struct NotificationRouter {
 
 impl NotificationRouter {
     pub fn new(user_notifications: Arc<CassandraUserNotificationsRepository>) -> Self {
-        let cors = CorsLayer::new()
-            .allow_origin(Any)
-            .allow_methods(Any)
-            .allow_headers([header::AUTHORIZATION, header::CONTENT_TYPE]);
+    let cors = CorsLayer::new()
+        .allow_origin([
+            "https://localhost".parse::<HeaderValue>().unwrap(),
+            "http://localhost:3000".parse::<HeaderValue>().unwrap(),
+        ])
+        .allow_methods([
+            Method::GET,
+            Method::POST,
+            Method::OPTIONS,
+        ])
+        .allow_headers([
+            header::AUTHORIZATION, 
+            header::CONTENT_TYPE,
+            header::ACCEPT,
+        ])
+        .allow_credentials(true);
 
         let router = Router::new()
-            .route("/notification", get(Self::get_notifications))
-            .route("/notification/read", post(Self::mark_as_read))
+            .route("/notify/fetch", get(Self::get_notifications))
+            .route("/notify/read", post(Self::mark_as_read))
             .layer(axum::middleware::from_fn(Self::auth_middleware))
             .layer(cors)
             .with_state(user_notifications);
@@ -53,6 +59,7 @@ impl NotificationRouter {
         State(user_notifications): State<Arc<CassandraUserNotificationsRepository>>,
         Extension(claims): Extension<Claims>,
     ) -> Result<Json<Vec<Notification>>, StatusCode> {
+        
         let notifications = user_notifications
             .get_all(claims.user_id)
             .await

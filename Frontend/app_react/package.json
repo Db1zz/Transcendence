@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "proxy": "https://localhost",
   "dependencies": {
     "@stomp/stompjs": "^7.0.0",
     "@testing-library/dom": "^10.4.1",

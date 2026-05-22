@@ -1,19 +1,19 @@
 import api from "../../utils/api";
 
 export class NotifyClient {
-  public notifyServerAddr: string;
+  public notifyWsAddr: string;
   private ws: WebSocket | null;
 
   public onMessageReceived?: (data: any) => void;
 
-  constructor(notifyServerAddr: string) {
-    this.notifyServerAddr = notifyServerAddr;
+  constructor(notifyWsAddr: string) {
+    this.notifyWsAddr = notifyWsAddr;
     this.ws = null;
   }
 
   public async fetchOfflineNotifications(token: string): Promise<any[]> {
     try {
-      const response = await fetch(`https://127.0.0.1/notification`, {
+      const response = await fetch(`/notify/fetch`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -36,7 +36,7 @@ export class NotifyClient {
     if (notificationIds.length === 0) return true;
 
     try {
-      const response = await fetch(`https://127.0.0.1/notification/read`, {
+      const response = await fetch(`/notify/read`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -60,7 +60,7 @@ export class NotifyClient {
       const res = await api.get<{ token: string }>("/notification/token");
       const token = res.data.token;
 
-      this.ws = new WebSocket(this.notifyServerAddr);
+      this.ws = new WebSocket(this.notifyWsAddr);
 
       this.ws.onopen = () => {
         this.ws?.send(token);
@@ -111,3 +111,4 @@ export class NotifyClient {
     console.log("Notify client stopped manually");
   }
 }
+
