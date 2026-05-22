@@ -14,17 +14,18 @@ up-elk:
 	docker compose -f docker-compose.yaml -f docker-compose.elk.yaml -f ./Tools/Notify/docker-compose.make.yaml logs -f
 
 setup-elk:
-	@echo "waiting for elk to wake up"
-	@while ! curl -sk "https://localhost:9200" > /dev/null; do \
-		sleep 2; \
+	@echo "waiting for Elasticsearch to wake up (this can take a minute)..."
+	@while [ "$$(curl -s -k -u "elastic:$(ELASTIC_PASSWORD)" -o /dev/null -w '%{http_code}' https://localhost:9200)" != "200" ]; do \
+		sleep 5; \
 	done
 	
+	@echo "\nSetting kibana_system password"
 	@curl -sk -X POST -u "elastic:$(ELASTIC_PASSWORD)" \
 		-H "Content-Type: application/json" \
 		"https://localhost:9200/_security/user/kibana_system/_password" \
 		-d '{"password":"$(KIBANA_PASSWORD)"}' > /dev/null
 
-	@echo "setup log retention and archiving policies"
+	@echo "\nsetup log retention and archiving policies"
 	@curl -sk -X PUT -u "elastic:$(ELASTIC_PASSWORD)" \
 		-H "Content-Type: application/json" \
 		"https://localhost:9200/_ilm/policy/anteiku-retention-policy" \
@@ -39,12 +40,12 @@ setup-elk:
 	@echo "\nrestarting kibana"
 	@docker restart anteiku-kibana > /dev/null
 
-	@echo "wait"
+	@echo "\nwait for Kibana"
 	@while ! curl -sk "https://localhost:5601/api/status" | grep -q '"level":"available"'; do \
 		sleep 5; \
 	done
 
-	@echo "creating data view"
+	@echo "\ncreating data view"
 	@curl -sk -X POST "https://localhost:5601/api/data_views/data_view" \
 		-H "kbn-xsrf: true" \
 		-H "Content-Type: application/json" \
