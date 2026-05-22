@@ -8,6 +8,27 @@ jest.mock("lucide-react", () => ({
   Pencil: () => <span>PencilIcon</span>,
 }));
 
+jest.mock("react-i18next", () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        "profileEdit.uploading": "uploading...",
+        "profileEdit.uploadFromComputer": "upload from my device",
+        "profileEdit.pictureHint": "picture is set automatically after upload.",
+        "profileEdit.username": "username",
+        "profileEdit.usernamePlaceholder": "your username",
+        "profileEdit.displayableName": "displayable name",
+        "profileEdit.displayableNamePlaceholder": "name shown in profile",
+        "profileEdit.aboutMe": "about me",
+        "profileEdit.aboutPlaceholder": "tell people something about yourself",
+        "common.saving": "saving...",
+        "common.save": "save",
+      };
+      return translations[key] || key;
+    },
+  }),
+}));
+
 describe("ProfileEditForm Component", () => {
   const mockOnSave = jest.fn();
   const mockOnUploadPicture = jest.fn();
@@ -103,7 +124,7 @@ describe("ProfileEditForm Component", () => {
       type: "image/png",
     });
 
-    const fileInput = screen.getByLabelText(/upload from computer/i);
+    const fileInput = screen.getByLabelText(/upload from my device/i);
 
     await user.upload(fileInput, file);
 
@@ -138,7 +159,8 @@ describe("ProfileEditForm Component", () => {
     );
 
     const file = new File(["huge data"], "huge.png", { type: "image/png" });
-    const fileInput = screen.getByLabelText(/upload from computer/i);
+    
+    const fileInput = screen.getByLabelText(/upload from my device/i);
 
     await user.upload(fileInput, file);
 

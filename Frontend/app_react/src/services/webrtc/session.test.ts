@@ -6,7 +6,6 @@ const mockGetUserMedia = jest.fn();
 
 const mockWsSend = jest.fn();
 const mockWsClose = jest.fn();
-let wsMessageCallback: ((event: any) => void) | null = null;
 
 const mockAddTrack = jest.fn();
 const mockCreateOffer = jest.fn();
@@ -24,38 +23,39 @@ describe("WebRtcSession", () => {
 
   let session: WebRtcSession;
   let mockCallbacks: any;
+  let mockWsInstance: any;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    wsMessageCallback = null;
 
-    mockGetTracks.mockReturnValue([{ id: "mock-track-1" }]);
+    mockGetTracks.mockReturnValue([{ id: "mock-track-1", stop: jest.fn() }]);
     mockGetUserMedia.mockResolvedValue(mockStream);
-
     Object.defineProperty(global.navigator, "mediaDevices", {
       value: { getUserMedia: mockGetUserMedia },
       configurable: true,
     });
 
+    (global as any).RTCSessionDescription = jest.fn().mockImplementation((init) => init);
+    (global as any).RTCIceCandidate = jest.fn().mockImplementation((init) => init);
+
     global.WebSocket = jest.fn().mockImplementation((url) => {
-      return {
+      mockWsInstance = {
         url,
         send: mockWsSend,
         close: mockWsClose,
-        addEventListener: jest.fn((event, cb) => {
-          if (event === "message") wsMessageCallback = cb;
-        }),
+        readyState: 1,
+        onmessage: null,
       };
+      return mockWsInstance;
     }) as any;
+    (global.WebSocket as any).OPEN = 1;
 
     mockCreateOffer.mockResolvedValue({ type: "offer", sdp: "fake-offer" });
     mockCreateAnswer.mockResolvedValue({ type: "answer", sdp: "fake-answer" });
-
     mockSetLocalDescription.mockImplementation(function (this: any, desc: any) {
       this.localDescription = desc;
       return Promise.resolve();
     });
-
     mockSetRemoteDescription.mockResolvedValue(undefined);
     mockAddIceCandidate.mockResolvedValue(undefined);
 
@@ -67,7 +67,9 @@ describe("WebRtcSession", () => {
         setLocalDescription: mockSetLocalDescription,
         setRemoteDescription: mockSetRemoteDescription,
         addIceCandidate: mockAddIceCandidate,
-        addEventListener: jest.fn(),
+        close: jest.fn(),
+        signalingState: "new",
+        remoteDescription: {},
         localDescription: null,
       };
     }) as any;
@@ -114,14 +116,12 @@ describe("WebRtcSession", () => {
   describe("Signaling Message Handling", () => {
     beforeEach(async () => {
       await session.start();
-      expect(wsMessageCallback).toBeTruthy();
+      expect(mockWsInstance.onmessage).toBeTruthy();
     });
 
     it("handles 'new-connection' by creating an offer and sending it", async () => {
       const signal = { type: "new-connection", from: "peer-1" };
-
-      wsMessageCallback!({ data: JSON.stringify(signal) });
-
+      mockWsInstance.onmessage({ data: JSON.stringify(signal) });
       await flushPromises();
 
       expect(session.peers.has("peer-1")).toBe(true);
@@ -146,8 +146,7 @@ describe("WebRtcSession", () => {
       const incomingOffer = { type: "offer", sdp: "real-incoming-offer" };
       const signal = { type: "offer", from: "peer-2", sdp: incomingOffer };
 
-      wsMessageCallback!({ data: JSON.stringify(signal) });
-
+      mockWsInstance.onmessage({ data: JSON.stringify(signal) });
       await flushPromises();
 
       expect(session.peers.has("peer-2")).toBe(true);
@@ -169,7 +168,7 @@ describe("WebRtcSession", () => {
     });
 
     it("handles 'answer' by setting the remote description on an existing peer", async () => {
-      wsMessageCallback!({
+      mockWsInstance.onmessage({
         data: JSON.stringify({ type: "new-connection", from: "peer-3" }),
       });
       await flushPromises();
@@ -178,14 +177,14 @@ describe("WebRtcSession", () => {
       const incomingAnswer = { type: "answer", sdp: "real-incoming-answer" };
       const signal = { type: "answer", from: "peer-3", sdp: incomingAnswer };
 
-      wsMessageCallback!({ data: JSON.stringify(signal) });
+      mockWsInstance.onmessage({ data: JSON.stringify(signal) });
       await flushPromises();
 
       expect(mockSetRemoteDescription).toHaveBeenCalledWith(incomingAnswer);
     });
 
     it("handles 'ice' by adding the ICE candidate to the existing peer", async () => {
-      wsMessageCallback!({
+      mockWsInstance.onmessage({
         data: JSON.stringify({ type: "new-connection", from: "peer-4" }),
       });
       await flushPromises();
@@ -201,14 +200,14 @@ describe("WebRtcSession", () => {
         candidate: incomingCandidate,
       };
 
-      wsMessageCallback!({ data: JSON.stringify(signal) });
+      mockWsInstance.onmessage({ data: JSON.stringify(signal) });
       await flushPromises();
 
       expect(mockAddIceCandidate).toHaveBeenCalledWith(incomingCandidate);
     });
 
     it("handles 'user-disconnection' by removing the peer and firing the callback", async () => {
-      wsMessageCallback!({
+      mockWsInstance.onmessage({
         data: JSON.stringify({ type: "new-connection", from: "peer-5" }),
       });
       await flushPromises();
@@ -216,7 +215,7 @@ describe("WebRtcSession", () => {
       expect(session.peers.has("peer-5")).toBe(true);
 
       const signal = { type: "user-disconnection", from: "peer-5" };
-      wsMessageCallback!({ data: JSON.stringify(signal) });
+      mockWsInstance.onmessage({ data: JSON.stringify(signal) });
       await flushPromises();
 
       expect(session.peers.has("peer-5")).toBe(false);

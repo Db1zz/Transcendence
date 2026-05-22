@@ -72,7 +72,7 @@ describe("SignupPage Component", () => {
 
     await waitFor(() => {
       expect(mockedAxios.get).toHaveBeenCalledWith(
-        "http://localhost:8080/api/users/check-email?email=kaneki%40anteiku.com",
+        "https://localhost/api/users/check-email?email=kaneki%40anteiku.com",
       );
       expect(screen.getByText("this email is available")).toBeInTheDocument();
     });
@@ -93,7 +93,7 @@ describe("SignupPage Component", () => {
 
     await waitFor(() => {
       expect(mockedAxios.get).toHaveBeenCalledWith(
-        "http://localhost:8080/api/users/check-username?username=touka_k",
+        "https://localhost/api/users/check-username?username=touka_k",
       );
       expect(screen.getByText("this username is taken")).toBeInTheDocument();
     });
@@ -145,7 +145,7 @@ describe("SignupPage Component", () => {
 
     await waitFor(() => {
       expect(mockedAxios.post).toHaveBeenCalledWith(
-        "http://localhost:8080/api/users/register",
+        "https://localhost/api/users/register",
         {
           email: "hide@ccg.com",
           username: "hide_nagachika",
