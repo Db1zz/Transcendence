@@ -18,6 +18,7 @@ import {
 import { useServerMembers } from "../hooks/useServerMembers";
 import { useAuth } from "../contexts/AuthContext";
 import api from "../utils/api";
+import { Button } from "./Button";
 
 interface ServerSettingsModalProps {
 	isOpen: boolean;
@@ -219,38 +220,32 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
 									Settings for {serverName} will go here.
 								</p>
 								<div className="mt-auto pt-10">
-									<div className="rounded-xl border border-red-200 bg-red-50 p-5 shadow-sm">
-										<div className="mb-3 flex items-center gap-2 text-red-700 font-bold">
-											<AlertCircle size={18} />
-											Dangerous Actions
+									{isOwner ? (
+										<div className="rounded-xl border border-red-200 bg-red-50 p-5 shadow-sm">
+											<p className="text-sm text-red-700/80 mb-4">
+												You are an owner so you can delete this server for everyone.
+											</p>
+											<Button
+												type="button"
+												onClick={handleDeleteServer}
+												color="bg-red-600"
+												className="px-4 py-2.5"
+											>
+												<Trash2 size={16} />
+												Delete Server
+											</Button>
 										</div>
-										<p className="text-sm text-red-700/80 mb-4">
-											{isOwner
-												? "As the owner, you can delete this server for everyone."
-												: "You can leave this server at any time."}
-										</p>
-										<div className="flex flex-wrap gap-3">
-											{isOwner ? (
-												<button
-													type="button"
-													onClick={handleDeleteServer}
-													className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-red-700"
-												>
-													<Trash2 size={16} />
-													Delete Server
-												</button>
-											) : (
-												<button
-													type="button"
-													onClick={handleLeaveServer}
-													className="inline-flex items-center gap-2 rounded-lg bg-brand-brick px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-red-700"
-												>
-													<X size={16} />
-													Leave Server
-												</button>
-											)}
-										</div>
-									</div>
+									) : (
+										<Button
+											type="button"
+											onClick={handleLeaveServer}
+											color="bg-brand-brick"
+											className="px-4 py-2.5"
+										>
+											<X size={16} />
+											Leave Server
+										</Button>
+									)}
 								</div>
 							</div>
 						)}
