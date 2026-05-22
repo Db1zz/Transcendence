@@ -13,4 +13,5 @@ public interface ChannelMemberRepository extends JpaRepository<ChannelMemberEnti
     List<ChannelMemberEntity> findByChannelId(UUID channelId);
     boolean existsByChannel_IdAndUser_Id(UUID channelId, UUID userId);
     void deleteByChannel_IdAndUser_Id(UUID channelId, UUID userId);
+    void deleteByChannelId(UUID channelId);
 }

@@ -34,6 +34,7 @@ public class OrganizationService {
     private final UserRepository userRepository;
     private final OrganizationMemberRepository organizationMemberRepository;
     private final ChannelRepository channelRepository;
+    private final ChannelMemberRepository channelMemberRepository;
     private final OrganizationInviteRepository organizationInviteRepository;
     private final RoleRepository roleRepository;
     private final ChannelMapper channelMapper;
@@ -144,6 +145,21 @@ public class OrganizationService {
         if (!organization.getOwner().getId().equals(currentUserId)) {
             throw new AccessDeniedException("Only owner can delete organization");
         }
+
+        List<ChannelEntity> channels = channelRepository.findByOrganizationId(organizationId);
+        for (ChannelEntity channel : channels) {
+            channelMemberRepository.deleteByChannelId(channel.getId());
+        }
+
+        channelRepository.deleteAll(channels);
+
+        organizationInviteRepository.deleteByOrganizationId(organizationId);
+
+        List<OrganizationMemberEntity> members = organizationMemberRepository.findByOrganizationId(organizationId);
+        organizationMemberRepository.deleteAll(members);
+
+        List<RoleEntity> roles = roleRepository.findByOrganizationId(organizationId);
+        roleRepository.deleteAll(roles);
 
         organizationRepository.delete(organization);
         log.info("Organization deleted: ID {} by Owner ID {}",  organization.getId(), currentUserId);
