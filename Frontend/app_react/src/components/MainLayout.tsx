@@ -741,6 +741,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 											categories={serverCategories}
 											activeChannelId={activeServerChannelId || ""}
 											onSelectChannel={handleChannelSelect}
+											onChannelsChanged={async () => {
+												if (activeServerId) {
+													await fetchServerData(activeServerId);
+												}
+											}}
 										/>
 									) : (
 										<LeftBar
