@@ -35,6 +35,7 @@ import type { VoiceParticipant } from "./VoiceView";
 import MobileNavBar from "./MobileNavBar";
 import { ProfilePopup } from "./ProfilePopup";
 import { NotificationsPage } from "./NotificationsPage";
+import defaultAvatar from "../img/default.png";
 
 const parseStompPayload = (data: any) => {
 	if (data && typeof data === "object") {
@@ -168,8 +169,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 		if (!user) return null;
 		return {
 			id: user.id,
-			name: user.name,
-			picture: user.picture,
+			username: user.username || user.name,
+			displayName: user.name,
+			picture: user.picture || defaultAvatar,
 		};
 	}, [user]);
 
@@ -179,8 +181,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 		if (user) {
 			const localParticipant = {
 				id: user.id,
-				name: user.name,
-				picture: user.picture,
+				username: user.username || user.name,
+				displayName: user.name,
+				picture: user.picture || defaultAvatar,
 			};
 			merged.set(user.id, localParticipant);
 			merged.set("local", localParticipant);
@@ -189,16 +192,18 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 		rawServerMembers.forEach((member) => {
 			merged.set(member.user.id, {
 				id: member.user.id,
-				name: member.user.displayName || member.user.username,
-				picture: member.user.picture,
+				username: member.user.username,
+				displayName: member.user.displayName || member.user.username,
+				picture: member.user.picture || defaultAvatar,
 			});
 		});
 
 		rawFriends.forEach((friend) => {
 			merged.set(friend.id, {
 				id: friend.id,
-				name: friend.name || friend.username,
-				picture: friend.picture,
+				username: friend.username,
+				displayName: friend.name || friend.username,
+				picture: friend.picture || defaultAvatar,
 			});
 		});
 
@@ -254,7 +259,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 								updatedUsers.push({
 									id: String(data.userId),
 									name: data.userName || fallbackName,
-									avatar: data.userAvatar,
+									avatar: data.userAvatar || defaultAvatar,
 								});
 							}
 
@@ -295,8 +300,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 									const rawUsers = syncMap.get(String(ch.id));
 									const formattedUsers = rawUsers.map((u: any) => ({
 										id: String(u.id),
-										name: u.displayName,
-										avatar: u.picture,
+										name: u.username || u.displayName,
+										avatar: u.picture || defaultAvatar,
 									}));
 									return { ...ch, connectedUsers: formattedUsers };
 								}
@@ -524,8 +529,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 								if (ch.id === c.id) {
 									users.push({
 										id: user.id,
-										name: user.name,
-										avatar: user.picture,
+										name: user.username || user.name,
+										avatar: user.picture || defaultAvatar,
 									});
 								}
 								return { ...ch, connectedUsers: users };

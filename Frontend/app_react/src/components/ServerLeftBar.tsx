@@ -14,6 +14,7 @@ import {
 	Trash2,
 } from "lucide-react";
 import bgLSideBar from "../img/bg_l_sidebar.png";
+import defaultAvatar from "../img/default.png";
 import api from "../utils/api";
 import { useCall } from "../hooks/useCall";
 import { useAuth } from "../contexts/AuthContext";
@@ -204,8 +205,8 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
 					sendToOrganization(serverId, {
 						type: "VOICE_STATE_UPDATE",
 						userId: user.id,
-						userName: user.name,
-						userAvatar: user.picture,
+						userName: user.username || user.name,
+						userAvatar: user.picture || defaultAvatar,
 						channelId: ch.id,
 						action: "JOIN",
 					});
@@ -224,7 +225,7 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
 			sendOrganizationAction(serverId, `voice/${channelId}/leave`, {
 				type: "VOICE_STATE_UPDATE",
 				userId: user.id,
-				userName: user.name,
+				userName: user.username || user.name,
 				channelId: null,
 				action: "LEAVE",
 			});
@@ -350,13 +351,15 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
 																			key={u.id}
 																			className="flex items-center gap-2 px-2 py-1 rounded-md hover:bg-white/30 cursor-pointer transition-colors"
 																		>
-																			{u.avatar ? (
-																				<img
-																					src={u.avatar}
-																					alt={u.name}
-																					className="w-6 h-6 rounded-full border border-gray-800 object-cover"
-																				/>
-																			) : (
+																			<img
+																				src={u.avatar || defaultAvatar}
+																				alt={u.name}
+																				className="w-6 h-6 rounded-full border border-gray-800 object-cover"
+																				onError={(event) => {
+																					event.currentTarget.src = defaultAvatar;
+																				}}
+																			/>
+																			{!u.avatar && (
 																				<div className="w-6 h-6 rounded-full bg-brand-green flex items-center justify-center text-xs text-brand-beige font-bold border border-gray-800">
 																					{u.name
 																						? u.name.charAt(0).toUpperCase()
