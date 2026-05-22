@@ -23,6 +23,9 @@ public class OrganizationEntity {
     @JoinColumn(name = "owner_id", nullable = false)
     private UserEntity owner;
 
+    @Column(name = "picture")
+    private String picture;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
