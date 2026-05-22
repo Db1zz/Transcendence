@@ -58,7 +58,7 @@ async fn produce_stream_data(
 }
 
 async fn run_client(consumer_addr: String, client_id: Uuid) {
-    let ws_addr = format!("ws://{}", consumer_addr);
+    let ws_addr = format!("wss://{}", consumer_addr);
     let (mut ws_stream, _) = connect_async(&ws_addr).await.expect("Failed to connect");
 
     let token = generate_token_for_test(client_id, &get_jwt_secret());

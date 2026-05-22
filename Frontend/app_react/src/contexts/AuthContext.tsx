@@ -108,14 +108,14 @@ export const AuthProvider = ({ children }: Props) => {
     credentials?: { email: string; password: string },
   ): Promise<boolean> => {
     if (provider === "github" || provider === "google") {
-      window.location.href = `http://localhost:8080/oauth2/authorization/${provider}`;
+      window.location.href = `https://localhost/oauth2/authorization/${provider}`;
       return true;
     }
 
     if (provider === "credentials" && credentials) {
       try {
         const response = await axios.post(
-          "http://localhost:8080/api/auth/login",
+          "https://localhost/api/auth/login",
           {
             email: credentials.email,
             password: credentials.password,
@@ -136,7 +136,7 @@ export const AuthProvider = ({ children }: Props) => {
   const logout = async () => {
     try {
       await axios.post(
-        "http://localhost:8080/logout",
+        "https://localhost/logout",
         {},
         { withCredentials: true },
       );

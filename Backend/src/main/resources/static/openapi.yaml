@@ -5,7 +5,7 @@ info:
   version: 1.0.0
 
 servers:
-  - url: http://localhost:8080/api
+  - url: https://localhost/api
     description: Local HTTP Development Server
 
 paths:
@@ -213,7 +213,7 @@ paths:
               content:
                 text/plain:
                   schema:
-                    const: "http://0.0.0.0:3000/login"
+                    const: "https://0.0.0.0/login"
         401:
           description: "Invalid access token"
 

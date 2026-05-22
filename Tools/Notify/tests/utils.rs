@@ -84,7 +84,7 @@ async fn wait_for_cassandra(addr: &str) {
 }
 
 pub async fn connect_to_manager(addr: &str) -> WebSocketStream<MaybeTlsStream<TcpStream>> {
-    let protocol = "ws://".to_owned();
+    let protocol = "wss://".to_owned();
     let client_addr = protocol + addr;
 
     let (ws_stream, _) = connect_async(client_addr).await.expect("Failed to connect");
