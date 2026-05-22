@@ -14,7 +14,7 @@ export const useCall = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           callerId: user?.id,
-          invitedUsers: [calleeId],
+          invitedUserIds: [calleeId],
         }),
       });
 
