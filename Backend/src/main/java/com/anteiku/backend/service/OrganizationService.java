@@ -9,8 +9,12 @@ import com.anteiku.backend.model.*;
 import com.anteiku.backend.repository.*;
 import com.anteiku.backend.util.PermissionFlags;
 import com.anteiku.backend.util.SecurityUtils;
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,10 +22,12 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -38,6 +44,7 @@ public class OrganizationService {
     private final OrganizationInviteRepository organizationInviteRepository;
     private final RoleRepository roleRepository;
     private final ChannelMapper channelMapper;
+    private final Cloudinary cloudinary;
 
     public CreateOrganizationResponseDto createOrganization(CreateOrganizationDto dto) {
         UUID currentUserId = SecurityUtils.getCurrentUserId();
@@ -51,6 +58,7 @@ public class OrganizationService {
         OrganizationEntity organization = OrganizationEntity.builder()
                 .name(dto.getName())
                 .owner(owner)
+            .picture(null)
                 .createdAt(Instant.now())
                 .build();
 
@@ -109,6 +117,7 @@ public class OrganizationService {
                     dto.setId(org.getId());
                     dto.setName(org.getName());
                     dto.setOwnerId(org.getOwner().getId());
+                    dto.setIconUrl(org.getPicture());
                     dto.setCreatedAt(OffsetDateTime.ofInstant(org.getCreatedAt(), ZoneId.systemDefault()));
                     return dto;
                 })
@@ -163,6 +172,55 @@ public class OrganizationService {
 
         organizationRepository.delete(organization);
         log.info("Organization deleted: ID {} by Owner ID {}",  organization.getId(), currentUserId);
+    }
+
+    @SuppressWarnings("unchecked")
+    public String uploadOrganizationPicture(UUID organizationId, MultipartFile file)
+            throws IOException {
+        UUID currentUserId = SecurityUtils.getCurrentUserId();
+        if (currentUserId == null) {
+            throw new AuthenticationCredentialsNotFoundException("User is not authenticated");
+        }
+
+        OrganizationEntity organization = organizationRepository.findById(organizationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Organization not found"));
+
+        if (!organization.getOwner().getId().equals(currentUserId)) {
+            throw new AccessDeniedException("Only owner can update organization picture");
+        }
+
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("Picture file cannot be empty");
+        }
+
+        String contentType = file.getContentType() == null ? "" : file.getContentType();
+        if (!contentType.startsWith("image/")) {
+            throw new IllegalArgumentException("Only image files are allowed");
+        }
+
+        if (file.getSize() > 15L * 1024 * 1024) {
+            throw new IllegalArgumentException("Image is too large. Maximum allowed size is 15 MB");
+        }
+
+        Map<String, Object> uploadResult = cloudinary.uploader().upload(
+                file.getBytes(),
+                ObjectUtils.asMap(
+                        "folder", "anteiku/organization-pictures",
+                        "public_id", organizationId + "-" + UUID.randomUUID(),
+                        "overwrite", true,
+                        "resource_type", "image"
+                )
+        );
+
+        String pictureUrl = (String) uploadResult.get("secure_url");
+        if (pictureUrl == null || pictureUrl.isBlank()) {
+            throw new IllegalStateException("Failed to upload organization picture");
+        }
+
+        organization.setPicture(pictureUrl);
+        organizationRepository.save(organization);
+
+        return pictureUrl;
     }
 
     private String generateInviteCode() {

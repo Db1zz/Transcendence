@@ -217,6 +217,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 		return servers.find((server) => server.id === activeServerId)?.ownerId;
 	}, [servers, activeServerId]);
 
+	const activeServerIconUrl = useMemo(() => {
+		return servers.find((server) => server.id === activeServerId)?.iconUrl;
+	}, [servers, activeServerId]);
+
 	useEffect(() => {
 		activeServerIdRef.current = activeServerId;
 	}, [activeServerId]);
@@ -829,6 +833,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 											serverId={activeServerId || ""}
 											serverName={activeServerName}
 											serverOwnerId={activeServerOwnerId}
+											serverIconUrl={activeServerIconUrl}
 											categories={serverCategories}
 											activeChannelId={activeServerChannelId || ""}
 											onSelectChannel={handleChannelSelect}

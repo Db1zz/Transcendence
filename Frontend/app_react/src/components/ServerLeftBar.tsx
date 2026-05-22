@@ -48,6 +48,7 @@ interface ServerLeftBarProps {
 	serverId: string;
 	serverName: string;
 	serverOwnerId?: string;
+	serverIconUrl?: string;
 	categories: ChannelCategory[];
 	activeChannelId: string;
 	onSelectChannel: (channel: Channel) => void;
@@ -62,6 +63,7 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
 	serverId,
 	serverName,
 	serverOwnerId,
+	serverIconUrl,
 	categories,
 	activeChannelId,
 	onSelectChannel,
@@ -487,6 +489,7 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
 				serverId={serverId}
 				serverName={serverName}
 				ownerId={serverOwnerId}
+				serverIconUrl={serverIconUrl}
 				onServerDeleted={onServerDeleted}
 				onServerLeft={onServerLeft}
 			/>
