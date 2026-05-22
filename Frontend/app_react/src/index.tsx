@@ -16,7 +16,7 @@ const root = ReactDOM.createRoot(
 root.render(
   <AuthProvider>
     <Router>
-      <NotificationProvider notifyServerAddr="ws://localhost:6969">
+      <NotificationProvider notifyServerAddr="wss://localhost/notification">
         <Routes>
           <Route path="/" element={<HomePage />}></Route>
           <Route path="/login" element={<LoginPage />}></Route>

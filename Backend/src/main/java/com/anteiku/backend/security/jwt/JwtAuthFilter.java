@@ -1,7 +1,6 @@
 package com.anteiku.backend.security.jwt;
 
 import com.anteiku.backend.constant.TokenNames;
-import com.anteiku.backend.model.UserInfoDto;
 import com.anteiku.backend.model.UserPublicDto;
 import com.anteiku.backend.security.session.UserSessionsService;
 import com.anteiku.backend.service.UserService;
@@ -29,15 +28,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final UserService userService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        final String lookupToken = new String("Bearer ");
-        String header = request.getHeader("Authorization"); 
-        String userEmail = null;
-        String token = null;
-        Cookie[] cookies = request.getCookies();
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
 
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
+        final String lookupToken = "Bearer ";
+        String header = request.getHeader("Authorization");
+        String token = null;
+
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
                 if (cookie.getName().equals(TokenNames.ACCESS_TOKEN)) {
                     token = cookie.getValue();
                     break;
@@ -46,31 +45,30 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         if (token == null && header != null && header.startsWith(lookupToken)) {
-             token = header.substring(lookupToken.length());
+            token = header.substring(lookupToken.length());
         }
 
-        if (token != null) {
-            if (!jwtService.isTokenValid(token) || sessionService.isSessionLoggedOut(token)) {
-                filterChain.doFilter(request, response);
-                return;
-            }
+        if (token != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            userEmail = jwtService.extractUserEmail(token);
-        }
+            if (jwtService.isTokenValid(token) && !sessionService.isSessionLoggedOut(token)) {
+                String userEmail = jwtService.extractUserEmail(token);
 
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            if (jwtService.isTokenValid(token)) {
-                UserPublicDto userPublicDto = userService.getUserByEmail(userEmail);
+                if (userEmail != null) {
+                    UserPublicDto userPublicDto = userService.getUserByEmail(userEmail);
+                    SimpleGrantedAuthority authority = new SimpleGrantedAuthority(userPublicDto.getRole());
 
-                SimpleGrantedAuthority authority = new SimpleGrantedAuthority(userPublicDto.getRole());
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            userPublicDto.getId(),
+                            null,
+                            Collections.singleton(authority)
+                    );
 
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userPublicDto.getId(), null, Collections.singleton(authority));
-
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
         }
+
         filterChain.doFilter(request, response);
     }
 }

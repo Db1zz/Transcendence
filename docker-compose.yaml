@@ -11,12 +11,19 @@ services:
     networks:
       - anteiku-network
 
-  # redis:
-  #   image: redis:alpine
-  #   ports:
-  #     - "6379:6379"
-  #   networks:
-  #     - anteiku-network
+  nginx:
+    build:
+      context: ./nginx
+    container_name: anteiku-nginx
+    ports:
+      - "443:443"
+      - "5601:5601"
+      - "9200:9200"
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - anteiku-network
 
   backend:
       image: eclipse-temurin:25-jdk-alpine
@@ -70,7 +77,6 @@ volumes:
   maven_repo:
   maven_target:
   
-
 networks:
   anteiku-network:
     name: anteiku-network

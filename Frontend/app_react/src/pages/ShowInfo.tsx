@@ -15,7 +15,7 @@ function ShowInfo() {
 
   const getInfo = () => {
     axios
-      .get("http://localhost:8080/api/info", { withCredentials: true })
+      .get("https://localhost/api/info", { withCredentials: true })
       .then((res) => {
         console.log("admin info =", res);
       })

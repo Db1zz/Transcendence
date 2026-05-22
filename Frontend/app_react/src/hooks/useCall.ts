@@ -8,7 +8,7 @@ export const useCall = () => {
 
   const joinOrCreateRoom = async (calleeId: string) => {
     try {
-      const response = await fetch("http://localhost:8080/api/voice/join", {
+      const response = await fetch("https://localhost/api/voice/join", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -34,7 +34,7 @@ export const useCall = () => {
 
   const joinVoiceChannel = async (channelId: string) => {
     try {
-      const response = await fetch("http://localhost:8080/api/voice/join", {
+      const response = await fetch("https://localhost/api/voice/join", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
