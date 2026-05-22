@@ -120,7 +120,7 @@ impl ClientsManager {
             let msg = match client.read.next().await {
                 Some(Ok(m)) => m,
                 Some(Err(e)) => {
-                    error!(error = ?e, "This is weird bugggg, should not to happen anyways...");
+                    error!(error = ?e, "TCP Connection was closed without a websocket close frame.");
                     break;
                 }
                 None => {

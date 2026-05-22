@@ -40,7 +40,7 @@ impl NotificationRouter {
             .allow_headers([header::AUTHORIZATION, header::CONTENT_TYPE]);
 
         let router = Router::new()
-            .route("/notify", get(Self::get_notifications))
+            .route("/notify/fetch", get(Self::get_notifications))
             .route("/notify/read", post(Self::mark_as_read))
             .layer(axum::middleware::from_fn(Self::auth_middleware))
             .layer(cors)
@@ -53,6 +53,7 @@ impl NotificationRouter {
         State(user_notifications): State<Arc<CassandraUserNotificationsRepository>>,
         Extension(claims): Extension<Claims>,
     ) -> Result<Json<Vec<Notification>>, StatusCode> {
+        
         let notifications = user_notifications
             .get_all(claims.user_id)
             .await
