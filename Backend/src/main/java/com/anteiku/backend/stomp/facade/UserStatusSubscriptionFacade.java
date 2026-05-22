@@ -44,7 +44,6 @@ public class UserStatusSubscriptionFacade {
                     String.format("{\"userId\":\"%s\", \"status\":\"online\"}", userId)
             );
         }
-
     }
 
     private Set<UUID> fetchKnownUsersFromDb(UUID userId) {
