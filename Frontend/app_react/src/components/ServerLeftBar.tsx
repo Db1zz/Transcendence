@@ -47,22 +47,28 @@ export interface ChannelCategory {
 interface ServerLeftBarProps {
 	serverId: string;
 	serverName: string;
+	serverOwnerId?: string;
 	categories: ChannelCategory[];
 	activeChannelId: string;
 	onSelectChannel: (channel: Channel) => void;
 	onChannelsChanged?: () => Promise<void> | void;
 	onDeleteChannel?: (channel: Channel) => Promise<void> | void;
+	onServerDeleted?: () => Promise<void> | void;
+	onServerLeft?: () => Promise<void> | void;
 	canManageChannels?: boolean;
 }
 
 export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
 	serverId,
 	serverName,
+	serverOwnerId,
 	categories,
 	activeChannelId,
 	onSelectChannel,
 	onChannelsChanged,
 	onDeleteChannel,
+	onServerDeleted,
+	onServerLeft,
 	canManageChannels = false,
 }) => {
 	const { user } = useAuth();
@@ -480,6 +486,9 @@ export const ServerLeftBar: React.FC<ServerLeftBarProps> = ({
 				onClose={() => setSettingsModalOpen(false)}
 				serverId={serverId}
 				serverName={serverName}
+				ownerId={serverOwnerId}
+				onServerDeleted={onServerDeleted}
+				onServerLeft={onServerLeft}
 			/>
 			<CreateChannelModal
 				isOpen={createTextChannelOpen}

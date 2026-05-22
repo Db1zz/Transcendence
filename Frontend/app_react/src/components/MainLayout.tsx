@@ -31,6 +31,7 @@ import { useServerMembers } from "../hooks/useServerMembers";
 import { useFriends } from "../hooks/useFriends";
 import { useRoles } from "../hooks/useRoles";
 import { usePermissions, PERMISSION_FLAGS } from "../hooks/usePermissions";
+import { useServers } from "../hooks/useServers";
 import type { VoiceParticipant } from "./VoiceView";
 import MobileNavBar from "./MobileNavBar";
 import { ProfilePopup } from "./ProfilePopup";
@@ -78,6 +79,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 	const { incomingCall, setIncomingCall } = useNotifications();
 	const { activeCall, joinOrCreateRoom, joinVoiceChannel, leaveRoom } =
 		useCall();
+	const { servers, createServer, joinServer, refetch: refetchServers } =
+		useServers();
 	const { statuses } = useUserStatuses(user?.id ?? "");
 	const { hasPermission } = usePermissions();
 
@@ -209,6 +212,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
 		return Array.from(merged.values());
 	}, [rawFriends, rawServerMembers, user]);
+
+	const activeServerOwnerId = useMemo(() => {
+		return servers.find((server) => server.id === activeServerId)?.ownerId;
+	}, [servers, activeServerId]);
 
 	useEffect(() => {
 		activeServerIdRef.current = activeServerId;
@@ -624,6 +631,34 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 		localStorage.removeItem("activeServerChannelName");
 	};
 
+	const resetActiveServerState = () => {
+		setActiveServerId(null);
+		activeServerIdRef.current = null;
+		lastServerId.current = null;
+		setActiveServerName("");
+		setActiveServerChannelId(null);
+		setActiveServerChannelName("");
+		setServerCategories([]);
+		setInServerVoice(false);
+		localStorage.removeItem("activeServerId");
+		localStorage.removeItem("activeServerName");
+		localStorage.removeItem("activeServerChannelId");
+		localStorage.removeItem("activeServerChannelName");
+		handleViewChange("friends");
+	};
+
+	const handleServerDeleted = async () => {
+		leaveRoom();
+		await refetchServers();
+		resetActiveServerState();
+	};
+
+	const handleServerLeft = async () => {
+		leaveRoom();
+		await refetchServers();
+		resetActiveServerState();
+	};
+
 	const handleMobileFriendsOpenChat = async (friend: {
 		id: string;
 		name: string;
@@ -718,6 +753,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 						onChatClick={() => handleViewChange("chat")}
 						onFriendsClick={() => handleViewChange("friends")}
 						onServerClick={handleServerClick}
+						servers={servers}
+						onCreateServer={createServer}
+						onJoinServer={joinServer}
 					/>
 				</div>
 				<main className="flex-1 flex flex-col p-0 pb-0 md:p-2 md:pb-0 overflow-hidden relative min-h-0">
@@ -790,11 +828,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 										<ServerLeftBar
 											serverId={activeServerId || ""}
 											serverName={activeServerName}
+											serverOwnerId={activeServerOwnerId}
 											categories={serverCategories}
 											activeChannelId={activeServerChannelId || ""}
 											onSelectChannel={handleChannelSelect}
 											canManageChannels={canManageChannels}
 											onDeleteChannel={handleChannelDelete}
+											onServerDeleted={handleServerDeleted}
+											onServerLeft={handleServerLeft}
 											onChannelsChanged={async () => {
 												if (activeServerId) {
 													await fetchServerData(activeServerId);
